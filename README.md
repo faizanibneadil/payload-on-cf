@@ -73,11 +73,12 @@ To deploy via GitHub Actions, ensure you set up the following secrets in your re
 * Copy this 32-character hex ID string and add it as `CLOUDFLARE_ACCOUNT_ID`.
 
 ### 2. `CLOUDFLARE_API_TOKEN`
+> **Important:** The default "Edit Cloudflare Workers" template in Cloudflare does **not** include D1 Database permissions. You must create a **Custom Token** or edit your token permissions to include Cloudflare D1; otherwise, D1 commands will fail with `error code: 7403`.
+
 * Go to [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens).
-* Click **Create Token**.
-* Choose **Create Custom Token** (at the bottom) or use the **Edit Cloudflare Workers** template.
+* Click **Create Token** -> Choose **Create Custom Token** (Get started at the bottom).
 * Grant the following **Permissions**:
-  - **Account | Cloudflare D1 | Edit**
+  - **Account | Cloudflare D1 | Edit** *(Required for D1 database migrations)*
   - **Account | Workers R2 Storage | Edit**
   - **Account | Workers Scripts | Edit**
   - **Account | Account Settings | Read**
