@@ -51,11 +51,11 @@ jobs:
         run: |
           if [ "${{ github.ref_name }}" = "dev" ]; then
             echo "CF_ENV=dev" >> $GITHUB_ENV
-            echo "WORKER_URL=https://my-app-dev.workers.dev" >> $GITHUB_ENV
+            echo "WORKER_URL=https://payload-on-cf-dev.workers.dev" >> $GITHUB_ENV
             echo "ENV_FLAG=--env dev" >> $GITHUB_ENV
           else
             echo "CF_ENV=production" >> $GITHUB_ENV
-            echo "WORKER_URL=https://my-app.workers.dev" >> $GITHUB_ENV
+            echo "WORKER_URL=https://payload-on-cf.workers.dev" >> $GITHUB_ENV
             echo "ENV_FLAG=" >> $GITHUB_ENV
           fi
 
