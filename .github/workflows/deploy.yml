@@ -81,8 +81,11 @@ jobs:
             pnpm deploy:database
           fi
 
-      - name: Configure SMTP secrets on Cloudflare Wrangler
+      - name: Configure secrets on Cloudflare Wrangler
         run: |
+          if [ -n "$PAYLOAD_SECRET" ]; then
+            printf "%s" "$PAYLOAD_SECRET" | pnpm exec wrangler secret put PAYLOAD_SECRET $ENV_FLAG
+          fi
           if [ -n "$SMTP_USER" ]; then
             printf "%s" "$SMTP_USER" | pnpm exec wrangler secret put SMTP_USER $ENV_FLAG
           fi
