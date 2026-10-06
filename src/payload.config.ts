@@ -22,14 +22,17 @@ const realpath = (value: string) => {
   }
 }
 
-const isCLI = process.argv.some((value) => {
-  const resolved = realpath(value)
-  if (!resolved) return false
-  return (
-    resolved.endsWith(path.join('payload', 'bin.js')) ||
-    resolved.endsWith(path.join('next', 'dist', 'bin', 'next'))
-  )
-})
+const isCLI =
+  Boolean(process.env.NEXT_PHASE) ||
+  process.argv.some((value) => {
+    const resolved = realpath(value)
+    if (!resolved) return false
+    return (
+      resolved.endsWith(path.join('payload', 'bin.js')) ||
+      resolved.endsWith(path.join('next', 'dist', 'bin', 'next')) ||
+      resolved.includes(path.join('next', 'dist'))
+    )
+  })
 const isProduction = process.env.NODE_ENV === 'production'
 
 const createLog =
@@ -41,8 +44,18 @@ const createLog =
     }
   }
 
+const cloudflare =
+  isCLI || !isProduction
+    ? await getCloudflareContextFromWrangler()
+    : await getCloudflareContext({ async: true })
+
+const env = {
+  ...process.env,
+  ...(cloudflare?.env as unknown as Record<string, string | undefined>),
+}
+
 const cloudflareLogger = {
-  level: process.env.PAYLOAD_LOG_LEVEL || 'info',
+  level: env.PAYLOAD_LOG_LEVEL || 'info',
   trace: createLog('trace', console.debug),
   debug: createLog('debug', console.debug),
   info: createLog('info', console.log),
@@ -52,17 +65,13 @@ const cloudflareLogger = {
   silent: () => {},
 } as any // Use PayloadLogger type when it's exported
 
-const cloudflare =
-  isCLI || !isProduction
-    ? await getCloudflareContextFromWrangler()
-    : await getCloudflareContext({ async: true })
-
-const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com'
-const smtpPort = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : 587
-const smtpUser = process.env.SMTP_USER
-const smtpPass = process.env.SMTP_PASS
-const smtpFromAddress = process.env.SMTP_FROM_ADDRESS || 'noreply@example.com'
-const smtpFromName = process.env.SMTP_FROM_NAME || 'Payload CMS'
+const smtpHost = env.SMTP_HOST || 'smtp.gmail.com'
+const smtpPort = env.SMTP_PORT ? parseInt(env.SMTP_PORT, 10) : 587
+const smtpUser = env.SMTP_USER
+const smtpPass = env.SMTP_PASS
+const smtpFromAddress = env.SMTP_FROM_ADDRESS || 'noreply@example.com'
+const smtpFromName = env.SMTP_FROM_NAME || 'Payload CMS'
+const payloadSecret = env.PAYLOAD_SECRET || ''
 
 export default buildConfig({
   admin: {
@@ -73,7 +82,7 @@ export default buildConfig({
   },
   collections: [Users, Media],
   editor: lexicalEditor(),
-  secret: process.env.PAYLOAD_SECRET || '',
+  secret: payloadSecret,
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
@@ -110,7 +119,7 @@ function getCloudflareContextFromWrangler(): Promise<CloudflareContext> {
     ({ getPlatformProxy }) =>
       getPlatformProxy({
         environment: process.env.CLOUDFLARE_ENV,
-        remoteBindings: isProduction,
+        remoteBindings: isProduction && Boolean(process.env.CLOUDFLARE_API_TOKEN),
       } satisfies GetPlatformProxyOptions),
   )
 }
