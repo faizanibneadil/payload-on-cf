@@ -1,0 +1,123 @@
+name: Deploy Payload v4 to Cloudflare Workers
+
+on:
+  push:
+    branches: [main, dev]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: payload-cf-deploy-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
+      PAYLOAD_SECRET: ${{ secrets.PAYLOAD_SECRET }}
+      SMTP_HOST: ${{ secrets.SMTP_HOST }}
+      SMTP_PORT: ${{ secrets.SMTP_PORT }}
+      SMTP_USER: ${{ secrets.SMTP_USER }}
+      SMTP_PASS: ${{ secrets.SMTP_PASS }}
+      SMTP_FROM_ADDRESS: ${{ secrets.SMTP_FROM_ADDRESS }}
+      SMTP_FROM_NAME: ${{ secrets.SMTP_FROM_NAME }}
+      NODE_ENV: production
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.29.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.19.0
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Set Environment Target
+        id: env_target
+        run: |
+          if [ "${{ github.ref_name }}" = "dev" ]; then
+            echo "CF_ENV=dev" >> $GITHUB_ENV
+            echo "WORKER_URL=https://my-app-dev.workers.dev" >> $GITHUB_ENV
+            echo "ENV_FLAG=--env dev" >> $GITHUB_ENV
+          else
+            echo "CF_ENV=production" >> $GITHUB_ENV
+            echo "WORKER_URL=https://my-app.workers.dev" >> $GITHUB_ENV
+            echo "ENV_FLAG=" >> $GITHUB_ENV
+          fi
+
+      - name: Generate Cloudflare binding types
+        run: pnpm generate:types:cloudflare
+
+      - name: Generate and commit schema migrations
+        run: |
+          pnpm payload migrate:create initial --skip-empty --json || true
+          if [ -n "$(git status --porcelain src/migrations)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add src/migrations
+            git commit -m "chore(db): generate Payload schema migration [skip ci]"
+            git push
+          fi
+
+      - name: Apply Payload migrations to D1
+        run: |
+          if [ "$CF_ENV" = "dev" ]; then
+            CLOUDFLARE_ENV=dev pnpm deploy:database
+          else
+            pnpm deploy:database
+          fi
+
+      - name: Configure SMTP secrets on Cloudflare Wrangler
+        run: |
+          if [ -n "$SMTP_USER" ]; then
+            printf "%s" "$SMTP_USER" | pnpm exec wrangler secret put SMTP_USER $ENV_FLAG
+          fi
+          if [ -n "$SMTP_PASS" ]; then
+            printf "%s" "$SMTP_PASS" | pnpm exec wrangler secret put SMTP_PASS $ENV_FLAG
+          fi
+          if [ -n "$SMTP_HOST" ]; then
+            printf "%s" "$SMTP_HOST" | pnpm exec wrangler secret put SMTP_HOST $ENV_FLAG
+          fi
+          if [ -n "$SMTP_PORT" ]; then
+            printf "%s" "$SMTP_PORT" | pnpm exec wrangler secret put SMTP_PORT $ENV_FLAG
+          fi
+          if [ -n "$SMTP_FROM_ADDRESS" ]; then
+            printf "%s" "$SMTP_FROM_ADDRESS" | pnpm exec wrangler secret put SMTP_FROM_ADDRESS $ENV_FLAG
+          fi
+          if [ -n "$SMTP_FROM_NAME" ]; then
+            printf "%s" "$SMTP_FROM_NAME" | pnpm exec wrangler secret put SMTP_FROM_NAME $ENV_FLAG
+          fi
+
+      - name: Build and Deploy Worker
+        run: |
+          if [ "$CF_ENV" = "dev" ]; then
+            CLOUDFLARE_ENV=dev pnpm deploy:app
+          else
+            pnpm deploy:app
+          fi
+
+      - name: Smoke test deployed worker endpoints
+        run: |
+          echo "Testing endpoint reachability for $WORKER_URL"
+          for endpoint in / /admin; do
+            code=$(curl -sS -L -o /tmp/response -w "%{http_code}" "$WORKER_URL$endpoint") || code="000"
+            echo "$endpoint => HTTP $code"
+            if [ "$code" -ge 500 ]; then
+              cat /tmp/response
+              exit 1
+            fi
+          done

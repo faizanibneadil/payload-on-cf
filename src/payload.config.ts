@@ -7,10 +7,10 @@ import { fileURLToPath } from 'url'
 import { CloudflareContext, getCloudflareContext } from '@opennextjs/cloudflare'
 import { GetPlatformProxyOptions } from 'wrangler'
 import { r2Storage } from '@payloadcms/storage-r2'
+import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
-import migrations from './db/migrations'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -57,6 +57,13 @@ const cloudflare =
     ? await getCloudflareContextFromWrangler()
     : await getCloudflareContext({ async: true })
 
+const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com'
+const smtpPort = process.env.SMTP_PORT ? parseInt(process.env.SMTP_PORT, 10) : 587
+const smtpUser = process.env.SMTP_USER
+const smtpPass = process.env.SMTP_PASS
+const smtpFromAddress = process.env.SMTP_FROM_ADDRESS || 'noreply@example.com'
+const smtpFromName = process.env.SMTP_FROM_NAME || 'Payload CMS'
+
 export default buildConfig({
   admin: {
     user: Users.slug,
@@ -74,6 +81,21 @@ export default buildConfig({
     binding: cloudflare.env.D1,
   }),
   logger: isProduction ? cloudflareLogger : undefined,
+  email: smtpUser && smtpPass
+    ? nodemailerAdapter({
+        defaultFromAddress: smtpFromAddress,
+        defaultFromName: smtpFromName,
+        transportOptions: {
+          host: smtpHost,
+          port: smtpPort,
+          secure: smtpPort === 465,
+          auth: {
+            user: smtpUser,
+            pass: smtpPass,
+          },
+        } as any,
+      })
+    : undefined,
   plugins: [
     r2Storage({
       bucket: cloudflare.env.R2,
