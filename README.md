@@ -62,6 +62,36 @@ This will take you to Cloudflare to login and then you can use the Wrangler CLI 
 
 Wrangler is pretty smart so it will automatically bind your services for local development just by running `pnpm dev`.
 
+## GitHub Actions Deployment Setup
+
+To deploy via GitHub Actions, ensure you set up the following secrets in your repository settings (**Settings > Secrets and variables > Actions > New repository secret**):
+
+### 1. `CLOUDFLARE_ACCOUNT_ID`
+* Log in to the [Cloudflare Dashboard](https://dash.cloudflare.com/).
+* Select your account/domain from the dashboard.
+* Look at the right sidebar under **Overview** or check the browser URL (`https://dash.cloudflare.com/<ACCOUNT_ID>`).
+* Copy this 32-character hex ID string and add it as `CLOUDFLARE_ACCOUNT_ID`.
+
+### 2. `CLOUDFLARE_API_TOKEN`
+* Go to [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens).
+* Click **Create Token**.
+* Choose **Create Custom Token** (at the bottom) or use the **Edit Cloudflare Workers** template.
+* Grant the following **Permissions**:
+  - **Account | Cloudflare D1 | Edit**
+  - **Account | Workers R2 Storage | Edit**
+  - **Account | Workers Scripts | Edit**
+  - **Account | Account Settings | Read**
+  - **User | User Details | Read** (optional, recommended)
+* Under **Account Resources**, select **Include > All accounts** (or your specific account).
+* Click **Continue to summary** and then **Create Token**.
+* Copy the token value and add it in GitHub Repository Secrets as `CLOUDFLARE_API_TOKEN`.
+
+### 3. Other Required Secrets
+- `PAYLOAD_SECRET`: Secret key for Payload CMS sessions.
+- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM_ADDRESS`, `SMTP_FROM_NAME`: Email service credentials.
+
+---
+
 ## Deployments
 
 When you're ready to deploy, first make sure you have created your migrations:
