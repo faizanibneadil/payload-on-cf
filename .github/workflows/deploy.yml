@@ -59,8 +59,10 @@ jobs:
             echo "ENV_FLAG=" >> $GITHUB_ENV
           fi
 
-      - name: Generate Cloudflare binding types
-        run: pnpm generate:types:cloudflare
+      - name: Generate importmap and types
+        run: |
+          pnpm generate:importmap
+          pnpm generate:types
 
       - name: Generate and commit schema migrations
         run: |

@@ -123,12 +123,23 @@ export default buildConfig({
 })
 
 // Adapted from https://github.com/opennextjs/opennextjs-cloudflare/blob/d00b3a13e42e65aad76fba41774815726422cc39/packages/cloudflare/src/api/cloudflare-context.ts#L328C36-L328C46
-function getCloudflareContextFromWrangler(): Promise<CloudflareContext> {
-  return import(/* webpackIgnore: true */ `${'__wrangler'.replaceAll('_', '')}`).then(
-    ({ getPlatformProxy }) =>
-      getPlatformProxy({
-        environment: process.env.CLOUDFLARE_ENV,
-        remoteBindings: isProduction && Boolean(process.env.CLOUDFLARE_API_TOKEN),
-      } satisfies GetPlatformProxyOptions),
-  )
+async function getCloudflareContextFromWrangler(): Promise<CloudflareContext> {
+  try {
+    const { getPlatformProxy } = await import(/* webpackIgnore: true */ `${'__wrangler'.replaceAll('_', '')}`)
+    return await getPlatformProxy({
+      environment: process.env.CLOUDFLARE_ENV,
+      remoteBindings: isProduction && Boolean(process.env.CLOUDFLARE_API_TOKEN),
+    } satisfies GetPlatformProxyOptions)
+  } catch (error) {
+    console.warn('Wrangler proxy init failed or unavailable, using fallback Cloudflare context for CLI:', error)
+    return {
+      env: {
+        D1: {} as any,
+        R2: {} as any,
+      },
+      cf: {} as any,
+      ctx: {} as any,
+      caches: {} as any,
+    } as unknown as CloudflareContext
+  }
 }

@@ -5,6 +5,7 @@
   "license": "MIT",
   "type": "module",
   "scripts": {
+    "prebuild": "pnpm run generate:importmap && pnpm run generate:types:payload",
     "build": "cross-env NODE_OPTIONS=\"--no-deprecation --max-old-space-size=8000\" next build --webpack",
     "deploy": "pnpm run deploy:database && pnpm run deploy:app",
     "deploy:app": "opennextjs-cloudflare build ${CLOUDFLARE_ENV:+--env $CLOUDFLARE_ENV} && opennextjs-cloudflare deploy ${CLOUDFLARE_ENV:+--env $CLOUDFLARE_ENV}",
@@ -65,6 +66,9 @@
     "pnpm": "^9 || ^10 || ^11"
   },
   "pnpm": {
+    "overrides": {
+      "esbuild": "0.18.20"
+    },
     "onlyBuiltDependencies": [
       "sharp",
       "esbuild",
