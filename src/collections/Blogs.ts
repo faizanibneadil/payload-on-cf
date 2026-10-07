@@ -14,7 +14,7 @@ export const Blogs:CollectionConfig = {
     },
     fields: [{
         type: "text",
-        name: "text",
+        name: "title",
     },{
         type: "richText",
         name: "content",
