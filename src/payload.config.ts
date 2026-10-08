@@ -12,7 +12,7 @@ import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
-import { Blogs } from './collections/Blogs'
+import { Playgrounds } from './collections/Playgrounds'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -73,7 +73,7 @@ const smtpUser = env.SMTP_USER
 const smtpPass = env.SMTP_PASS
 const smtpFromAddress = env.SMTP_FROM_ADDRESS || 'noreply@example.com'
 const smtpFromName = env.SMTP_FROM_NAME || 'Payload CMS'
-const payloadSecret = env.PAYLOAD_SECRET || ''
+const payloadSecret = env.PAYLOAD_SECRET || 'fallback-secret-for-local-dev-only'
 
 export default buildConfig({
   admin: {
@@ -82,7 +82,7 @@ export default buildConfig({
       baseDir: path.resolve(dirname),
     },
   },
-  collections: [Users, Media, Blogs],
+  collections: [Users, Media, Playgrounds],
   editor: lexicalEditor(),
   secret: payloadSecret,
   typescript: {
@@ -107,19 +107,19 @@ export default buildConfig({
         } as any,
       })
     : undefined,
-  plugins: [
-    r2Storage({
-      bucket: cloudflare.env.R2,
-      collections: { media: true },
-    }),
-  ],
   onInit: async (payload) => {
-    await payload.sendEmail({
-      to: 'faizanibneadil1@gmail.com',
-      subject: 'Cloudflare deployments status: SUCCESS',
-      text: 'Cloudflare deployment is successful so u can use the project.'
-    })
-  }
+    if (smtpUser && smtpPass) {
+      try {
+        await payload.sendEmail({
+          to: 'faizanibneadil1@gmail.com',
+          subject: 'Cloudflare deployments status: SUCCESS',
+          text: 'Cloudflare deployment is successful so u can use the project.',
+        })
+      } catch (err) {
+        console.warn('Failed to send startup email:', err)
+      }
+    }
+  },
 })
 
 // Adapted from https://github.com/opennextjs/opennextjs-cloudflare/blob/d00b3a13e42e65aad76fba41774815726422cc39/packages/cloudflare/src/api/cloudflare-context.ts#L328C36-L328C46

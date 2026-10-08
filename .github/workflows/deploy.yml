@@ -46,6 +46,9 @@ jobs:
       - name: Install dependencies
         run: pnpm install --no-frozen-lockfile
 
+      - name: Validate environment variables
+        run: node scripts/check-env.mjs
+
       - name: Set Environment Target
         id: env_target
         run: |
@@ -58,6 +61,9 @@ jobs:
             echo "WORKER_URL=https://payload-on-cf.workers.dev" >> $GITHUB_ENV
             echo "ENV_FLAG=" >> $GITHUB_ENV
           fi
+
+      - name: Copy Vivari Service Worker
+        run: pnpm run copy-sw
 
       - name: Generate importmap and types
         run: |
@@ -108,6 +114,8 @@ jobs:
           fi
 
       - name: Build and Deploy Worker
+        env:
+          NEXT_PUBLIC_SERVER_URL: ${{ vars.NEXT_PUBLIC_SERVER_URL || env.WORKER_URL }}
         run: |
           if [ "$CF_ENV" = "dev" ]; then
             CLOUDFLARE_ENV=dev pnpm deploy:app
