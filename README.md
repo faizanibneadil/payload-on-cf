@@ -1,155 +1,98 @@
-# Payload Cloudflare Template
+# Multi-User Code Playground (Next.js + Payload CMS + Cloudflare D1 + Vivari WebContainer)
 
-[![Deploy to Cloudflare](https://deploy.workers.cloudflare.com/button)](https://deploy.workers.cloudflare.com/?url=https://github.com/payloadcms/payload/tree/3.x/templates/with-cloudflare-d1)
+A multi-user playground for HTML, CSS, and JS with live browser-based previews powered by Vivari WebContainer. Features rich text theory notes (Payload Lexical), customizable code files, user authentication, and single-click forking.
 
-**This can only be deployed on Paid Workers right now due to size limits.** This template comes configured with the bare minimum to get started on anything you need.
+## 🚀 Features
 
-## Quick start
-
-This template can be deployed directly to Cloudflare Workers by clicking the button to take you to the setup screen.
-
-From there you can connect your code to a git provider such Github or Gitlab, name your Workers, D1 Database and R2 Bucket as well as attach any additional environment variables or services you need.
-
-## Quick Start - local setup
-
-To spin up this template locally, follow these steps:
-
-### Clone
-
-After you click the `Deploy` button above, you'll want to have standalone copy of this repo on your machine. Cloudflare will connect your app to a git provider such as Github and you can access your code from there.
-
-### Local Development
-
-## How it works
-
-Out of the box, using [`Wrangler`](https://developers.cloudflare.com/workers/wrangler/) will automatically create local bindings for you to connect to the remote services and it can even create a local mock of the services you're using with Cloudflare.
-
-We've pre-configured Payload for you with the following:
-
-### Collections
-
-See the [Collections](https://payloadcms.com/docs/configuration/collections) docs for details on how to extend this functionality.
-
-- #### Users (Authentication)
-
-  Users are auth-enabled collections that have access to the admin panel.
-
-  For additional help, see the official [Auth Example](https://github.com/payloadcms/payload/tree/3.x/examples/auth) or the [Authentication](https://payloadcms.com/docs/authentication/overview#authentication-overview) docs.
-
-- #### Media
-
-  This is the uploads enabled collection.
-
-### Image Storage (R2)
-
-Images will be served from an R2 bucket which you can then further configure to use a CDN to serve for your frontend directly.
-
-### D1 Database
-
-The Worker will have direct access to a D1 SQLite database which Wrangler can connect locally to, just note that you won't have a connection string as you would typically with other providers.
-
-You can enable read replicas by adding `readReplicas: 'first-primary'` in the DB adapter and then enabling it on your D1 Cloudflare dashboard. Read more about this feature on [our docs](https://payloadcms.com/docs/database/sqlite#d1-read-replicas).
-
-## Working with Cloudflare
-
-Firstly, after installing dependencies locally you need to authenticate with Wrangler by running:
-
-```bash
-pnpm wrangler login
-```
-
-This will take you to Cloudflare to login and then you can use the Wrangler CLI locally for anything, use `pnpm wrangler help` to see all available options.
-
-Wrangler is pretty smart so it will automatically bind your services for local development just by running `pnpm dev`.
-
-## GitHub Actions Deployment Setup
-
-To deploy via GitHub Actions, ensure you set up the following secrets in your repository settings (**Settings > Secrets and variables > Actions > New repository secret**):
-
-### 1. `CLOUDFLARE_ACCOUNT_ID`
-* Log in to the [Cloudflare Dashboard](https://dash.cloudflare.com/).
-* Select your account/domain from the dashboard.
-* Look at the right sidebar under **Overview** or check the browser URL (`https://dash.cloudflare.com/<ACCOUNT_ID>`).
-* Copy this 32-character hex ID string and add it as `CLOUDFLARE_ACCOUNT_ID`.
-
-### 2. `CLOUDFLARE_API_TOKEN`
-> **Important:** The default "Edit Cloudflare Workers" template in Cloudflare does **not** include D1 Database permissions. You must create a **Custom Token** or edit your token permissions to include Cloudflare D1; otherwise, D1 commands will fail with `error code: 7403`.
-
-* Go to [Cloudflare API Tokens](https://dash.cloudflare.com/profile/api-tokens).
-* Click **Create Token** -> Choose **Create Custom Token** (Get started at the bottom).
-* Grant the following **Permissions**:
-  - **Account | Cloudflare D1 | Edit** *(Required for D1 database migrations)*
-  - **Account | Workers R2 Storage | Edit**
-  - **Account | Workers Scripts | Edit**
-  - **Account | Account Settings | Read**
-  - **User | User Details | Read** (optional, recommended)
-* Under **Account Resources**, select **Include > All accounts** (or your specific account).
-* Click **Continue to summary** and then **Create Token**.
-* Copy the token value and add it in GitHub Repository Secrets as `CLOUDFLARE_API_TOKEN`.
-
-### 3. Other Required Secrets
-- `PAYLOAD_SECRET`: Secret key for Payload CMS sessions.
-- `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM_ADDRESS`, `SMTP_FROM_NAME`: Email service credentials.
+- **Theory Panel:** Rich text / markdown notes editor built on Lexical with an inline floating toolbar and markdown shortcuts.
+- **Practical Panel:** In-browser code editor (File Tree + CodeMirror 6 + Vivari Live Preview iframe).
+- **Public URL & Permissions:** Public read access via `/p/[slug]`. Only owners can update their playgrounds; non-owners and visitors can fork any playground to save their local edits.
+- **Authentication:** Username + password login via Payload CMS (`auth.loginWithUsername`), with role-based access control (`admin` | `user`).
+- **Data Model:** Cloudflare D1 SQLite database storing playgrounds (`title`, `slug`, `owner`, `theory`, `files`, `forkedFrom`).
+- **UI & Theme:** Built with shadcn/ui components on Base UI (`preset b0`), zero Radix dependencies, with light/dark theme persistence and zero FOUC.
+- **Service Worker Isolation:** COOP/COEP headers configured for cross-origin isolation on playground and Service Worker routes.
 
 ---
 
-## Deployments
+## 💻 Local Setup
 
-When you're ready to deploy, first make sure you have created your migrations:
-
+### 1. Install Dependencies
 ```bash
-pnpm payload migrate:create
+pnpm install
 ```
 
-Then run the following command:
-
+### 2. Environment Variables
+Copy `.env.example` to `.env` and fill in required variables:
 ```bash
-pnpm run deploy
+cp .env.example .env
 ```
 
-This will spin up Wrangler in `production` mode, run any created migrations, build the app and then deploy the bundle up to Cloudflare.
+Required `.env` variables:
+```env
+PAYLOAD_SECRET=your-32-byte-random-payload-secret
+NEXT_PUBLIC_SERVER_URL=http://localhost:3000
+```
 
-That's it! You can if you wish move these steps into your CI pipeline as well.
+### 3. Run Development Server
+```bash
+pnpm dev
+```
+Open [http://localhost:3000](http://localhost:3000) to view the application.
+Access the admin dashboard at [http://localhost:3000/admin](http://localhost:3000/admin).
 
-## Enabling logs
+---
 
-By default logs are not enabled for your API, we've made this decision because it does run against your quota so we've left it opt-in. But you can easily enable logs in one click in the Cloudflare panel, [see docs](https://developers.cloudflare.com/workers/observability/logs/workers-logs/#enable-workers-logs).
+## 👤 Creating Users in Payload CMS
 
-### Logger Configuration
+1. Open `/admin/login` (or `/admin`).
+2. The initial startup will prompt you to create the first Admin user (`username` + `password`).
+3. Additional regular users can be created manually by the admin inside the Payload Admin dashboard under **Users**.
+4. Regular users log in at `/admin/login` and are redirected back to the playground.
 
-This template includes a custom console-based logger compatible with Cloudflare Workers. Payload's default logger uses `pino-pretty`, which relies on Node.js APIs not available in Workers and would cause `fs.write is not implemented` errors.
+---
 
-The custom logger in `payload.config.ts`:
+## 🗄 Database Migrations (Cloudflare D1)
 
-- Routes logs through `console.*` methods which Workers handles correctly
-- Outputs JSON-formatted logs for Cloudflare observability
-- Only active in production (development uses the default `pino-pretty` for better DX)
+Schema migrations are managed automatically by Payload D1 SQLite adapter.
 
-You can control the log level via the `PAYLOAD_LOG_LEVEL` environment variable (e.g., `debug`, `info`, `warn`, `error`).
+To generate a new migration after schema changes:
+```bash
+pnpm payload migrate:create <migration-name>
+```
 
-### Diagnostic Channel Errors
+To apply migrations to the remote Cloudflare D1 database:
+```bash
+pnpm deploy:database
+```
 
-If you see "Failed to publish diagnostic channel message" errors in your observability logs, these typically come from the `undici` HTTP client library. The template includes `skipSafeFetch: true` in the Media collection to use native fetch instead of undici for file uploads, which helps reduce these errors.
+### Existing User Compatibility & Migrations
+When migrating from earlier schema versions where `username` and `role` were not present on the `users` table:
+- Migration `20261008_064007_add_playgrounds_and_users` automatically sets default `role = 'user'` and populates `username` for existing users from their `email` (or `user_<id>` fallback) during table rebuild.
+- If existing users need custom usernames after migration, administrators can log in to `/admin` and update user profiles as needed.
 
-Cloudflare Workers runs in an [isolated environment that cannot access private IP ranges](https://developers.cloudflare.com/workers-vpc/examples/route-across-private-services/) by default, providing built-in SSRF protection. This makes `skipSafeFetch` safe to use.
+---
 
-## Known issues
+## 🔐 GitHub Secrets & Variables List
 
-### Image resizing
+To deploy via GitHub Actions, add the following to your repository (**Settings > Secrets and variables > Actions**):
 
-Workers do not support `sharp`, so image resizing features are not available. The Media collection has `crop` and `focalPoint` disabled for this reason, and options like `imageSizes` will not work.
+### Repository Secrets
+1. `CLOUDFLARE_API_TOKEN`: Cloudflare API token with `Account | Cloudflare D1 | Edit`, `Account | Workers R2 Storage | Edit`, `Account | Workers Scripts | Edit`, and `Account | Account Settings | Read` permissions.
+2. `CLOUDFLARE_ACCOUNT_ID`: Your 32-character Cloudflare Account ID from the Cloudflare Dashboard.
+3. `PAYLOAD_SECRET`: 32-byte secret string for Payload JWT sessions.
+4. `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM_ADDRESS`, `SMTP_FROM_NAME`: (Optional) Email transport settings.
 
-### GraphQL
+### Repository Variables
+1. `NEXT_PUBLIC_SERVER_URL`: Production domain URL (e.g. `https://payload-on-cf.workers.dev`).
 
-We are currently waiting on some issues with GraphQL to be [fixed upstream in Workers](https://github.com/cloudflare/workerd/issues/5175) so full support for GraphQL is not currently guaranteed when deployed.
+---
 
-### Worker size limits
+## 📝 Step-by-Step Instructions: Adding a New Environment Variable
 
-We currently recommend deploying this template to the Paid Workers plan due to bundle [size limits](https://developers.cloudflare.com/workers/platform/limits/#worker-size) of 3mb. We're actively trying to reduce our bundle footprint over time to better meet this metric.
-
-This also applies to your own code, in the case of importing a lot of libraries you may find yourself limited by the bundle.
-
-## Questions
-
-If you have any issues or questions, reach out to us on [Discord](https://discord.com/invite/payload) or start a [GitHub discussion](https://github.com/payloadcms/payload/discussions).
-# payload-on-cf
+When adding a new environment variable in the future:
+1. **Add to `scripts/check-env.mjs`:** Include the variable name in `requiredEnvs` if mandatory.
+2. **Add to `.env.example`:** Provide example value and description.
+3. **Add to GitHub Actions Workflow (`.github/workflows/deploy.yml`):**
+   - For `NEXT_PUBLIC_*` build-time variables: add under the `Build and Deploy Worker` step `env:`.
+   - For runtime secrets: add to `Configure secrets on Cloudflare Wrangler` step using `wrangler secret put`.
+4. **Update `wrangler.jsonc` (if non-secret runtime variable):** Define under `vars`.

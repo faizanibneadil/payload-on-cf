@@ -69,7 +69,7 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
-    blogs: Blog;
+    playgrounds: Playground;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -79,7 +79,7 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
-    blogs: BlogsSelect<false> | BlogsSelect<true>;
+    playgrounds: PlaygroundsSelect<false> | PlaygroundsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -103,20 +103,18 @@ export interface Config {
 }
 export interface UserAuthOperations {
   forgotPassword: {
-    email: string;
-    password: string;
+    username: string;
   };
   login: {
-    email: string;
     password: string;
+    username: string;
   };
   registerFirstUser: {
-    email: string;
     password: string;
+    username: string;
   };
   unlock: {
-    email: string;
-    password: string;
+    username: string;
   };
 }
 /**
@@ -125,9 +123,11 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: number;
+  role: 'admin' | 'user';
   updatedAt: string;
   createdAt: string;
-  email: string;
+  email?: string | null;
+  username: string;
   resetPasswordToken?: string | null;
   resetPasswordExpiration?: string | null;
   salt?: string | null;
@@ -152,7 +152,6 @@ export interface User {
 export interface Media {
   id: number;
   alt: string;
-  _objectKey?: string | null;
   updatedAt: string;
   createdAt: string;
   url?: string | null;
@@ -165,12 +164,14 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "blogs".
+ * via the `definition` "playgrounds".
  */
-export interface Blog {
+export interface Playground {
   id: number;
-  title?: string | null;
-  content?: {
+  title: string;
+  slug: string;
+  owner: number | User;
+  theory?: {
     root: {
       type: string;
       children: {
@@ -185,6 +186,16 @@ export interface Blog {
     };
     [k: string]: unknown;
   } | null;
+  files?:
+    | {
+        [k: string]: unknown;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
+  forkedFrom?: (number | null) | Playground;
   updatedAt: string;
   createdAt: string;
 }
@@ -221,8 +232,8 @@ export interface PayloadLockedDocument {
         value: number | Media;
       } | null)
     | ({
-        relationTo: 'blogs';
-        value: number | Blog;
+        relationTo: 'playgrounds';
+        value: number | Playground;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -271,9 +282,11 @@ export interface PayloadMigration {
  * via the `definition` "users_select".
  */
 export interface UsersSelect<T extends boolean = true> {
+  role?: T;
   updatedAt?: T;
   createdAt?: T;
   email?: T;
+  username?: T;
   resetPasswordToken?: T;
   resetPasswordExpiration?: T;
   salt?: T;
@@ -295,7 +308,6 @@ export interface UsersSelect<T extends boolean = true> {
  */
 export interface MediaSelect<T extends boolean = true> {
   alt?: T;
-  _objectKey?: T;
   updatedAt?: T;
   createdAt?: T;
   url?: T;
@@ -308,11 +320,15 @@ export interface MediaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "blogs_select".
+ * via the `definition` "playgrounds_select".
  */
-export interface BlogsSelect<T extends boolean = true> {
+export interface PlaygroundsSelect<T extends boolean = true> {
   title?: T;
-  content?: T;
+  slug?: T;
+  owner?: T;
+  theory?: T;
+  files?: T;
+  forkedFrom?: T;
   updatedAt?: T;
   createdAt?: T;
 }
