@@ -65,6 +65,11 @@ To apply migrations to the remote Cloudflare D1 database:
 pnpm deploy:database
 ```
 
+### Existing User Compatibility & Migrations
+When migrating from earlier schema versions where `username` and `role` were not present on the `users` table:
+- Migration `20261008_064007_add_playgrounds_and_users` automatically sets default `role = 'user'` and populates `username` for existing users from their `email` (or `user_<id>` fallback) during table rebuild.
+- If existing users need custom usernames after migration, administrators can log in to `/admin` and update user profiles as needed.
+
 ---
 
 ## 🔐 GitHub Secrets & Variables List
