@@ -70,15 +70,15 @@ jobs:
           pnpm generate:importmap
           pnpm generate:types
 
-      - name: Generate and commit schema migrations
+      # Allowed as check-only: verify that schema matches committed migrations without auto-generating/committing
+      - name: Check for uncommitted schema migrations (schema drift guard)
+        timeout-minutes: 2
         run: |
-          pnpm payload migrate:create initial --skip-empty --json || true
+          pnpm payload migrate:create check --skip-empty
           if [ -n "$(git status --porcelain src/migrations)" ]; then
-            git config user.name "github-actions[bot]"
-            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add src/migrations
-            git commit -m "chore(db): generate Payload schema migration [skip ci]"
-            git push
+            echo "Error: Uncommitted schema changes detected! Please generate and commit migrations locally before pushing."
+            git status --porcelain src/migrations
+            exit 1
           fi
 
       - name: Apply Payload migrations to D1
