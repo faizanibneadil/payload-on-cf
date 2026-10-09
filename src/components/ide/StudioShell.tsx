@@ -1,6 +1,7 @@
 'use client'
 
 import dynamic from 'next/dynamic'
+import { IdeProvider } from './IdeProvider'
 
 const AppShell = dynamic(
   () => import('@/components/ide/AppShell').then((mod) => mod.AppShell),
@@ -26,10 +27,13 @@ export function StudioShell({
   currentUser,
 }: StudioShellProps) {
   return (
-    <AppShell
-      playground={playground}
-      currentUser={currentUser}
-      theoryContent={theoryContent}
-    />
+    <IdeProvider>
+      <AppShell
+        playground={playground}
+        initialFiles={initialFiles}
+        currentUser={currentUser}
+        theoryContent={theoryContent}
+      />
+    </IdeProvider>
   )
 }
