@@ -39,10 +39,15 @@ export function AppShell({ playground, initialFiles, currentUser, theoryContent 
     if (!initialFiles || initialFiles.length === 0 || !snap.kernelReady || !playground) return;
     const projName = playground.slug || playground.title || "playground";
     const dir = `/projects/${projName}`;
+    const encoder = new TextEncoder();
+    const files = initialFiles.map((f) => ({
+      path: f.path,
+      bytes: encoder.encode(f.content),
+    }));
     void c.importFilesAsProject({
       name: playground.title || projName,
       dir,
-      files: initialFiles,
+      files,
       silent: true,
     });
   }, [c, snap.kernelReady, playground, initialFiles]);
