@@ -49,6 +49,15 @@ node_modules/
 /blob-report/
 /playwright/.cache/
 
+# Generated static assets from packages
+public/devtools
+public/vv-devtools
+public/vendor
+public/sw.js
+public/devtools/**
+public/vv-devtools/**
+public/vendor/**
+
 # OpenNext
 .open-next
 .wrangler

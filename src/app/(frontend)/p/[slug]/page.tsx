@@ -1,32 +1,53 @@
+import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import config from '@/payload.config'
-import { notFound } from 'next/navigation'
-import { PlaygroundView } from '@/components/playground-view'
+import { StudioShell } from '@/components/ide/StudioShell'
 
-interface PageProps {
-  params: Promise<{
-    slug: string
-  }>
-}
-
-export default async function PublicPlaygroundPage({ params }: PageProps) {
+export default async function PlaygroundPage({
+  params,
+}: {
+  params: Promise<{ slug: string }>
+}) {
   const { slug } = await params
-
   const payload = await getPayload({ config })
-  const result = await payload.find({
+
+  const playgrounds = await payload.find({
     collection: 'playgrounds',
     where: {
-      slug: {
-        equals: slug,
-      },
+      slug: { equals: slug },
     },
+    limit: 1,
   })
 
-  if (!result.docs || result.docs.length === 0) {
+  if (!playgrounds.docs.length) {
     notFound()
   }
 
-  const playgroundData = JSON.parse(JSON.stringify(result.docs[0]))
+  const playground = playgrounds.docs[0]
 
-  return <PlaygroundView initialPlayground={playgroundData} />
+  const files = await payload.find({
+    collection: 'playground-files',
+    where: {
+      playground: { equals: playground.id },
+    },
+    limit: 300,
+  })
+
+  const fileMap = files.docs.map((f) => ({
+    path: f.path,
+    content: f.content || '',
+  }))
+
+  return (
+    <StudioShell
+      playground={{
+        id: String(playground.id),
+        title: playground.title,
+        slug: playground.slug,
+        owner: playground.owner,
+      }}
+      initialFiles={fileMap}
+      theoryContent={playground.theory}
+    />
+  )
 }

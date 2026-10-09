@@ -70,6 +70,7 @@ export interface Config {
     users: User;
     media: Media;
     playgrounds: Playground;
+    'playground-files': PlaygroundFile;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -80,6 +81,7 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     playgrounds: PlaygroundsSelect<false> | PlaygroundsSelect<true>;
+    'playground-files': PlaygroundFilesSelect<false> | PlaygroundFilesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -186,16 +188,20 @@ export interface Playground {
     };
     [k: string]: unknown;
   } | null;
-  files?:
-    | {
-        [k: string]: unknown;
-      }
-    | unknown[]
-    | string
-    | number
-    | boolean
-    | null;
   forkedFrom?: (number | null) | Playground;
+  updatedAt: string;
+  createdAt: string;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "playground-files".
+ */
+export interface PlaygroundFile {
+  id: number;
+  playground: number | Playground;
+  path: string;
+  content?: string | null;
+  size: number;
   updatedAt: string;
   createdAt: string;
 }
@@ -234,6 +240,10 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'playgrounds';
         value: number | Playground;
+      } | null)
+    | ({
+        relationTo: 'playground-files';
+        value: number | PlaygroundFile;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -327,8 +337,19 @@ export interface PlaygroundsSelect<T extends boolean = true> {
   slug?: T;
   owner?: T;
   theory?: T;
-  files?: T;
   forkedFrom?: T;
+  updatedAt?: T;
+  createdAt?: T;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "playground-files_select".
+ */
+export interface PlaygroundFilesSelect<T extends boolean = true> {
+  playground?: T;
+  path?: T;
+  content?: T;
+  size?: T;
   updatedAt?: T;
   createdAt?: T;
 }
