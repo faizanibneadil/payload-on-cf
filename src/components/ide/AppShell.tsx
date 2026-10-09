@@ -21,10 +21,11 @@ import { useIde } from "./useIde";
 import { isWordWrapChord } from "@/lib/vv/editor-prefs";
 
 export interface AppShellProps extends TitleBarProps {
+  initialFiles?: Array<{ path: string; content: string }>
   theoryContent?: any
 }
 
-export function AppShell({ playground, currentUser, theoryContent }: AppShellProps) {
+export function AppShell({ playground, initialFiles, currentUser, theoryContent }: AppShellProps) {
   const { c, snap } = useIde();
   const { resolvedTheme } = useTheme();
 
@@ -33,6 +34,18 @@ export function AppShell({ playground, currentUser, theoryContent }: AppShellPro
       c.applyUiTheme(resolvedTheme);
     }
   }, [c, resolvedTheme]);
+
+  useEffect(() => {
+    if (!initialFiles || initialFiles.length === 0 || !snap.kernelReady || !playground) return;
+    const projName = playground.slug || playground.title || "playground";
+    const dir = `/projects/${projName}`;
+    void c.importFilesAsProject({
+      name: playground.title || projName,
+      dir,
+      files: initialFiles,
+      silent: true,
+    });
+  }, [c, snap.kernelReady, playground, initialFiles]);
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
