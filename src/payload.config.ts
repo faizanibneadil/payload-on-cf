@@ -13,6 +13,7 @@ import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import { Users } from './collections/Users'
 import { Media } from './collections/Media'
 import { Playgrounds } from './collections/Playgrounds'
+import { PlaygroundFiles } from './collections/PlaygroundFiles'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -81,8 +82,12 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
+    components: {
+      beforeLogin: ['@/components/payload-auth-custom#BeforeLoginComponent'],
+      afterLogin: ['@/components/payload-auth-custom#AfterLoginComponent'],
+    },
   },
-  collections: [Users, Media, Playgrounds],
+  collections: [Users, Media, Playgrounds, PlaygroundFiles],
   editor: lexicalEditor(),
   secret: payloadSecret,
   typescript: {

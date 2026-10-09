@@ -1,25 +1,10 @@
-'use client'
+import { getPayload } from 'payload'
+import config from '@/payload.config'
+import { StudioShell } from '@/components/ide/StudioShell'
 
-import React, { useState } from 'react'
-import { useAuth } from '@/components/auth-context'
-import { DashboardView } from '@/components/dashboard-view'
-import { PlaygroundView } from '@/components/playground-view'
+export default async function HomePage() {
+  const payload = await getPayload({ config })
+  const user: any = null
 
-export default function HomePage() {
-  const { user, loading } = useAuth()
-  const [showSandbox, setShowSandbox] = useState(false)
-
-  if (loading) {
-    return (
-      <div className="flex h-screen w-full items-center justify-center bg-background text-sm text-muted-foreground">
-        Loading...
-      </div>
-    )
-  }
-
-  if (user && !showSandbox) {
-    return <DashboardView onOpenDefaultPlayground={() => setShowSandbox(true)} />
-  }
-
-  return <PlaygroundView />
+  return <StudioShell currentUser={user} />
 }
