@@ -67,7 +67,10 @@ export const Playgrounds: CollectionConfig = {
         }>
 
         if (!Array.isArray(ops) || ops.length > 50) {
-          return Response.json({ error: 'ops array required and must be <= 50 items' }, { status: 400 })
+          return Response.json(
+            { error: 'ops array required and must be <= 50 items' },
+            { status: 400 },
+          )
         }
 
         const results: Array<{ op: string; path?: string; success: boolean; error?: string }> = []
@@ -78,7 +81,12 @@ export const Playgrounds: CollectionConfig = {
               const content = op.content || ''
               const size = new TextEncoder().encode(content).length
               if (size > 512 * 1024) {
-                results.push({ op: 'put', path: op.path, success: false, error: 'File size exceeds 512 KB' })
+                results.push({
+                  op: 'put',
+                  path: op.path,
+                  success: false,
+                  error: 'File size exceeds 512 KB',
+                })
                 continue
               }
 
@@ -133,7 +141,12 @@ export const Playgrounds: CollectionConfig = {
               results.push({ op: 'move', path: op.to, success: true })
             }
           } catch (err: any) {
-            results.push({ op: op.op, path: op.path || op.to, success: false, error: err?.message || 'Failed' })
+            results.push({
+              op: op.op,
+              path: op.path || op.to,
+              success: false,
+              error: err?.message || 'Failed',
+            })
           }
         }
 
@@ -221,7 +234,7 @@ export const Playgrounds: CollectionConfig = {
   hooks: {
     beforeValidate: [
       async ({ data }) => {
-        if (data && data.title) {
+        if (data?.title) {
           data.slug = normalizeTitle(data.title)
         }
         return data

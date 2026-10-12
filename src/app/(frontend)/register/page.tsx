@@ -1,11 +1,11 @@
 'use client'
 
-import React, { useActionState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/navigation'
-import { registerUserAction } from './actions'
+import React, { useActionState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { registerUserAction } from './actions'
 
 export default function RegisterPage() {
   const router = useRouter()
@@ -13,7 +13,7 @@ export default function RegisterPage() {
 
   React.useEffect(() => {
     if (state?.success) {
-      router.push('/admin/login?redirect=/&registered=true')
+      router.push('/login?registered=true')
     }
   }, [state, router])
 
@@ -87,7 +87,7 @@ export default function RegisterPage() {
 
         <div className="text-center text-sm text-muted-foreground">
           Already have an account?{' '}
-          <Link href="/admin/login?redirect=/" className="text-primary hover:underline">
+          <Link href="/login" className="text-primary hover:underline font-medium">
             Log in
           </Link>
         </div>

@@ -1,7 +1,7 @@
-import { execSync } from 'child_process'
-import fs from 'fs'
-import path from 'path'
-import { fileURLToPath } from 'url'
+import { execSync } from 'node:child_process'
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
 const root = path.resolve(__dirname, '..')
@@ -17,7 +17,7 @@ const scripts = [
   'scripts/vendor-yarn.mjs',
   'scripts/vendor-pnpm.mjs',
   'scripts/vendor-corepack.mjs',
-  'scripts/vendor-tsgo.mjs'
+  'scripts/vendor-tsgo.mjs',
 ]
 
 for (const script of scripts) {

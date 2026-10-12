@@ -33,12 +33,12 @@ export function validateTitle(value: unknown): true | string {
   if (typeof value !== 'string' || !value.trim()) {
     return 'Title is required'
   }
+  if (value.trim().length > 50) {
+    return 'Title must be at most 50 characters'
+  }
   const normalized = normalizeTitle(value)
   if (!normalized) {
     return 'Title must contain at least one valid character (a-z, 0-9, -)'
-  }
-  if (normalized.length > 50) {
-    return 'Title cannot exceed 50 characters'
   }
   return true
 }

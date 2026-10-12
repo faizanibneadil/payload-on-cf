@@ -1,19 +1,17 @@
 import './crypto-patch'
-import fs from 'fs'
-import path from 'path'
+import fs from 'node:fs'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import { type CloudflareContext, getCloudflareContext } from '@opennextjs/cloudflare'
 import { sqliteD1Adapter } from '@payloadcms/db-d1-sqlite'
+import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import { lexicalEditor } from '@payloadcms/richtext-lexical'
 import { buildConfig } from 'payload'
-import { fileURLToPath } from 'url'
-import { CloudflareContext, getCloudflareContext } from '@opennextjs/cloudflare'
-import { GetPlatformProxyOptions } from 'wrangler'
-import { r2Storage } from '@payloadcms/storage-r2'
-import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
-
-import { Users } from './collections/Users'
+import type { GetPlatformProxyOptions } from 'wrangler'
 import { Media } from './collections/Media'
-import { Playgrounds } from './collections/Playgrounds'
 import { PlaygroundFiles } from './collections/PlaygroundFiles'
+import { Playgrounds } from './collections/Playgrounds'
+import { Users } from './collections/Users'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -97,21 +95,22 @@ export default buildConfig({
     binding: cloudflare.env.D1,
   }),
   logger: isProduction ? cloudflareLogger : undefined,
-  email: smtpUser && smtpPass
-    ? nodemailerAdapter({
-        defaultFromAddress: smtpFromAddress,
-        defaultFromName: smtpFromName,
-        transportOptions: {
-          host: smtpHost,
-          port: smtpPort,
-          secure: smtpPort === 465,
-          auth: {
-            user: smtpUser,
-            pass: smtpPass,
-          },
-        } as any,
-      })
-    : undefined,
+  email:
+    smtpUser && smtpPass
+      ? nodemailerAdapter({
+          defaultFromAddress: smtpFromAddress,
+          defaultFromName: smtpFromName,
+          transportOptions: {
+            host: smtpHost,
+            port: smtpPort,
+            secure: smtpPort === 465,
+            auth: {
+              user: smtpUser,
+              pass: smtpPass,
+            },
+          } as any,
+        })
+      : undefined,
   onInit: async (payload) => {
     if (smtpUser && smtpPass) {
       try {
@@ -130,13 +129,18 @@ export default buildConfig({
 // Adapted from https://github.com/opennextjs/opennextjs-cloudflare/blob/d00b3a13e42e65aad76fba41774815726422cc39/packages/cloudflare/src/api/cloudflare-context.ts#L328C36-L328C46
 async function getCloudflareContextFromWrangler(): Promise<CloudflareContext> {
   try {
-    const { getPlatformProxy } = await import(/* webpackIgnore: true */ `${'__wrangler'.replaceAll('_', '')}`)
+    const { getPlatformProxy } = await import(
+      /* webpackIgnore: true */ `${'__wrangler'.replaceAll('_', '')}`
+    )
     return await getPlatformProxy({
       environment: process.env.CLOUDFLARE_ENV,
       remoteBindings: isProduction && Boolean(process.env.CLOUDFLARE_API_TOKEN),
     } satisfies GetPlatformProxyOptions)
   } catch (error) {
-    console.warn('Wrangler proxy init failed or unavailable, using fallback Cloudflare context for CLI:', error)
+    console.warn(
+      'Wrangler proxy init failed or unavailable, using fallback Cloudflare context for CLI:',
+      error,
+    )
     return {
       env: {
         D1: {} as any,

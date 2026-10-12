@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { normalizeTitle, validateTitle } from '@/lib/title-slug'
 
 describe('Title and Slug Utils', () => {
