@@ -2,6 +2,7 @@
 
 import { cookies } from 'next/headers'
 import { getPayload } from 'payload'
+import { normalizeTitle } from '@/lib/title-slug'
 import config from '@/payload.config'
 
 export async function getCurrentUser() {
@@ -57,8 +58,10 @@ export async function createNewPlaygroundAction(title: string) {
       collection: 'playgrounds',
       data: {
         title,
+        slug: normalizeTitle(title),
         owner: user.id,
       },
+      draft: false,
       overrideAccess: true,
     })
 

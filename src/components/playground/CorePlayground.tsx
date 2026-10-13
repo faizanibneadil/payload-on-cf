@@ -31,7 +31,7 @@ export default function CorePlayground({
 }: CorePlaygroundProps) {
   return (
     <div className="h-full w-full bg-background overflow-hidden">
-      <ResizablePanelGroup direction="horizontal" className="h-full w-full">
+      <ResizablePanelGroup orientation="horizontal" className="h-full w-full">
         <ResizablePanel defaultSize={40} minSize={20} maxSize={80}>
           <TheoryEditor content={initialTheory} isReadOnly={isReadOnly} onChange={onTheoryChange} />
         </ResizablePanel>

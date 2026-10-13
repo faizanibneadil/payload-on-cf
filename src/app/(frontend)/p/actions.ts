@@ -148,10 +148,12 @@ export async function forkPlaygroundAction(playgroundId: number | string) {
       collection: 'playgrounds',
       data: {
         title: forkTitle,
+        slug,
         owner: user.id,
         theory: source.theory,
         forkedFrom: source.id,
       },
+      draft: false,
       overrideAccess: true,
     })
 

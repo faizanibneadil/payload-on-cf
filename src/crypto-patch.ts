@@ -8,8 +8,7 @@ const MAX_PBKDF2_ITERATIONS = 100000
 
 if (crypto && typeof crypto.pbkdf2 === 'function') {
   const originalPbkdf2 = crypto.pbkdf2
-  // @ts-expect-error
-  crypto.pbkdf2 = function (...args: any[]) {
+  ;(crypto as any).pbkdf2 = function (...args: any[]) {
     if (typeof args[2] === 'number' && args[2] > MAX_PBKDF2_ITERATIONS) {
       args[2] = MAX_PBKDF2_ITERATIONS
     }
@@ -19,8 +18,7 @@ if (crypto && typeof crypto.pbkdf2 === 'function') {
 
 if (crypto && typeof crypto.pbkdf2Sync === 'function') {
   const originalPbkdf2Sync = crypto.pbkdf2Sync
-  // @ts-expect-error
-  crypto.pbkdf2Sync = function (...args: any[]) {
+  ;(crypto as any).pbkdf2Sync = function (...args: any[]) {
     if (typeof args[2] === 'number' && args[2] > MAX_PBKDF2_ITERATIONS) {
       args[2] = MAX_PBKDF2_ITERATIONS
     }
