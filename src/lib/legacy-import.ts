@@ -19,7 +19,9 @@ export async function importLegacyShortUrl({ playgroundId, shortUrlId }: LegacyI
 
     if (!fetchRes.ok) return null
 
-    const data = await fetchRes.json()
+    const data = (await fetchRes.json()) as {
+      files?: Array<{ path: string; content?: string }>
+    } | null
     if (!data?.files) return null
 
     const payload = await getPayload({ config })

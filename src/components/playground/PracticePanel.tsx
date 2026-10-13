@@ -212,7 +212,7 @@ export default function PracticePanel({
       }}
     >
       <div className="flex h-full w-full flex-col bg-background">
-        <ResizablePanelGroup direction="horizontal" className="h-full w-full">
+        <ResizablePanelGroup orientation="horizontal" className="h-full w-full">
           {/* Left: Code Editor & Files */}
           <ResizablePanel defaultSize={50} minSize={30}>
             <div className="flex h-full flex-col border-r">
