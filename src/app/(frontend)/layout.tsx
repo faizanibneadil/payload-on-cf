@@ -5,11 +5,7 @@ export const metadata: Metadata = {
   description: 'In-browser IDE powered by Vivari',
 }
 
-export default function RootLayout({
-  children,
-}: {
-  children: React.ReactNode
-}) {
+export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en" suppressHydrationWarning className="h-full">
       <body className="h-full overflow-hidden font-sans antialiased bg-background text-foreground">

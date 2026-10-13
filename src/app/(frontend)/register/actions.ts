@@ -3,7 +3,7 @@
 import { getPayload } from 'payload'
 import config from '@/payload.config'
 
-export async function registerUserAction(prevState: any, formData: FormData) {
+export async function registerUserAction(_prevState: any, formData: FormData) {
   const honeypot = formData.get('website')
   if (honeypot) {
     return { success: false, error: 'Registration failed' }
@@ -24,7 +24,8 @@ export async function registerUserAction(prevState: any, formData: FormData) {
   if (!/^[a-z0-9_-]{3,30}$/.test(username)) {
     return {
       success: false,
-      error: 'Username must be 3-30 characters and contain only lowercase letters, numbers, underscores, and hyphens',
+      error:
+        'Username must be 3-30 characters and contain only lowercase letters, numbers, underscores, and hyphens',
     }
   }
 

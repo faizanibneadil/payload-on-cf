@@ -1,14 +1,17 @@
 'use client'
 
-import React from 'react'
 import Link from 'next/link'
+import React from 'react'
 
 export function AfterLoginComponent() {
   return (
     <div style={{ marginTop: '1rem', textAlign: 'center', fontSize: '0.875rem' }}>
       <p>
         Don't have an account?{' '}
-        <Link href="/register" style={{ color: 'var(--theme-elevation-800)', textDecoration: 'underline' }}>
+        <Link
+          href="/register"
+          style={{ color: 'var(--theme-elevation-800)', textDecoration: 'underline' }}
+        >
           Create an account
         </Link>
       </p>

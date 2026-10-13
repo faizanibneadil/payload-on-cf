@@ -1,10 +1,9 @@
-import { getPayload } from 'payload'
-import config from '@/payload.config'
-import { StudioShell } from '@/components/ide/StudioShell'
+import DashboardView from '@/components/playground/DashboardView'
+import { getCurrentUser, getUserPlaygrounds } from './actions'
 
 export default async function HomePage() {
-  const payload = await getPayload({ config })
-  const user: any = null
+  const user = await getCurrentUser()
+  const playgrounds = user ? await getUserPlaygrounds() : []
 
-  return <StudioShell currentUser={user} />
+  return <DashboardView user={user} playgrounds={playgrounds} />
 }

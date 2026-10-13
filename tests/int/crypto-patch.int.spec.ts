@@ -1,5 +1,5 @@
-import { describe, expect, it, vi } from 'vitest'
 import crypto from 'node:crypto'
+import { describe, expect, it } from 'vitest'
 import '../../src/crypto-patch'
 
 describe('crypto-patch', () => {

@@ -1,9 +1,9 @@
-import { test, expect, Page } from '@playwright/test'
+import { expect, type Page, test } from '@playwright/test'
 
 test.describe('Frontend', () => {
   let page: Page
 
-  test.beforeAll(async ({ browser }, testInfo) => {
+  test.beforeAll(async ({ browser }, _testInfo) => {
     const context = await browser.newContext()
     page = await context.newPage()
   })

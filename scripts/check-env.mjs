@@ -10,7 +10,9 @@ const missing = requiredEnvs.filter((name) => !process.env[name])
 
 if (missing.length > 0) {
   console.error('\n❌ ERROR: Missing required environment variable(s):')
-  missing.forEach((name) => console.error(`   - ${name}`))
+  for (const name of missing) {
+    console.error(`   - ${name}`)
+  }
   console.error('\nPlease check your .env file or GitHub Actions secrets.\n')
   process.exit(1)
 } else {

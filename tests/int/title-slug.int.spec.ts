@@ -1,9 +1,9 @@
-import { describe, it, expect } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import {
-  normalizeTitle,
-  validateTitle,
   generateFallbackTitle,
   generateForkTitle,
+  normalizeTitle,
+  validateTitle,
 } from '@/lib/title-slug'
 
 describe('Title and Slug Utilities', () => {
@@ -16,7 +16,9 @@ describe('Title and Slug Utilities', () => {
   it('validates title properly', () => {
     expect(validateTitle('valid-title')).toBe(true)
     expect(validateTitle('')).toBe('Title is required')
-    expect(validateTitle('!!!')).toBe('Title must contain at least one valid character (a-z, 0-9, -)')
+    expect(validateTitle('!!!')).toBe(
+      'Title must contain at least one valid character (a-z, 0-9, -)',
+    )
   })
 
   it('generates fallback title', () => {
