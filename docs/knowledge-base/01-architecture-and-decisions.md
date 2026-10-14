@@ -1,58 +1,58 @@
 # 01. Architecture and fixed decisions
 
 ## Product
-A playground for HTML/CSS/JS, React and Next.js. Two panels: **Theory** (rich text notes, Payload Lexical) and **Practical** (Vivari in-browser code environment: file panel + code panel + live preview).
+A playground for frontend students (HTML, CSS and JavaScript). Students complete assignments and build small projects in it.
+
+- **Theory panel:** lecture theory written in Tiptap. Editable only by the playground owner.
+- **Practice panel:** file explorer + Monaco code editor, Sandpack live preview and JavaScript console.
+- All panels are resizable. On mobile the panels become bottom tabs (Theory, Files, Code, Preview).
 
 ## Fixed decisions (do not change without asking)
 | Topic | Decision |
 |---|---|
 | Framework | Next.js App Router + Payload 3 in the same app |
-| Database | Cloudflare D1 (SQLite). Not Neon/Postgres |
-| Hosting | Cloudflare Workers via OpenNext; deploy through GitHub Actions |
-| Auth | Payload `users` collection, username + password only, no registration screen |
-| Login UI | Payload's official admin login screen (`/admin/login`) |
-| Default tab | **Practical** |
-| Saving | **No autosave anywhere.** Persist only when the user clicks Save |
-| Playground URL | `/p/[slug]` |
+| Database | Cloudflare D1 (SQLite) |
+| Hosting | Cloudflare Worker via OpenNext; deploy through GitHub Actions |
+| Auth | Payload `users` collection, **username + password only** (email login disabled). Register and Sign-in screens at `/register` and `/login` |
+| Code editor | Monaco (`@monaco-editor/react`), dynamically imported |
+| Preview / runtime | Sandpack, used **only** for bundling + preview (its CodeMirror editor is never used) |
+| Theory editor | Tiptap, dynamically imported |
+| Files and folders | `playground-files` collection with `@payloadcms/plugin-nested-docs` (`parent` + `breadcrumbs`) |
+| Routes | `/` = Playground (scratch/draft, or legacy import), `/p/[slug]` = a saved playground |
+| Saving | Explicit Save only (button or Ctrl/Cmd+S). No autosave |
 | UI kit | shadcn/ui on **Base UI** only. No Radix |
-| Slug rules | `[a-z0-9-]`, spaces become `-`, max 50, unique (DB + frontend) |
-| Sharing | `navigator.share`, fallback to clipboard |
-| Edit rights | Only the owner edits/saves; others fork to save |
+| Lint / format | Biome (no ESLint, no Prettier config) |
+| Package manager | pnpm |
 
-## Permission matrix
-| Actor | Read playground | Edit theory | Edit code locally | Save to this playground | Fork |
+## Permission matrix (enforced by Payload access control on the server)
+| Actor | Read | Edit code | Edit theory | Save | Fork |
 |---|---|---|---|---|---|
-| Anonymous | yes | no | yes (not persisted) | no | redirect to login |
-| Logged-in non-owner | yes | no | yes (not persisted) | no (Save becomes Fork) | yes |
+| Anonymous | yes | local scratch only (not persisted) | no | sign in first | sign in first |
+| Signed-in non-owner | yes (read-only) | no | no | no | yes |
 | Owner | yes | yes | yes | yes | yes |
 | Admin | yes | yes | yes | yes | yes |
 
-Enforce on the **server** (Payload access control + route handlers). UI hiding is cosmetic only.
+A fork is a **new playground owned by the forking student**; its theory is a copy that only the fork's owner can edit.
+The old `a=r` / `a=w` URL access modes are gone: sharing is `/p/[slug]` + ownership + access control.
 
-## Save flow (single request)
-Header Save collects `{ title, slug, theory (Lexical JSON), files (Vivari file tree) }` from local state and sends one update request. No debounced writes, no background sync, no API calls while typing in the editors. The only network call tied to typing is none; the slug availability check runs on Save only.
+## Save flow
+The client keeps a snapshot of the last saved tree. Save sends only the diff (`upserts` + `deletes`) and the theory (only when changed) in one server action. The server validates the final tree, then applies deletes → creates → updates → theory, always with `overrideAccess: false`.
 
-## Fork flow
-1. Anonymous: redirect to login.
-2. Logged in: create a new playground (owner = current user) copying theory + the *current in-browser* files, title `<original>-fork` (numeric suffix if taken), set `forkedFrom`, redirect to `/p/<new-slug>`.
+## Legacy URL-state import (isolated in `src/lib/legacy-import.ts`)
+Old links look like `/?playgroundId=<record id>&shortURL=<short id>` (owner link) or `/?shortURL=<short id>&a=r` (old share link, looked up by `shortURL`; its record is never deleted).
+1. The `/` page fetches the old record from the short-URL service.
+2. It builds `index.html`, `styles.css`, `script.js` from that data and opens them as an unsaved draft.
+3. On the first Save the new playground is created and, for owner links only, the old record is deleted through the delete API.
+4. Any fetch/delete failure is skipped silently. Delete the module (and its two call-sites) when the old links are no longer needed.
 
-## Suggested folder layout
+## Folder layout
 ```
 src/
-  app/
-    (frontend)/
-      page.tsx                 # landing, anonymous local playground
-      p/[slug]/page.tsx        # public playground
-      layout.tsx
-    (payload)/                 # Payload admin + API routes (template default)
-  collections/
-    Users.ts
-    Playgrounds.ts
-  lib/
-    slug.ts                    # ONE shared normalize/validate function
-    utils.ts                   # shadcn cn()
-  components/
-    ui/                        # shadcn (Base UI) components
-    playground/                # header, tabs, title field, toolbar, theory editor, practical panel
-  payload.config.ts
+  app/(frontend)/            # /, /p/[slug], /login, /register
+  app/(payload)/             # Payload admin + API
+  collections/               # Users, Playgrounds, PlaygroundFiles, Media
+  components/playground/     # PlaygroundIDE, TitleBar, FileExplorer, CodeEditor, PreviewPane, TheoryEditor
+  components/ui/             # shadcn (Base UI)
+  lib/                       # tree helpers, file rules, server helpers, legacy import, monaco/tiptap helpers
+  migrations/                # Payload D1 migrations (committed)
 ```

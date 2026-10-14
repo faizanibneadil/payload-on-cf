@@ -2,12 +2,17 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 @import "@fontsource-variable/geist";
+@import "./typeset.css";
 
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {
   --font-heading: var(--font-sans);
   --font-sans: "Geist Variable", sans-serif;
+  /* Monaco ke liye system mono stack (webfont load hone se pehle width measure galat hoti hai) */
+  --font-mono: Menlo, Monaco, "Courier New", monospace;
+  --color-editor: var(--editor);
+  --color-editor-gutter: var(--editor-gutter);
   --color-sidebar-ring: var(--sidebar-ring);
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
@@ -81,6 +86,11 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --editor: oklch(0.99 0 0);
+  --editor-gutter: oklch(0.97 0 0);
+  --hl-keyword: oklch(0.55 0.2 30);
+  --hl-string: oklch(0.5 0.14 235);
+  --hl-attr: oklch(0.55 0.15 95);
 }
 
 .dark {
@@ -115,6 +125,11 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  --editor: oklch(0.16 0 0);
+  --editor-gutter: oklch(0.16 0 0);
+  --hl-keyword: oklch(0.75 0.17 40);
+  --hl-string: oklch(0.78 0.12 235);
+  --hl-attr: oklch(0.82 0.14 95);
 }
 
 @layer base {
@@ -236,4 +251,65 @@
   background: #e51400;
   transform: translate(-50%, -50%);
   z-index: 0;
+}
+
+/* Tiptap placeholder (functional hook, typography nahi) */
+.tiptap p.is-editor-empty:first-child::before {
+  content: attr(data-placeholder);
+  float: left;
+  height: 0;
+  color: var(--color-muted-foreground);
+  pointer-events: none;
+}
+
+/* Editor root poori height le taake khali theory bhi full-height lage */
+.tiptap.typeset {
+  flex: 1 1 auto;
+  min-height: 100%;
+  outline: none;
+}
+
+.typeset pre code {
+  tab-size: 2;
+  white-space: pre;
+}
+
+/* highlight.js tokens (CodeBlockLowlight) */
+.hljs-comment,
+.hljs-quote {
+  color: var(--color-muted-foreground);
+  font-style: italic;
+}
+.hljs-keyword,
+.hljs-selector-tag,
+.hljs-name,
+.hljs-doctag,
+.hljs-formula {
+  color: var(--hl-keyword);
+  font-weight: 600;
+}
+.hljs-tag {
+  color: var(--color-muted-foreground);
+}
+.hljs-string,
+.hljs-regexp,
+.hljs-addition,
+.hljs-attribute,
+.hljs-meta .hljs-string {
+  color: var(--hl-string);
+}
+.hljs-attr,
+.hljs-selector-class,
+.hljs-selector-id,
+.hljs-selector-attr,
+.hljs-selector-pseudo,
+.hljs-number,
+.hljs-literal {
+  color: var(--hl-attr);
+}
+.hljs-emphasis {
+  font-style: italic;
+}
+.hljs-strong {
+  font-weight: 700;
 }

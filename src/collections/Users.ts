@@ -13,7 +13,8 @@ export const Users: CollectionConfig = {
     },
   },
   access: {
-    admin: ({ req: { user } }) => Boolean(user),
+    // Students ko Payload admin panel nahi chahiye — sirf admin role
+    admin: ({ req: { user } }) => user?.role === 'admin',
     create: async ({ req }) => {
       if (!req.user) {
         const count = await req.payload.count({ collection: 'users' })

@@ -32,4 +32,4 @@ Button, Tabs, Input, Tooltip, Toggle/ToggleGroup (theme), Dropdown/Menu, Dialog 
 Use `next-themes` (or an inline script setting a class before hydration), icon-only toggle, persisted preference. Tailwind v4 dark variant via the `dark` class.
 
 ## UI performance
-Server Components by default. Mark only interactive pieces `"use client"`. Do not wrap the whole layout in a client component. Lazy-load editors/Vivari.
+Server Components by default. Mark only interactive pieces `"use client"`. Do not wrap the whole layout in a client component. Lazy-load Monaco, Sandpack and Tiptap.

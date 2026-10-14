@@ -40,6 +40,7 @@ export default function RegisterPage() {
               id="username"
               name="username"
               type="text"
+              autoComplete="username"
               required
               placeholder="johndoe"
               disabled={isPending}
@@ -54,6 +55,7 @@ export default function RegisterPage() {
               id="password"
               name="password"
               type="password"
+              autoComplete="new-password"
               required
               placeholder="••••••••"
               disabled={isPending}
@@ -68,6 +70,7 @@ export default function RegisterPage() {
               id="confirmPassword"
               name="confirmPassword"
               type="password"
+              autoComplete="new-password"
               required
               placeholder="••••••••"
               disabled={isPending}

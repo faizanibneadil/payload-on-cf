@@ -62,13 +62,18 @@ jobs:
             echo "ENV_FLAG=" >> $GITHUB_ENV
           fi
 
-      - name: Copy Vivari Service Worker
-        run: pnpm run copy-sw
-
       - name: Generate importmap and types
         run: |
           pnpm generate:importmap
           pnpm generate:types
+
+      # Deploy se pehle tests: fail hone par migrations/deploy chalte hi nahi.
+      # NODE_ENV=test aur khali token — tests kabhi remote (production) D1 se connect nahi hote.
+      - name: Run tests
+        env:
+          NODE_ENV: test
+          CLOUDFLARE_API_TOKEN: ''
+        run: pnpm test:int
 
       # Allowed as check-only: verify that schema matches committed migrations without auto-generating/committing
       - name: Check for uncommitted schema migrations (schema drift guard)

@@ -29,6 +29,7 @@ export async function loginUserAction(_prevState: any, formData: FormData) {
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
         path: '/',
+        ...(res.exp ? { expires: new Date(res.exp * 1000) } : {}),
       })
       return { success: true }
     }
