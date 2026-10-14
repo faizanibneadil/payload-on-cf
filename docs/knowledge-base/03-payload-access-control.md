@@ -10,9 +10,7 @@ Official docs: https://payloadcms.com/docs/access-control/overview
 - Local API calls bypass access control by default (`overrideAccess: true`). In server code that acts on behalf of a user, pass `overrideAccess: false` and `user`.
 
 ## Admin panel gotcha (important)
-`access.admin` on the auth collection decides who may enter the admin panel. The brief says users log in via the official admin login screen, so **regular users must pass `access.admin`**, otherwise they log in and land on an unauthorized page. Therefore:
-- `access.admin: ({ req }) => Boolean(req.user)` on `users`
-- Hide everything they must not manage: `admin.hidden` on collections (function receiving `{ user }`) and strict collection access so they cannot read/update others. **[Verify `admin.hidden` signature]**
+`access.admin` on the auth collection decides who may enter the admin panel. Students sign in on the custom `/login` screen and never use the Payload admin, so `access.admin` on `users` allows the `admin` role only.
 
 ## Suggested rules
 ```ts
@@ -21,8 +19,8 @@ const isLoggedIn = ({ req }) => Boolean(req.user)
 
 // users
 access: {
-  admin: isLoggedIn,
-  create: isAdmin,                       // no public registration
+  admin: isAdmin,                        // students use /login, not the Payload admin
+  create: isAdmin,                       // /register creates users server-side (overrideAccess); first user becomes admin
   read: ({ req }) =>
     req.user?.role === 'admin' ? true : req.user ? { id: { equals: req.user.id } } : false,
   update: ({ req }) =>

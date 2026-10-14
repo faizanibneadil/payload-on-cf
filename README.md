@@ -1,16 +1,16 @@
-# Multi-User Code Playground (Next.js + Payload CMS + Cloudflare D1 + Vivari WebContainer)
+# Playground (Next.js + Payload CMS + Cloudflare D1)
 
-A multi-user playground for HTML, CSS, and JS with live browser-based previews powered by Vivari WebContainer. Features rich text theory notes (Payload Lexical), customizable code files, user authentication, and single-click forking.
+A playground for frontend students: write HTML, CSS and JavaScript across multiple files and folders, see a live preview and a JavaScript console, read the lecture theory next to the code, then save, share and fork projects.
 
-## 🚀 Features
+## Features
 
-- **Theory Panel:** Rich text / markdown notes editor built on Lexical with an inline floating toolbar and markdown shortcuts.
-- **Practical Panel:** In-browser code editor (File Tree + CodeMirror 6 + Vivari Live Preview iframe).
-- **Public URL & Permissions:** Public read access via `/p/[slug]`. Only owners can update their playgrounds; non-owners and visitors can fork any playground to save their local edits.
-- **Authentication:** Username + password login via Payload CMS (`auth.loginWithUsername`), with role-based access control (`admin` | `user`).
-- **Data Model:** Cloudflare D1 SQLite database storing playgrounds (`title`, `slug`, `owner`, `theory`, `files`, `forkedFrom`).
-- **UI & Theme:** Built with shadcn/ui components on Base UI (`preset b0`), zero Radix dependencies, with light/dark theme persistence and zero FOUC.
-- **Service Worker Isolation:** COOP/COEP headers configured for cross-origin isolation on playground and Service Worker routes.
+- **Theory panel:** lecture notes written in Tiptap (headings, lists, links, tables, highlighted code blocks with a copy button). Editable only by the owner.
+- **Practice panel:** file explorer (files + folders, powered by `@payloadcms/plugin-nested-docs`), Monaco editor, Sandpack live preview and console. Every panel is resizable; on mobile the panels become tabs.
+- **Accounts:** students register and sign in with **username and password only**.
+- **Ownership, sharing and forking:** each student sees their own playgrounds. A shared link (`/p/[slug]`) opens read-only for everyone else; they can **fork** it into their own playground.
+- **Legacy links:** old URL-state links (`/?playgroundId=…&shortURL=…` and old share links `/?shortURL=…`) are imported once into the new structure (see `src/lib/legacy-import.ts`).
+- **Security:** every permission is enforced on the server with Payload access control.
+- **Stack:** Next.js, Tailwind CSS, shadcn/ui (Base UI), Payload CMS, Cloudflare Worker + D1, Biome, pnpm.
 
 ---
 
@@ -42,12 +42,11 @@ Access the admin dashboard at [http://localhost:3000/admin](http://localhost:300
 
 ---
 
-## 👤 Creating Users in Payload CMS
+## 👤 Users
 
-1. Open `/admin/login` (or `/admin`).
-2. The initial startup will prompt you to create the first Admin user (`username` + `password`).
-3. Additional regular users can be created manually by the admin inside the Payload Admin dashboard under **Users**.
-4. Regular users log in at `/admin/login` and are redirected back to the playground.
+1. Open `/admin` once. The first account created becomes the **admin** (username + password).
+2. Students create their own accounts at `/register` and sign in at `/login`. They do not use the Payload admin panel.
+3. Admins can manage users in `/admin` under **Users**.
 
 ---
 

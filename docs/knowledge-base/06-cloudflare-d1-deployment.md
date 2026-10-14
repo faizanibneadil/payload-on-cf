@@ -39,5 +39,4 @@ deploy:app      = opennextjs-cloudflare build && opennextjs-cloudflare deploy
 
 ## Pitfalls
 - Missing secret at runtime = app fails after a "successful" deploy. See file 07.
-- COOP/COEP headers (needed by Vivari) must come from Next (`next.config` `headers()` or middleware). `public/_headers` only affects static assets on Workers, not dynamic responses. **[Verify on your deployment]**
-- Scope isolation headers to the playground routes. Do not put `Cross-Origin-Embedder-Policy: require-corp` on `/admin` or `/api` (it can break admin assets and third-party resources).
+- Sandpack runs its preview in a cross-origin iframe, so no COOP/COEP headers are needed. Do not add `Cross-Origin-Embedder-Policy: require-corp` to `/admin` or `/api`.

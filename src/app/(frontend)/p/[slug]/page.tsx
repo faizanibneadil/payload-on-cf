@@ -1,16 +1,42 @@
+import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
-import { getCurrentUser } from '@/app/(frontend)/actions'
+import { getUserPlaygrounds } from '@/app/(frontend)/actions'
+import PlaygroundIDE from '@/components/playground/PlaygroundIDE'
+import { getCurrentUser } from '@/lib/session'
 import { getPlaygroundBySlug } from '../actions'
-import SharedPlaygroundView from './SharedPlaygroundView'
 
-export default async function PlaygroundPage({ params }: { params: Promise<{ slug: string }> }) {
+type Props = { params: Promise<{ slug: string }> }
+
+export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
-  const user = await getCurrentUser()
-  const data = await getPlaygroundBySlug(slug)
+  return { title: `${slug} — Playground` }
+}
 
-  if (!data) {
-    notFound()
-  }
+export default async function PlaygroundPage({ params }: Props) {
+  const { slug } = await params
+  const [user, data, playgrounds] = await Promise.all([
+    getCurrentUser(),
+    getPlaygroundBySlug(slug),
+    getUserPlaygrounds(),
+  ])
 
-  return <SharedPlaygroundView user={user} playground={data.playground} initialFiles={data.files} />
+  if (!data) notFound()
+
+  const { playground, nodes } = data
+
+  return (
+    <PlaygroundIDE
+      key={playground.id}
+      user={user ? { id: user.id, username: user.username ?? '', role: user.role } : null}
+      playground={{
+        id: playground.id,
+        title: playground.title,
+        slug: playground.slug,
+        ownerId: playground.ownerId,
+        ownerName: playground.ownerName,
+      }}
+      initial={{ nodes, title: playground.title, theory: playground.theory }}
+      playgrounds={playgrounds}
+    />
+  )
 }

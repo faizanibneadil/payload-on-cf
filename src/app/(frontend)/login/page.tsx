@@ -37,6 +37,7 @@ export default function LoginPage() {
               id="username"
               name="username"
               type="text"
+              autoComplete="username"
               required
               placeholder="username"
               disabled={isPending}
@@ -51,6 +52,7 @@ export default function LoginPage() {
               id="password"
               name="password"
               type="password"
+              autoComplete="current-password"
               required
               placeholder="••••••••"
               disabled={isPending}

@@ -7,28 +7,23 @@
 - [ ] No Radix imports anywhere (`grep -R "radix" src package.json`)
 
 ## Auth and permissions
-- [ ] `auth.loginWithUsername` configured; email not required; no registration UI
-- [ ] Regular users pass `access.admin` but cannot see/edit other users or foreign playgrounds
-- [ ] `owner` set server-side; update/delete restricted to owner/admin
-- [ ] Non-owner Save triggers fork; anonymous Save/Fork goes to login
+- [ ] `auth.loginWithUsername` configured with `allowEmailLogin: false`; Register and Sign-in screens work; logout works
+- [ ] Students cannot enter the Payload admin panel (admin role only)
+- [ ] `owner` set server-side; update/delete restricted to owner/admin on playgrounds and playground-files
+- [ ] Non-owner sees read-only code and theory and gets a Fork button; anonymous Save/Fork goes to login
 
 ## Behavior
-- [ ] Default tab = Practical
-- [ ] **No autosave** (no debounced writes, no API calls while typing). Save is one request
-- [ ] Unsaved-changes indicator/warning present
-- [ ] Title: live normalization, max 50, unique (DB unique index + validate + Save-time availability check), fallback `untitled-<id>`
-- [ ] Route is `/p/[slug]`; unknown slug returns 404
+- [ ] **No autosave** (no debounced writes, no API calls while typing). Save is one server action sending only the diff
+- [ ] Unsaved-changes indicator and `beforeunload` warning present
+- [ ] Title: live normalization, max 50, unique slug, fallback `untitled-<id>`
+- [ ] `/` serves the Playground; `/p/[slug]` shows a saved playground; unknown slug returns 404
 - [ ] Share uses `navigator.share` with clipboard fallback
-- [ ] Theme toggle persists; no flash
-- [ ] Theory: inline toolbar only, no fixed toolbar; read-only for non-owners
-- [ ] Practical: file panel + code panel + preview all working
+- [ ] Theme toggle persists; default follows the system
+- [ ] Theory read-only for non-owners; code editor, preview and console work; all panels resize; mobile tabs work
+- [ ] Monaco, Sandpack and Tiptap are dynamically imported
 
-## Vivari
-- [ ] `@vivari/core` installed as peer; single copy
-- [ ] COOP/COEP on `/` and `/p/*` only; `sw.js` in `public/` with `Service-Worker-Allowed: /`
-- [ ] `/admin` and `/api` unaffected by COEP
-- [ ] Fonts self-hosted; no remote subresources on playground routes
-- [ ] `/vendor` handled or `install={false}` decided
+## Legacy import
+- [ ] Old `?playgroundId=&shortURL=` link opens as a draft; first Save creates the playground and deletes the old record; failures are silent
 
 ## Deployment
 - [ ] Migrations created and committed; workflow applies them to the **remote** D1

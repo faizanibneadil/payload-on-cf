@@ -173,21 +173,15 @@ export interface Playground {
   title: string;
   slug: string;
   owner: number | User;
-  theory?: {
-    root: {
-      type: string;
-      children: {
-        type: any;
-        version: number;
+  theory?:
+    | {
         [k: string]: unknown;
-      }[];
-      direction: ('ltr' | 'rtl') | null;
-      format: 'left' | 'start' | 'center' | 'right' | 'end' | 'justify' | '';
-      indent: number;
-      version: number;
-    };
-    [k: string]: unknown;
-  } | null;
+      }
+    | unknown[]
+    | string
+    | number
+    | boolean
+    | null;
   forkedFrom?: (number | null) | Playground;
   updatedAt: string;
   createdAt: string;
@@ -199,9 +193,19 @@ export interface Playground {
 export interface PlaygroundFile {
   id: number;
   playground: number | Playground;
-  path: string;
+  name: string;
+  type: 'file' | 'folder';
   content?: string | null;
   size: number;
+  parent?: (number | null) | PlaygroundFile;
+  breadcrumbs?:
+    | {
+        doc?: (number | null) | PlaygroundFile;
+        url?: string | null;
+        label?: string | null;
+        id?: string | null;
+      }[]
+    | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -347,9 +351,19 @@ export interface PlaygroundsSelect<T extends boolean = true> {
  */
 export interface PlaygroundFilesSelect<T extends boolean = true> {
   playground?: T;
-  path?: T;
+  name?: T;
+  type?: T;
   content?: T;
   size?: T;
+  parent?: T;
+  breadcrumbs?:
+    | T
+    | {
+        doc?: T;
+        url?: T;
+        label?: T;
+        id?: T;
+      };
   updatedAt?: T;
   createdAt?: T;
 }

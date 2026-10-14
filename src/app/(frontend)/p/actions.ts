@@ -1,184 +1,172 @@
 'use server'
 
-import { getPayload } from 'payload'
-import { getCurrentUser } from '@/app/(frontend)/actions'
-import config from '@/payload.config'
+import {
+  applyChanges,
+  createNodes,
+  fetchNodes,
+  getPayloadClient,
+  isOwnerOf,
+} from '@/lib/playground-server'
+import { isTempId, type TreeNode } from '@/lib/playground-tree'
+import { getCurrentUser } from '@/lib/session'
+import { generateForkTitle, validateTitle } from '@/lib/title-slug'
+
+const MAX_THEORY_CHARS = 512 * 1024
 
 export async function getPlaygroundBySlug(slug: string) {
   try {
-    const payload = await getPayload({ config })
+    const payload = await getPayloadClient()
     const result = await payload.find({
       collection: 'playgrounds',
       where: { slug: { equals: slug } },
       limit: 1,
-      overrideAccess: true,
+      depth: 0,
+      overrideAccess: false,
     })
-
-    if (result.docs.length === 0) return null
-
     const playground = result.docs[0]
+    if (!playground) return null
 
-    const filesResult = await payload.find({
-      collection: 'playground-files',
-      where: { playground: { equals: playground.id } },
-      limit: 300,
-      overrideAccess: true,
-    })
+    const nodes = await fetchNodes(payload, playground.id)
+    const ownerId = typeof playground.owner === 'object' ? playground.owner.id : playground.owner
+
+    // Users collection public read nahi hoti — sirf username server par nikalte hain (aur kuch nahi)
+    let ownerName: string | null = null
+    try {
+      const owner = await payload.findByID({
+        collection: 'users',
+        id: ownerId,
+        depth: 0,
+        select: { username: true },
+        overrideAccess: true,
+      })
+      ownerName = owner.username ?? null
+    } catch {
+      ownerName = null
+    }
 
     return {
-      playground,
-      files: filesResult.docs,
+      playground: {
+        id: playground.id,
+        title: playground.title,
+        slug: playground.slug,
+        theory: playground.theory ?? null,
+        ownerId,
+        ownerName,
+        forked: Boolean(playground.forkedFrom),
+      },
+      nodes,
     }
   } catch {
     return null
   }
 }
 
-export async function savePlaygroundAction(
-  playgroundId: number | string,
-  theoryContent: any,
-  files: Array<{ path: string; content: string }>,
-) {
+interface SaveInput {
+  playgroundId: number | string
+  theory?: unknown
+  upserts: TreeNode[]
+  deletes: string[]
+}
+
+export async function savePlaygroundAction(input: SaveInput) {
   const user = await getCurrentUser()
-  if (!user) return { success: false, error: 'Unauthorized' }
+  if (!user) return { success: false as const, error: 'Please sign in first' }
 
   try {
-    const payload = await getPayload({ config })
-
-    const pg = await payload.findByID({
+    const payload = await getPayloadClient()
+    const playground = await payload.findByID({
       collection: 'playgrounds',
-      id: playgroundId,
-      overrideAccess: true,
+      id: input.playgroundId,
+      depth: 0,
+      overrideAccess: false,
+    })
+    // Friendly message; asal enforcement Payload access control karta hai
+    if (!isOwnerOf(playground, user)) {
+      return { success: false as const, error: 'Only the owner can edit this playground' }
+    }
+    if (input.theory !== undefined && JSON.stringify(input.theory).length > MAX_THEORY_CHARS) {
+      return { success: false as const, error: 'Theory is too large' }
+    }
+
+    await applyChanges(payload, user, input.playgroundId, {
+      theory: input.theory,
+      upserts: input.upserts.map((n) => ({ ...n, id: String(n.id) })),
+      deletes: input.deletes.filter((id) => !isTempId(id)).map(String),
     })
 
-    if (!pg) return { success: false, error: 'Playground not found' }
-
-    const isOwner =
-      user.role === 'admin' ||
-      (typeof pg.owner === 'object' ? pg.owner.id === user.id : pg.owner === user.id)
-
-    if (!isOwner) {
-      return { success: false, error: 'Forbidden: You do not own this playground' }
+    return { success: true as const, nodes: await fetchNodes(payload, input.playgroundId) }
+  } catch (err) {
+    return {
+      success: false as const,
+      error: err instanceof Error ? err.message : 'Failed to save playground',
     }
+  }
+}
 
-    if (theoryContent !== undefined) {
-      await payload.update({
-        collection: 'playgrounds',
-        id: playgroundId,
-        data: { theory: theoryContent },
-        overrideAccess: true,
-      })
+export async function renamePlaygroundAction(id: number | string, title: string) {
+  const user = await getCurrentUser()
+  if (!user) return { success: false as const, error: 'Please sign in first' }
+  const check = validateTitle(title)
+  if (check !== true) return { success: false as const, error: check }
+
+  try {
+    const payload = await getPayloadClient()
+    const updated = await payload.update({
+      collection: 'playgrounds',
+      id,
+      data: { title: title.trim() },
+      depth: 0,
+      user,
+      overrideAccess: false,
+    })
+    return { success: true as const, slug: updated.slug }
+  } catch (err) {
+    return {
+      success: false as const,
+      error: err instanceof Error ? err.message : 'Failed to rename playground',
     }
-
-    if (files && files.length > 0) {
-      for (const file of files) {
-        const cleanPath = file.path.startsWith('/') ? file.path.slice(1) : file.path
-        const existing = await payload.find({
-          collection: 'playground-files',
-          where: {
-            and: [{ playground: { equals: playgroundId } }, { path: { equals: cleanPath } }],
-          },
-          overrideAccess: true,
-        })
-
-        if (existing.docs.length > 0) {
-          await payload.update({
-            collection: 'playground-files',
-            id: existing.docs[0].id,
-            data: {
-              content: file.content,
-              size: new TextEncoder().encode(file.content).length,
-            },
-            overrideAccess: true,
-          })
-        } else {
-          await payload.create({
-            collection: 'playground-files',
-            data: {
-              playground: Number(playgroundId),
-              path: cleanPath,
-              content: file.content,
-              size: new TextEncoder().encode(file.content).length,
-            },
-            overrideAccess: true,
-          })
-        }
-      }
-    }
-
-    return { success: true }
-  } catch (err: any) {
-    return { success: false, error: err?.message || 'Failed to save playground' }
   }
 }
 
 export async function forkPlaygroundAction(playgroundId: number | string) {
   const user = await getCurrentUser()
-  if (!user) return { success: false, error: 'Unauthorized' }
+  if (!user) return { success: false as const, error: 'Please sign in to fork' }
 
+  const payload = await getPayloadClient()
+  let forkId: number | string | undefined
   try {
-    const payload = await getPayload({ config })
-
     const source = await payload.findByID({
       collection: 'playgrounds',
       id: playgroundId,
-      overrideAccess: true,
+      depth: 0,
+      overrideAccess: false,
     })
+    const nodes = await fetchNodes(payload, source.id)
 
-    if (!source) return { success: false, error: 'Source playground not found' }
-
-    const baseTitle = `${source.title}-fork`
-    let forkTitle = baseTitle.slice(0, 50)
-    let slug = forkTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-')
-
-    let counter = 1
-    while (true) {
-      const existing = await payload.find({
-        collection: 'playgrounds',
-        where: { slug: { equals: slug } },
-        overrideAccess: true,
-      })
-      if (existing.docs.length === 0) break
-      forkTitle = `${baseTitle}-${counter}`.slice(0, 50)
-      slug = forkTitle.toLowerCase().replace(/[^a-z0-9]+/g, '-')
-      counter++
-    }
-
-    const newPg = await payload.create({
+    const fork = await payload.create({
       collection: 'playgrounds',
       data: {
-        title: forkTitle,
-        slug,
+        title: generateForkTitle(source.title),
         owner: user.id,
-        theory: source.theory,
+        theory: source.theory ?? null,
         forkedFrom: source.id,
-      },
-      draft: false,
-      overrideAccess: true,
+      } as never,
+      depth: 0,
+      user,
+      overrideAccess: false,
     })
-
-    const sourceFiles = await payload.find({
-      collection: 'playground-files',
-      where: { playground: { equals: source.id } },
-      limit: 300,
-      overrideAccess: true,
-    })
-
-    for (const file of sourceFiles.docs) {
-      await payload.create({
-        collection: 'playground-files',
-        data: {
-          playground: newPg.id,
-          path: file.path,
-          content: file.content,
-          size: file.size,
-        },
-        overrideAccess: true,
-      })
+    forkId = fork.id
+    await createNodes(payload, user, fork.id, nodes)
+    return { success: true as const, slug: fork.slug }
+  } catch (err) {
+    if (forkId !== undefined) {
+      await payload
+        .delete({ collection: 'playgrounds', id: forkId, user, overrideAccess: false })
+        .catch(() => {})
     }
-
-    return { success: true, id: newPg.id, slug: newPg.slug }
-  } catch (err: any) {
-    return { success: false, error: err?.message || 'Failed to fork playground' }
+    return {
+      success: false as const,
+      error: err instanceof Error ? err.message : 'Failed to fork playground',
+    }
   }
 }

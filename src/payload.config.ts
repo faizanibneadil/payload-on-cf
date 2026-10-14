@@ -5,7 +5,7 @@ import { fileURLToPath } from 'node:url'
 import { type CloudflareContext, getCloudflareContext } from '@opennextjs/cloudflare'
 import { sqliteD1Adapter } from '@payloadcms/db-d1-sqlite'
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
-import { lexicalEditor } from '@payloadcms/richtext-lexical'
+import { nestedDocsPlugin } from '@payloadcms/plugin-nested-docs'
 import { buildConfig } from 'payload'
 import type { GetPlatformProxyOptions } from 'wrangler'
 import { Media } from './collections/Media'
@@ -86,7 +86,14 @@ export default buildConfig({
     },
   },
   collections: [Users, Media, Playgrounds, PlaygroundFiles],
-  editor: lexicalEditor(),
+  plugins: [
+    // Files aur folders ka tree (parent + breadcrumbs) — path = breadcrumb url
+    nestedDocsPlugin({
+      collections: ['playground-files'],
+      generateLabel: (_, doc) => String(doc.name ?? ''),
+      generateURL: (docs) => docs.reduce((url, doc) => `${url}/${doc.name}`, ''),
+    }),
+  ],
   secret: payloadSecret,
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),

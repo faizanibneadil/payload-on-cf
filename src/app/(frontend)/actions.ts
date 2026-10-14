@@ -1,117 +1,105 @@
 'use server'
 
-import { cookies } from 'next/headers'
-import { getPayload } from 'payload'
-import { normalizeTitle } from '@/lib/title-slug'
-import config from '@/payload.config'
-
-export async function getCurrentUser() {
-  try {
-    const cookieStore = await cookies()
-    const token = cookieStore.get('payload-token')?.value
-    if (!token) return null
-
-    const payload = await getPayload({ config })
-    const { user } = await payload.auth({
-      headers: new Headers({
-        cookie: `payload-token=${token}`,
-      }),
-    })
-
-    return user || null
-  } catch {
-    return null
-  }
-}
+import { createDefaultNodes } from '@/lib/default-files'
+import { deleteLegacyRecord } from '@/lib/legacy-import'
+import { createNodes, getPayloadClient } from '@/lib/playground-server'
+import { type TreeNode, validateTree } from '@/lib/playground-tree'
+import { getCurrentUser } from '@/lib/session'
+import { validateTitle } from '@/lib/title-slug'
 
 export async function getUserPlaygrounds() {
   const user = await getCurrentUser()
   if (!user) return []
 
   try {
-    const payload = await getPayload({ config })
+    const payload = await getPayloadClient()
     const result = await payload.find({
       collection: 'playgrounds',
-      where: {
-        owner: { equals: user.id },
-      },
+      where: { owner: { equals: user.id } },
       sort: '-updatedAt',
       limit: 100,
-      overrideAccess: true,
+      depth: 0,
+      user,
+      overrideAccess: false,
     })
-
-    return result.docs
+    return result.docs.map((pg) => ({
+      id: pg.id,
+      title: pg.title,
+      slug: pg.slug,
+      updatedAt: pg.updatedAt,
+      forked: Boolean(pg.forkedFrom),
+    }))
   } catch {
     return []
   }
 }
 
-export async function createNewPlaygroundAction(title: string) {
-  const user = await getCurrentUser()
-  if (!user) {
-    return { success: false, error: 'Unauthorized' }
-  }
+interface CreateInput {
+  title: string
+  nodes?: TreeNode[]
+  theory?: unknown
+  /** purane URL-state playground ka record id (import ke baad delete hoga) */
+  legacyRecordId?: string
+}
 
+export async function createPlaygroundAction(input: CreateInput) {
+  const user = await getCurrentUser()
+  if (!user) return { success: false as const, error: 'Please sign in first' }
+
+  const titleCheck = validateTitle(input.title)
+  if (titleCheck !== true) return { success: false as const, error: titleCheck }
+
+  const nodes = input.nodes?.length ? input.nodes : createDefaultNodes()
+  const treeError = validateTree(nodes)
+  if (treeError) return { success: false as const, error: treeError }
+
+  const payload = await getPayloadClient()
+  let createdId: number | string | undefined
   try {
-    const payload = await getPayload({ config })
     const created = await payload.create({
       collection: 'playgrounds',
       data: {
-        title,
-        slug: normalizeTitle(title),
+        title: input.title.trim(),
         owner: user.id,
-      },
-      draft: false,
-      overrideAccess: true,
+        theory: (input.theory ?? null) as Record<string, unknown> | null,
+      } as never,
+      depth: 0,
+      user,
+      overrideAccess: false,
     })
+    createdId = created.id
+    await createNodes(payload, user, created.id, nodes)
 
-    // Create default files
-    const defaultFiles = [
-      {
-        path: 'index.html',
-        content: `<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>My Playground</title>
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <h1>Hello World</h1>
-    <script src="script.js"></script>
-  </body>
-</html>`,
-      },
-      {
-        path: 'styles.css',
-        content: `body {
-  font-family: system-ui, sans-serif;
-  padding: 2rem;
-  background: #18181b;
-  color: #fff;
-}`,
-      },
-      {
-        path: 'script.js',
-        content: `console.log('Hello from my playground!');`,
-      },
-    ]
+    // Legacy record best-effort delete (fail ho to skip)
+    if (input.legacyRecordId) await deleteLegacyRecord(input.legacyRecordId)
 
-    for (const file of defaultFiles) {
-      await payload.create({
-        collection: 'playground-files',
-        data: {
-          playground: created.id,
-          path: file.path,
-          content: file.content,
-          size: new TextEncoder().encode(file.content).length,
-        },
-        overrideAccess: true,
-      })
+    return { success: true as const, slug: created.slug }
+  } catch (err) {
+    console.error('[createPlaygroundAction] failed', err)
+    // Half-created playground na bache
+    if (createdId !== undefined) {
+      await payload
+        .delete({ collection: 'playgrounds', id: createdId, user, overrideAccess: false })
+        .catch(() => {})
     }
+    return {
+      success: false as const,
+      error: err instanceof Error ? err.message : 'Failed to create playground',
+    }
+  }
+}
 
-    return { success: true, id: created.id, slug: created.slug }
-  } catch (err: any) {
-    return { success: false, error: err?.message || 'Failed to create playground' }
+export async function deletePlaygroundAction(id: number | string) {
+  const user = await getCurrentUser()
+  if (!user) return { success: false as const, error: 'Please sign in first' }
+  try {
+    const payload = await getPayloadClient()
+    await payload.delete({ collection: 'playgrounds', id, user, overrideAccess: false })
+    return { success: true as const }
+  } catch (err) {
+    return {
+      success: false as const,
+      error: err instanceof Error ? err.message : 'Failed to delete playground',
+    }
   }
 }

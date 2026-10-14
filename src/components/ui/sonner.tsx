@@ -1,3 +1,5 @@
+'use client'
+
 import {
   CircleCheck as CircleCheckIcon,
   Info as InfoIcon,
@@ -5,8 +7,6 @@ import {
   OctagonX as OctagonXIcon,
   TriangleAlert as TriangleAlertIcon,
 } from 'lucide-react'
-
-;('use client')
 
 import { useTheme } from 'next-themes'
 import { Toaster as Sonner, type ToasterProps } from 'sonner'
