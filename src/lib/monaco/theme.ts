@@ -34,7 +34,7 @@ function resolveCssVar(name: string): string {
 /** App ke theme variables se "app" Monaco theme define karke apply karta hai */
 export function applyMonacoTheme(monaco: Monaco) {
   monaco.editor.defineTheme('app', {
-    base: 'vs',
+    base: 'vs-dark',
     inherit: true,
     rules: [],
     colors: {
