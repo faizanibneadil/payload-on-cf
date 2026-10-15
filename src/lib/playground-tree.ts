@@ -75,8 +75,8 @@ export function buildPathMap(nodes: TreeNode[]): Map<string, string> {
   return paths
 }
 
-/** Sandpack ke liye { "/css/app.css": "..." } map (sirf files) */
-export function toSandpackFiles(nodes: TreeNode[]): Record<string, string> {
+/** Preview ke liye { "/css/app.css": "..." } map (sirf files) */
+export function toPreviewFiles(nodes: TreeNode[]): Record<string, string> {
   const paths = buildPathMap(nodes)
   const files: Record<string, string> = {}
   for (const node of nodes) {

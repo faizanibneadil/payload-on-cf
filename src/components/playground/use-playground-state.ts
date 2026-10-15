@@ -9,7 +9,7 @@ import {
   isTempId,
   newTempId,
   type TreeNode,
-  toSandpackFiles,
+  toPreviewFiles,
 } from '@/lib/playground-tree'
 
 // Playground ki poori client-side state ek jagah: files tree, theory, title, open tabs.
@@ -24,7 +24,6 @@ interface State {
   theoryDirty: boolean
   activeId: string | null
   openIds: string[]
-  runToken: number
 }
 
 type Action =
@@ -36,7 +35,6 @@ type Action =
   | { type: 'remove'; id: string }
   | { type: 'title'; title: string }
   | { type: 'theory'; theory: unknown }
-  | { type: 'run' }
   | { type: 'saved'; nodes: TreeNode[]; title?: string }
 
 const firstFileId = (nodes: TreeNode[]): string | null => {
@@ -95,8 +93,6 @@ function reducer(state: State, action: Action): State {
       return { ...state, title: action.title }
     case 'theory':
       return { ...state, theory: action.theory, theoryDirty: true }
-    case 'run':
-      return { ...state, runToken: state.runToken + 1 }
     case 'saved': {
       // Save ke baad temp ids real ids se badal jate hain — path se purane tabs map karo
       const oldPaths = buildPathMap(state.nodes)
@@ -156,7 +152,6 @@ export function usePlaygroundState(init: PlaygroundInit) {
       theoryDirty: false,
       activeId: first,
       openIds: first ? [first] : [],
-      runToken: 0,
     }
   })
 
@@ -167,7 +162,7 @@ export function usePlaygroundState(init: PlaygroundInit) {
   const dirty =
     upserts.length > 0 || deletes.length > 0 || state.theoryDirty || state.title !== state.baseTitle
 
-  const sandpackFiles = useMemo(() => toSandpackFiles(state.nodes), [state.nodes])
+  const previewFiles = useMemo(() => toPreviewFiles(state.nodes), [state.nodes])
 
   const open = useCallback((id: string) => dispatch({ type: 'open', id }), [])
   const close = useCallback((id: string) => dispatch({ type: 'close', id }), [])
@@ -177,7 +172,6 @@ export function usePlaygroundState(init: PlaygroundInit) {
   )
   const setTitle = useCallback((title: string) => dispatch({ type: 'title', title }), [])
   const setTheory = useCallback((theory: unknown) => dispatch({ type: 'theory', theory }), [])
-  const run = useCallback(() => dispatch({ type: 'run' }), [])
   const markSaved = useCallback(
     (nodes: TreeNode[], title?: string) => dispatch({ type: 'saved', nodes, title }),
     [],
@@ -222,7 +216,7 @@ export function usePlaygroundState(init: PlaygroundInit) {
     dirty,
     changes: { upserts, deletes },
     hasTempNodes: state.nodes.some((n) => isTempId(n.id)),
-    sandpackFiles,
+    previewFiles,
     activeNode,
     paths,
     open,
@@ -230,7 +224,6 @@ export function usePlaygroundState(init: PlaygroundInit) {
     setContent,
     setTitle,
     setTheory,
-    run,
     markSaved,
     create,
     rename,

@@ -38,6 +38,19 @@ export async function registerUserAction(_prevState: any, formData: FormData) {
 
   try {
     const payload = await getPayload({ config })
+
+    // Pehle se maujood username ka saaf message (Payload ka unique error generic hota hai)
+    const existing = await payload.find({
+      collection: 'users',
+      where: { username: { equals: username } },
+      limit: 1,
+      depth: 0,
+      overrideAccess: true,
+    })
+    if (existing.totalDocs > 0) {
+      return { success: false, error: 'Username is already taken' }
+    }
+
     await payload.create({
       collection: 'users',
       data: {
@@ -50,9 +63,7 @@ export async function registerUserAction(_prevState: any, formData: FormData) {
 
     return { success: true }
   } catch (err: any) {
-    if (err?.message?.includes('unique') || err?.data?.[0]?.message?.includes('unique')) {
-      return { success: false, error: 'Username is already taken' }
-    }
+    console.error('[registerUserAction] failed', err)
     return { success: false, error: 'An error occurred during registration. Please try again.' }
   }
 }

@@ -11,7 +11,7 @@ const HTML = `<!DOCTYPE html>
   <body>
     <main id="app">
       <h1>Hello, Playground!</h1>
-      <p>Edit the HTML, CSS and JavaScript files and press Run.</p>
+      <p>Edit the HTML, CSS and JavaScript files — the preview updates as you type.</p>
     </main>
     <script src="script.js"></script>
   </body>

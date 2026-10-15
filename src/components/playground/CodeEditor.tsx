@@ -2,7 +2,6 @@
 
 import Editor, { type Monaco } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor'
-import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useRef } from 'react'
 import { formatCode, isFormattable } from '@/lib/format-code'
 import '@/lib/monaco/loader'
@@ -44,35 +43,19 @@ interface CodeEditorProps {
   readOnly: boolean
   onChange: (value: string) => void
   onSave?: () => void
-  onRun?: () => void
 }
 
-export default function CodeEditor({
-  path,
-  value,
-  readOnly,
-  onChange,
-  onSave,
-  onRun,
-}: CodeEditorProps) {
-  const { resolvedTheme } = useTheme()
-  const mode = resolvedTheme === 'light' ? 'light' : 'dark'
+export default function CodeEditor({ path, value, readOnly, onChange, onSave }: CodeEditorProps) {
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
   const monacoRef = useRef<Monaco | null>(null)
   const onChangeRef = useRef(onChange)
   const onSaveRef = useRef(onSave)
-  const onRunRef = useRef(onRun)
   const readOnlyRef = useRef(readOnly)
   readOnlyRef.current = readOnly
   onChangeRef.current = onChange
   onSaveRef.current = onSave
-  onRunRef.current = onRun
 
   const language = languageFor(path)
-
-  useEffect(() => {
-    if (monacoRef.current) applyMonacoTheme(monacoRef.current, mode)
-  }, [mode])
 
   // formatOnType sirf html ke liye chahiye (auto-close-tag provider uska use karta hai)
   useEffect(() => {
@@ -136,7 +119,7 @@ export default function CodeEditor({
         padding: { top: 8 },
       }}
       beforeMount={(monaco) => {
-        applyMonacoTheme(monaco, mode)
+        applyMonacoTheme(monaco)
         // JS suggestions ke liye DOM globals (document, console, ...)
         monaco.typescript.javascriptDefaults.setCompilerOptions({
           target: monaco.typescript.ScriptTarget.ES2020,
@@ -157,12 +140,9 @@ export default function CodeEditor({
             void format()
           },
         })
-        // Ctrl/Cmd+S -> save, Ctrl/Cmd+Enter -> run
+        // Ctrl/Cmd+S -> save
         editorInstance.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () =>
           onSaveRef.current?.(),
-        )
-        editorInstance.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () =>
-          onRunRef.current?.(),
         )
 
         registerAutoCloseTag(monaco, editorInstance)

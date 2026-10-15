@@ -8,7 +8,6 @@ import {
   Loader2,
   LogIn,
   LogOut,
-  Play,
   Save,
   Share2,
   Shield,
@@ -29,7 +28,6 @@ import {
 import { Input } from '@/components/ui/input'
 import { normalizeTitle } from '@/lib/title-slug'
 import { cn } from '@/lib/utils'
-import { ThemeToggle } from './ThemeToggle'
 
 export interface SessionUser {
   id: number
@@ -52,7 +50,6 @@ interface TitleBarProps {
   theoryOpen: boolean
   showTheoryToggle: boolean
   onToggleTheory: () => void
-  onRun: () => void
   onSave: () => void
   onFork: () => void
   onShare: () => void
@@ -132,7 +129,6 @@ export default function TitleBar({
   theoryOpen,
   showTheoryToggle,
   onToggleTheory,
-  onRun,
   onSave,
   onFork,
   onShare,
@@ -184,11 +180,6 @@ export default function TitleBar({
           </Button>
         )}
 
-        <Button variant="ghost" size="sm" onClick={onRun} title="Run (Ctrl/Cmd + Enter)">
-          <Play className="fill-current" />
-          <span className="hidden sm:inline">Run</span>
-        </Button>
-
         {!readOnly && (
           <Button
             size="sm"
@@ -213,8 +204,6 @@ export default function TitleBar({
             <Share2 />
           </Button>
         )}
-
-        <ThemeToggle />
 
         {user ? (
           <DropdownMenu>

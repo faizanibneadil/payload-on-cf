@@ -31,10 +31,10 @@ function resolveCssVar(name: string): string {
   }
 }
 
-/** App ke current theme variables se "app" Monaco theme define karke apply karta hai */
-export function applyMonacoTheme(monaco: Monaco, mode: 'dark' | 'light') {
+/** App ke theme variables se "app" Monaco theme define karke apply karta hai */
+export function applyMonacoTheme(monaco: Monaco) {
   monaco.editor.defineTheme('app', {
-    base: mode === 'dark' ? 'vs-dark' : 'vs',
+    base: 'vs',
     inherit: true,
     rules: [],
     colors: {
