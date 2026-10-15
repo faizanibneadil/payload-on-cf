@@ -28,7 +28,6 @@ import {
 import { Input } from '@/components/ui/input'
 import { normalizeTitle } from '@/lib/title-slug'
 import { cn } from '@/lib/utils'
-import { ThemeToggle } from './ThemeToggle'
 
 export interface SessionUser {
   id: number
@@ -205,8 +204,6 @@ export default function TitleBar({
             <Share2 />
           </Button>
         )}
-
-        <ThemeToggle />
 
         {user ? (
           <DropdownMenu>

@@ -2,7 +2,6 @@
 
 import Editor, { type Monaco } from '@monaco-editor/react'
 import type { editor } from 'monaco-editor'
-import { useTheme } from 'next-themes'
 import { useCallback, useEffect, useRef } from 'react'
 import { formatCode, isFormattable } from '@/lib/format-code'
 import '@/lib/monaco/loader'
@@ -47,8 +46,6 @@ interface CodeEditorProps {
 }
 
 export default function CodeEditor({ path, value, readOnly, onChange, onSave }: CodeEditorProps) {
-  const { resolvedTheme } = useTheme()
-  const mode = resolvedTheme === 'light' ? 'light' : 'dark'
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
   const monacoRef = useRef<Monaco | null>(null)
   const onChangeRef = useRef(onChange)
@@ -59,10 +56,6 @@ export default function CodeEditor({ path, value, readOnly, onChange, onSave }: 
   onSaveRef.current = onSave
 
   const language = languageFor(path)
-
-  useEffect(() => {
-    if (monacoRef.current) applyMonacoTheme(monacoRef.current, mode)
-  }, [mode])
 
   // formatOnType sirf html ke liye chahiye (auto-close-tag provider uska use karta hai)
   useEffect(() => {
@@ -126,7 +119,7 @@ export default function CodeEditor({ path, value, readOnly, onChange, onSave }: 
         padding: { top: 8 },
       }}
       beforeMount={(monaco) => {
-        applyMonacoTheme(monaco, mode)
+        applyMonacoTheme(monaco)
         // JS suggestions ke liye DOM globals (document, console, ...)
         monaco.typescript.javascriptDefaults.setCompilerOptions({
           target: monaco.typescript.ScriptTarget.ES2020,

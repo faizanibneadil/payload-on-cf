@@ -28,8 +28,8 @@ After init and after every `add`, verify. Search the repo:
 ## Components likely needed
 Button, Tabs, Input, Tooltip, Toggle/ToggleGroup (theme), Dropdown/Menu, Dialog or AlertDialog (fork confirm, unsaved changes), Sonner/Toast (save feedback), Skeleton, ScrollArea, Resizable panels (file/code/preview layout) **[Verify availability on Base UI variant]**.
 
-## Theme (light/dark) without flash
-Use `next-themes` (or an inline script setting a class before hydration), icon-only toggle, persisted preference. Tailwind v4 dark variant via the `dark` class.
+## Theme
+The app ships a single (light) theme. Light/dark switching was removed on purpose: no `next-themes`, no `dark` variant, no `dark:` utilities. Re-introduce it only if the owner asks.
 
 ## UI performance
 Server Components by default. Mark only interactive pieces `"use client"`. Do not wrap the whole layout in a client component. Lazy-load Monaco, Sandpack and Tiptap.
