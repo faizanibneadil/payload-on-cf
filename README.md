@@ -44,7 +44,7 @@ Access the admin dashboard at [http://localhost:3000/admin](http://localhost:300
 
 ## 👤 Users
 
-1. Open `/admin` once. The first account created becomes the **admin** (username + password).
+1. The first account created becomes the **admin** (username + password). On an existing database with no admin, migration `20261015_060000_promote_first_user_to_admin` promotes the oldest account to admin, so `/admin` is reachable. Sign in at `/admin/login` with that username.
 2. Students create their own accounts at `/register` and sign in at `/login`. They do not use the Payload admin panel.
 3. Admins can manage users in `/admin` under **Users**.
 
