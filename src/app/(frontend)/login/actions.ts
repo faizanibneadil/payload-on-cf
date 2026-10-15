@@ -35,7 +35,18 @@ export async function loginUserAction(_prevState: any, formData: FormData) {
     }
 
     return { success: false, error: 'Invalid credentials' }
-  } catch (_err: any) {
+  } catch (err: any) {
+    // Galat credentials aur account lock ke ilawa baaqi errors server ke masle hain — unhe log karo
+    if (err?.name === 'LockedAuth') {
+      return {
+        success: false,
+        error: 'Too many failed attempts. Please try again in a few minutes.',
+      }
+    }
+    if (err?.name !== 'AuthenticationError') {
+      console.error('[loginUserAction] failed', err)
+      return { success: false, error: 'Something went wrong. Please try again.' }
+    }
     return { success: false, error: 'Invalid username or password' }
   }
 }
