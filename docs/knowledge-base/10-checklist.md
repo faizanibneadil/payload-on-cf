@@ -18,7 +18,7 @@
 - [ ] Title: live normalization, max 50, unique slug, fallback `untitled-<id>`
 - [ ] `/` serves the Playground; `/p/[slug]` shows a saved playground; unknown slug returns 404
 - [ ] Share uses `navigator.share` with clipboard fallback
-- [ ] Single light theme only (no theme toggle, no `next-themes`)
+- [ ] Dark theme only (no light theme, no theme toggle, no `next-themes`)
 - [ ] Theory read-only for non-owners; code editor, preview and console work; all panels resize; mobile tabs work
 - [ ] Monaco, Sandpack and Tiptap are dynamically imported
 

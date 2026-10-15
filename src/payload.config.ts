@@ -76,6 +76,8 @@ const payloadSecret = env.PAYLOAD_SECRET || 'fallback-secret-for-local-dev-only'
 
 export default buildConfig({
   admin: {
+    // App ki tarah admin bhi sirf dark theme me (theme toggle nahi)
+    theme: 'dark',
     user: Users.slug,
     importMap: {
       baseDir: path.resolve(dirname),

@@ -17,6 +17,11 @@ export async function registerUserAction(_prevState: any, formData: FormData) {
     return { success: false, error: 'All fields are required' }
   }
 
+  // "admin" CI seed script ke liye reserved hai (koi student pehle register na kar le)
+  if (username === 'admin') {
+    return { success: false, error: 'This username is reserved' }
+  }
+
   if (password !== confirmPassword) {
     return { success: false, error: 'Passwords do not match' }
   }

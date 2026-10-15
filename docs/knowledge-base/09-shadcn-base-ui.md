@@ -29,7 +29,7 @@ After init and after every `add`, verify. Search the repo:
 Button, Tabs, Input, Tooltip, Toggle/ToggleGroup (theme), Dropdown/Menu, Dialog or AlertDialog (fork confirm, unsaved changes), Sonner/Toast (save feedback), Skeleton, ScrollArea, Resizable panels (file/code/preview layout) **[Verify availability on Base UI variant]**.
 
 ## Theme
-The app ships a single (light) theme. Light/dark switching was removed on purpose: no `next-themes`, no `dark` variant, no `dark:` utilities. Re-introduce it only if the owner asks.
+The app ships a single **dark** theme. There is no light theme and no theme switching: no `next-themes`, no toggle. Dark tokens live in `:root` (`globals.css`), `<html class="dark">` is static so shadcn's `dark:` utilities apply, Monaco uses `vs-dark`, and Payload admin is forced to dark with `admin.theme: 'dark'`. The preview iframe keeps a white canvas, like a normal browser page. Do not add a light theme unless the owner asks.
 
 ## UI performance
 Server Components by default. Mark only interactive pieces `"use client"`. Do not wrap the whole layout in a client component. Lazy-load Monaco, Sandpack and Tiptap.
