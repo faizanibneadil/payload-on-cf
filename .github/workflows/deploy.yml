@@ -94,6 +94,19 @@ jobs:
             pnpm deploy:database
           fi
 
+      # Admin user sirf tab banta hai jab database me koi admin na ho (script idempotent hai).
+      # Default credentials admin/admin hain; ADMIN_USERNAME / ADMIN_PASSWORD secrets se badal sakte hain.
+      - name: Seed default admin user
+        env:
+          ADMIN_USERNAME: ${{ secrets.ADMIN_USERNAME }}
+          ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+        run: |
+          if [ "$CF_ENV" = "dev" ]; then
+            CLOUDFLARE_ENV=dev pnpm deploy:seed
+          else
+            pnpm deploy:seed
+          fi
+
       - name: Configure secrets on Cloudflare Wrangler
         run: |
           if [ -n "$PAYLOAD_SECRET" ]; then

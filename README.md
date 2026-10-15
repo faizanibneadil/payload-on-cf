@@ -45,6 +45,7 @@ Access the admin dashboard at [http://localhost:3000/admin](http://localhost:300
 ## 👤 Users
 
 1. The first account created becomes the **admin** (username + password). On an existing database with no admin, migration `20261015_060000_promote_first_user_to_admin` promotes the oldest account to admin, so `/admin` is reachable. Sign in at `/admin/login` with that username.
+   CI/CD also runs `pnpm deploy:seed` (`scripts/seed-admin.ts`) after the migrations: if the database has **no admin**, it creates the user `admin` with password `admin` (override with `ADMIN_USERNAME` / `ADMIN_PASSWORD`). If an admin already exists it does nothing. **Change the default password right after the first login.** The username `admin` is reserved at registration.
 2. Students create their own accounts at `/register` and sign in at `/login`. They do not use the Payload admin panel.
 3. Admins can manage users in `/admin` under **Users**.
 
@@ -79,7 +80,8 @@ To deploy via GitHub Actions, add the following to your repository (**Settings >
 1. `CLOUDFLARE_API_TOKEN`: Cloudflare API token with `Account | Cloudflare D1 | Edit`, `Account | Workers R2 Storage | Edit`, `Account | Workers Scripts | Edit`, and `Account | Account Settings | Read` permissions.
 2. `CLOUDFLARE_ACCOUNT_ID`: Your 32-character Cloudflare Account ID from the Cloudflare Dashboard.
 3. `PAYLOAD_SECRET`: 32-byte secret string for Payload JWT sessions.
-4. `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM_ADDRESS`, `SMTP_FROM_NAME`: (Optional) Email transport settings.
+4. `ADMIN_USERNAME`, `ADMIN_PASSWORD`: (Optional) Credentials for the default admin. If unset, the default admin is `admin` / `admin`.
+5. `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM_ADDRESS`, `SMTP_FROM_NAME`: (Optional) Email transport settings.
 
 ### Repository Variables
 1. `NEXT_PUBLIC_SERVER_URL`: Production domain URL (e.g. `https://payload-on-cf.workers.dev`).
