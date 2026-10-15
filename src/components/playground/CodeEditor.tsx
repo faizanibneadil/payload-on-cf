@@ -44,29 +44,19 @@ interface CodeEditorProps {
   readOnly: boolean
   onChange: (value: string) => void
   onSave?: () => void
-  onRun?: () => void
 }
 
-export default function CodeEditor({
-  path,
-  value,
-  readOnly,
-  onChange,
-  onSave,
-  onRun,
-}: CodeEditorProps) {
+export default function CodeEditor({ path, value, readOnly, onChange, onSave }: CodeEditorProps) {
   const { resolvedTheme } = useTheme()
   const mode = resolvedTheme === 'light' ? 'light' : 'dark'
   const editorRef = useRef<editor.IStandaloneCodeEditor | null>(null)
   const monacoRef = useRef<Monaco | null>(null)
   const onChangeRef = useRef(onChange)
   const onSaveRef = useRef(onSave)
-  const onRunRef = useRef(onRun)
   const readOnlyRef = useRef(readOnly)
   readOnlyRef.current = readOnly
   onChangeRef.current = onChange
   onSaveRef.current = onSave
-  onRunRef.current = onRun
 
   const language = languageFor(path)
 
@@ -157,12 +147,9 @@ export default function CodeEditor({
             void format()
           },
         })
-        // Ctrl/Cmd+S -> save, Ctrl/Cmd+Enter -> run
+        // Ctrl/Cmd+S -> save
         editorInstance.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () =>
           onSaveRef.current?.(),
-        )
-        editorInstance.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.Enter, () =>
-          onRunRef.current?.(),
         )
 
         registerAutoCloseTag(monaco, editorInstance)

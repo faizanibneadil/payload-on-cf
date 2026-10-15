@@ -8,7 +8,6 @@ import {
   Loader2,
   LogIn,
   LogOut,
-  Play,
   Save,
   Share2,
   Shield,
@@ -52,7 +51,6 @@ interface TitleBarProps {
   theoryOpen: boolean
   showTheoryToggle: boolean
   onToggleTheory: () => void
-  onRun: () => void
   onSave: () => void
   onFork: () => void
   onShare: () => void
@@ -132,7 +130,6 @@ export default function TitleBar({
   theoryOpen,
   showTheoryToggle,
   onToggleTheory,
-  onRun,
   onSave,
   onFork,
   onShare,
@@ -183,11 +180,6 @@ export default function TitleBar({
             <span className="hidden lg:inline">Theory</span>
           </Button>
         )}
-
-        <Button variant="ghost" size="sm" onClick={onRun} title="Run (Ctrl/Cmd + Enter)">
-          <Play className="fill-current" />
-          <span className="hidden sm:inline">Run</span>
-        </Button>
 
         {!readOnly && (
           <Button

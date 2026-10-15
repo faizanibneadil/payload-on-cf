@@ -261,11 +261,6 @@ export default function PlaygroundIDE({
     router.refresh()
   }, [router, confirmLeave])
 
-  const run = useCallback(() => {
-    ide.run()
-    if (desktop === false) goTab('preview')
-  }, [ide, desktop, goTab])
-
   const openFile = useCallback(
     (id: string) => {
       ide.open(id)
@@ -348,7 +343,6 @@ export default function PlaygroundIDE({
             readOnly={readOnly}
             onChange={(value) => ide.setContent(activeNode.id, value)}
             onSave={save}
-            onRun={run}
           />
         ) : (
           <div className="flex h-full flex-col items-center justify-center gap-2 p-6 text-center text-sm text-muted-foreground">
@@ -360,7 +354,7 @@ export default function PlaygroundIDE({
     </div>
   )
 
-  const preview = <PreviewPane files={ide.sandpackFiles} runToken={state.runToken} />
+  const preview = <PreviewPane files={ide.previewFiles} />
 
   const theory = (
     <TheoryEditor content={state.theory} editable={!readOnly} onChange={ide.setTheory} />
@@ -380,7 +374,6 @@ export default function PlaygroundIDE({
       theoryOpen={theoryOpen}
       showTheoryToggle={desktop === true}
       onToggleTheory={() => setTheoryOpen((v) => !v)}
-      onRun={run}
       onSave={save}
       onFork={fork}
       onShare={share}
@@ -444,7 +437,7 @@ export default function PlaygroundIDE({
   }
 
   // Mobile: ek waqt me ek panel, neeche tab bar. Visit ke baad panel mounted rehta hai
-  // (Sandpack/Monaco dobara boot na ho), bas hide hota hai.
+  // (Monaco/preview dobara boot na ho), bas hide hota hai.
   const tabs: { id: MobileTab; label: string; icon: typeof Code2 }[] = [
     { id: 'theory', label: 'Theory', icon: BookOpen },
     { id: 'files', label: 'Files', icon: FolderTree },
