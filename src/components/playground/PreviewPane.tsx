@@ -12,6 +12,7 @@ import {
   resolvePath,
 } from '@/lib/preview-document'
 import { cn } from '@/lib/utils'
+import { PanelCollapseButton } from './PanelWorkspace'
 
 interface PreviewPaneProps {
   files: Record<string, string>
@@ -92,7 +93,7 @@ export default function PreviewPane({ files }: PreviewPaneProps) {
     const onMessage = (event: MessageEvent) => {
       if (event.source !== iframeRef.current?.contentWindow) return
       const data = event.data as { __pg?: number; type?: string; payload?: any } | null
-      if (!data || data.__pg !== 1) return
+      if (data?.__pg !== 1) return
 
       if (data.type === 'console' && typeof data.payload?.text === 'string') {
         const level = (data.payload.level as Level) in LEVEL_CLASS ? data.payload.level : 'log'
@@ -179,6 +180,7 @@ export default function PreviewPane({ files }: PreviewPaneProps) {
                 className="min-w-0 flex-1 bg-transparent font-mono outline-none"
               />
             </div>
+            <PanelCollapseButton id="preview" className="shrink-0" />
           </div>
           <div className="min-h-0 flex-1 bg-white">
             <iframe

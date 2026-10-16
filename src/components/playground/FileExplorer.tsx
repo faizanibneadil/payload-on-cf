@@ -35,6 +35,7 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { childrenOf, descendantsOf, type TreeNode } from '@/lib/playground-tree'
 import { cn } from '@/lib/utils'
+import { PanelCollapseButton } from './PanelWorkspace'
 
 type Editing =
   | { kind: 'create'; type: 'file' | 'folder'; parentId: string | null }
@@ -286,28 +287,31 @@ export default function FileExplorer({
         <span className="text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
           Files
         </span>
-        {!readOnly && (
-          <div className="flex items-center gap-0.5">
-            <Button
-              variant="ghost"
-              size="icon-xs"
-              title="New file"
-              aria-label="New file"
-              onClick={() => startCreate('file', activeParent)}
-            >
-              <FilePlus />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon-xs"
-              title="New folder"
-              aria-label="New folder"
-              onClick={() => startCreate('folder', activeParent)}
-            >
-              <FolderPlus />
-            </Button>
-          </div>
-        )}
+        <div className="flex items-center gap-0.5">
+          {!readOnly && (
+            <>
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                title="New file"
+                aria-label="New file"
+                onClick={() => startCreate('file', activeParent)}
+              >
+                <FilePlus />
+              </Button>
+              <Button
+                variant="ghost"
+                size="icon-xs"
+                title="New folder"
+                aria-label="New folder"
+                onClick={() => startCreate('folder', activeParent)}
+              >
+                <FolderPlus />
+              </Button>
+            </>
+          )}
+          <PanelCollapseButton id="files" />
+        </div>
       </div>
 
       <div className="min-h-0 flex-1 overflow-y-auto py-1" role="tree" aria-label="Project files">

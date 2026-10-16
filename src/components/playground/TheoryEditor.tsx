@@ -37,6 +37,7 @@ import { CodeBlockWithCopy } from '@/lib/tiptap/code-block-with-copy'
 import { lowlight } from '@/lib/tiptap/lowlight-instance'
 import { SmartCodeIndent } from '@/lib/tiptap/smart-code-indent'
 import { cn } from '@/lib/utils'
+import { PanelHeader } from './PanelWorkspace'
 
 // Module-level taake extension instances ka identity stable rahe
 const EXTENSIONS = [
@@ -330,6 +331,7 @@ export default function TheoryEditor({ content, editable, onChange }: TheoryEdit
 
   return (
     <div className="flex h-full min-h-0 flex-col bg-editor">
+      <PanelHeader id="theory" />
       {editable && editor && <Toolbar editor={editor} />}
       <div className="min-h-0 flex-1 overflow-y-auto">
         <div className="mx-auto flex min-h-full w-full max-w-[44em] flex-col px-5 py-6 sm:px-8">
