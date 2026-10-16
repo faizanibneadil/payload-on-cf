@@ -1,7 +1,6 @@
 'use client'
 
 import {
-  BookOpen,
   Code2,
   FolderGit2,
   GitFork,
@@ -47,9 +46,6 @@ interface TitleBarProps {
   dirty: boolean
   busy: boolean
   ownerName: string | null
-  theoryOpen: boolean
-  showTheoryToggle: boolean
-  onToggleTheory: () => void
   onSave: () => void
   onFork: () => void
   onShare: () => void
@@ -126,9 +122,6 @@ export default function TitleBar({
   dirty,
   busy,
   ownerName,
-  theoryOpen,
-  showTheoryToggle,
-  onToggleTheory,
   onSave,
   onFork,
   onShare,
@@ -167,19 +160,6 @@ export default function TitleBar({
       </div>
 
       <div className="ml-auto flex items-center gap-1">
-        {showTheoryToggle && (
-          <Button
-            variant={theoryOpen ? 'secondary' : 'ghost'}
-            size="sm"
-            onClick={onToggleTheory}
-            aria-pressed={theoryOpen}
-            title="Show or hide theory"
-          >
-            <BookOpen />
-            <span className="hidden lg:inline">Theory</span>
-          </Button>
-        )}
-
         {!readOnly && (
           <Button
             size="sm"

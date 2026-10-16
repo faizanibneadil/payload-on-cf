@@ -376,9 +376,6 @@ export default function PlaygroundIDE({
       dirty={dirty}
       busy={busy}
       ownerName={playground?.ownerName ?? null}
-      theoryOpen={false}
-      showTheoryToggle={false}
-      onToggleTheory={() => {}}
       onSave={save}
       onFork={fork}
       onShare={share}
