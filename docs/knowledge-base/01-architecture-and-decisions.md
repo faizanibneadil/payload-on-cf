@@ -4,7 +4,7 @@
 A playground for frontend students (HTML, CSS and JavaScript). Students complete assignments and build small projects in it.
 
 - **Theory panel:** lecture theory written in Tiptap. Editable only by the playground owner.
-- **Practice panel:** file explorer + Monaco code editor, Sandpack live preview and JavaScript console.
+- **Practice panel:** file explorer + Monaco code editor, sandboxed live preview (multiple tabs) and JavaScript console.
 - All panels are resizable. On mobile the panels become bottom tabs (Theory, Files, Code, Preview).
 
 ## Fixed decisions (do not change without asking)
@@ -15,7 +15,7 @@ A playground for frontend students (HTML, CSS and JavaScript). Students complete
 | Hosting | Cloudflare Worker via OpenNext; deploy through GitHub Actions |
 | Auth | Payload `users` collection, **username + password only** (email login disabled). Register and Sign-in screens at `/register` and `/login` |
 | Code editor | Monaco (`@monaco-editor/react`), dynamically imported |
-| Preview / runtime | Sandpack, used **only** for bundling + preview (its CodeMirror editor is never used) |
+| Preview / runtime | Own sandboxed iframe (`srcdoc`) with a postMessage console; Sandpack was replaced |
 | Theory editor | Tiptap, dynamically imported |
 | Files and folders | `playground-files` collection with `@payloadcms/plugin-nested-docs` (`parent` + `breadcrumbs`) |
 | Routes | `/` = Playground (scratch/draft, or legacy import), `/p/[slug]` = a saved playground |
