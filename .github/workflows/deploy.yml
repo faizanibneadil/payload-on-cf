@@ -6,7 +6,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: write
+  contents: read
 
 concurrency:
   group: payload-cf-deploy-${{ github.ref }}
@@ -54,11 +54,9 @@ jobs:
         run: |
           if [ "${{ github.ref_name }}" = "dev" ]; then
             echo "CF_ENV=dev" >> $GITHUB_ENV
-            echo "WORKER_URL=https://payload-on-cf-dev.workers.dev" >> $GITHUB_ENV
             echo "ENV_FLAG=--env dev" >> $GITHUB_ENV
           else
             echo "CF_ENV=production" >> $GITHUB_ENV
-            echo "WORKER_URL=https://payload-on-cf.workers.dev" >> $GITHUB_ENV
             echo "ENV_FLAG=" >> $GITHUB_ENV
           fi
 
@@ -132,20 +130,26 @@ jobs:
           fi
 
       - name: Build and Deploy Worker
-        env:
-          NEXT_PUBLIC_SERVER_URL: ${{ vars.NEXT_PUBLIC_SERVER_URL || env.WORKER_URL }}
         run: |
+          set -o pipefail
           if [ "$CF_ENV" = "dev" ]; then
-            CLOUDFLARE_ENV=dev pnpm deploy:app
+            CLOUDFLARE_ENV=dev pnpm deploy:app 2>&1 | tee /tmp/deploy.log
           else
-            pnpm deploy:app
+            pnpm deploy:app 2>&1 | tee /tmp/deploy.log
           fi
+          # Wrangler deploy ke output se asli workers.dev URL nikalo (account subdomain ke saath)
+          url=$(grep -oE 'https://[A-Za-z0-9.-]+\.workers\.dev' /tmp/deploy.log | tail -1 || true)
+          echo "DEPLOYED_URL=$url" >> $GITHUB_ENV
 
       - name: Smoke test deployed worker endpoints
         run: |
-          echo "Testing endpoint reachability for $WORKER_URL"
+          if [ -z "$DEPLOYED_URL" ]; then
+            echo "Could not detect the deployed URL from the deploy log; skipping smoke test."
+            exit 0
+          fi
+          echo "Testing endpoint reachability for $DEPLOYED_URL"
           for endpoint in / /admin; do
-            code=$(curl -sS -L -o /tmp/response -w "%{http_code}" "$WORKER_URL$endpoint") || code="000"
+            code=$(curl -sS -L -o /tmp/response -w "%{http_code}" "$DEPLOYED_URL$endpoint") || code="000"
             echo "$endpoint => HTTP $code"
             if [ "$code" -ge 500 ]; then
               cat /tmp/response
