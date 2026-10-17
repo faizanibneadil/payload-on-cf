@@ -20,7 +20,10 @@
 - [ ] Share uses `navigator.share` with clipboard fallback
 - [ ] Dark theme only (no light theme, no theme toggle, no `next-themes`)
 - [ ] Theory read-only for non-owners; code editor, preview and console work; all panels resize; mobile tabs work
-- [ ] Monaco, Sandpack and Tiptap are dynamically imported
+- [ ] Monaco and Tiptap are dynamically imported (the sandboxed preview also loads lazily)
+- [ ] Panels: Theory/Files/Code/Preview collapse to a 40px rail, dragging below min collapses, Code or Preview always stays open (see `11-panel-layout.mdx`)
+- [ ] Preview supports up to 10 tabs, each with its own address bar and console; mobile shows a dropdown
+- [ ] Theory uses a bubble toolbar and a "/" menu; read-only users see no toolbar
 
 ## Legacy import
 - [ ] Old `?playgroundId=&shortURL=` link opens as a draft; first Save creates the playground and deletes the old record; failures are silent

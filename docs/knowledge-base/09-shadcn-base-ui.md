@@ -32,4 +32,4 @@ Button, Tabs, Input, Tooltip, Toggle/ToggleGroup (theme), Dropdown/Menu, Dialog 
 The app ships a single **dark** theme. There is no light theme and no theme switching: no `next-themes`, no toggle. Dark tokens live in `:root` (`globals.css`), `<html class="dark">` is static so shadcn's `dark:` utilities apply, Monaco uses `vs-dark`, and Payload admin is forced to dark with `admin.theme: 'dark'`. The preview iframe keeps a white canvas, like a normal browser page. Do not add a light theme unless the owner asks.
 
 ## UI performance
-Server Components by default. Mark only interactive pieces `"use client"`. Do not wrap the whole layout in a client component. Lazy-load Monaco, Sandpack and Tiptap.
+Server Components by default. Mark only interactive pieces `"use client"`. Do not wrap the whole layout in a client component. Lazy-load Monaco and Tiptap (and the preview).
