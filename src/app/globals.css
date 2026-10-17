@@ -94,6 +94,11 @@
   --hl-attr: oklch(0.82 0.14 95);
 }
 
+/* Rail ka vertical label (top se neeche) */
+@utility writing-vertical {
+  writing-mode: vertical-rl;
+}
+
 @layer base {
   * {
     @apply border-border outline-ring/50;

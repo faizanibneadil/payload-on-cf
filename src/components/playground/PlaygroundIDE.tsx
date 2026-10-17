@@ -12,10 +12,10 @@ import {
   renamePlaygroundAction,
   savePlaygroundAction,
 } from '@/app/(frontend)/p/actions'
-import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable'
 import type { TreeNode } from '@/lib/playground-tree'
 import { cn } from '@/lib/utils'
 import FileExplorer from './FileExplorer'
+import PanelWorkspace, { PanelCollapseButton } from './PanelWorkspace'
 import PlaygroundsDialog, { type PlaygroundListItem } from './PlaygroundsDialog'
 import TitleBar, { type SessionUser } from './TitleBar'
 import { usePlaygroundState } from './use-playground-state'
@@ -62,7 +62,6 @@ interface PlaygroundIDEProps {
 type MobileTab = 'theory' | 'files' | 'code' | 'preview'
 
 const DESKTOP_QUERY = '(min-width: 768px)'
-const WIDE_QUERY = '(min-width: 1024px)'
 
 // Server par null: pehle layout pata chalne tak skeleton, taake galat layout mount na ho
 function useDesktop(): boolean | null {
@@ -104,7 +103,6 @@ export default function PlaygroundIDE({
 
   const [busy, setBusy] = useState(false)
   const [listOpen, setListOpen] = useState(false)
-  const [theoryOpen, setTheoryOpen] = useState(false)
   const [mobileTab, setMobileTab] = useState<MobileTab>('code')
   const [visited, setVisited] = useState<Set<MobileTab>>(() => new Set(['code']))
 
@@ -120,14 +118,11 @@ export default function PlaygroundIDE({
     setListOpen(true)
   }, [user, isDraft, fromLegacy])
 
-  // Theory default: wide screen par agar theory likhi hui hai to khuli rakho
-  const theoryInit = useRef(false)
+  // Mobile par agar visitor ke liye theory likhi hui hai to pehle wahi dikhao
+  const mobileInit = useRef(false)
   useEffect(() => {
-    if (desktop === null || theoryInit.current) return
-    theoryInit.current = true
-    if (desktop && window.matchMedia(WIDE_QUERY).matches && hasTheoryContent(initial.theory)) {
-      setTheoryOpen(true)
-    }
+    if (desktop === null || mobileInit.current) return
+    mobileInit.current = true
     if (!desktop && hasTheoryContent(initial.theory) && !isOwner) setMobileTab('theory')
   }, [desktop, initial.theory, isOwner])
 
@@ -287,52 +282,62 @@ export default function PlaygroundIDE({
 
   const editor = (
     <div className="flex h-full min-h-0 flex-col bg-editor">
-      {state.openIds.length > 0 && (
-        <div
-          className="flex h-9 shrink-0 overflow-x-auto border-b bg-muted/30"
-          role="tablist"
-          aria-label="Open files"
-        >
-          {state.openIds.map((id) => {
-            const node = state.nodes.find((n) => n.id === id)
-            if (!node) return null
-            const active = id === state.activeId
-            return (
-              <div
-                key={id}
-                className={cn(
-                  'group flex shrink-0 items-center gap-1.5 border-r pr-1 pl-3 text-xs',
-                  active ? 'bg-editor text-foreground' : 'text-muted-foreground hover:bg-accent/40',
-                )}
-              >
-                <button
-                  type="button"
-                  role="tab"
-                  aria-selected={active}
-                  onClick={() => ide.open(id)}
-                  className="flex h-full items-center gap-1.5"
-                >
-                  <FileText className="size-3.5" />
-                  {node.name}
-                  {modifiedIds.has(id) && !readOnly && (
-                    <span
-                      role="img"
-                      className="size-1.5 rounded-full bg-amber-500"
-                      aria-label="Modified"
-                    />
+      {(desktop || state.openIds.length > 0) && (
+        <div className="flex h-9 shrink-0 items-center border-b bg-muted/30">
+          <div
+            className="flex h-full min-w-0 flex-1 overflow-x-auto"
+            role="tablist"
+            aria-label="Open files"
+          >
+            {state.openIds.length === 0 && (
+              <span className="flex items-center px-3 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+                Code
+              </span>
+            )}
+            {state.openIds.map((id) => {
+              const node = state.nodes.find((n) => n.id === id)
+              if (!node) return null
+              const active = id === state.activeId
+              return (
+                <div
+                  key={id}
+                  className={cn(
+                    'group flex shrink-0 items-center gap-1.5 border-r pr-1 pl-3 text-xs',
+                    active
+                      ? 'bg-editor text-foreground'
+                      : 'text-muted-foreground hover:bg-accent/40',
                   )}
-                </button>
-                <button
-                  type="button"
-                  aria-label={`Close ${node.name}`}
-                  onClick={() => ide.close(id)}
-                  className="flex size-5 items-center justify-center rounded-sm opacity-60 hover:bg-muted hover:opacity-100"
                 >
-                  <X className="size-3" />
-                </button>
-              </div>
-            )
-          })}
+                  <button
+                    type="button"
+                    role="tab"
+                    aria-selected={active}
+                    onClick={() => ide.open(id)}
+                    className="flex h-full items-center gap-1.5"
+                  >
+                    <FileText className="size-3.5" />
+                    {node.name}
+                    {modifiedIds.has(id) && !readOnly && (
+                      <span
+                        role="img"
+                        className="size-1.5 rounded-full bg-amber-500"
+                        aria-label="Modified"
+                      />
+                    )}
+                  </button>
+                  <button
+                    type="button"
+                    aria-label={`Close ${node.name}`}
+                    onClick={() => ide.close(id)}
+                    className="flex size-5 items-center justify-center rounded-sm opacity-60 hover:bg-muted hover:opacity-100"
+                  >
+                    <X className="size-3" />
+                  </button>
+                </div>
+              )
+            })}
+          </div>
+          <PanelCollapseButton id="code" className="mx-1 shrink-0" />
         </div>
       )}
       <div className="min-h-0 flex-1">
@@ -354,7 +359,7 @@ export default function PlaygroundIDE({
     </div>
   )
 
-  const preview = <PreviewPane files={ide.previewFiles} />
+  const preview = <PreviewPane files={ide.previewFiles} compact={desktop === false} />
 
   const theory = (
     <TheoryEditor content={state.theory} editable={!readOnly} onChange={ide.setTheory} />
@@ -371,9 +376,6 @@ export default function PlaygroundIDE({
       dirty={dirty}
       busy={busy}
       ownerName={playground?.ownerName ?? null}
-      theoryOpen={theoryOpen}
-      showTheoryToggle={desktop === true}
-      onToggleTheory={() => setTheoryOpen((v) => !v)}
       onSave={save}
       onFork={fork}
       onShare={share}
@@ -409,27 +411,10 @@ export default function PlaygroundIDE({
       <div className="flex h-dvh flex-col">
         {titleBar}
         <main className="min-h-0 flex-1">
-          <ResizablePanelGroup orientation="horizontal">
-            {theoryOpen && (
-              <>
-                <ResizablePanel id="theory" defaultSize="26%" minSize="14%">
-                  {theory}
-                </ResizablePanel>
-                <ResizableHandle />
-              </>
-            )}
-            <ResizablePanel id="files" defaultSize="15%" minSize="10%" maxSize="40%">
-              {explorer}
-            </ResizablePanel>
-            <ResizableHandle />
-            <ResizablePanel id="code" minSize="20%">
-              {editor}
-            </ResizablePanel>
-            <ResizableHandle />
-            <ResizablePanel id="preview" defaultSize="32%" minSize="15%">
-              {preview}
-            </ResizablePanel>
-          </ResizablePanelGroup>
+          <PanelWorkspace
+            theoryWanted={hasTheoryContent(initial.theory) || !readOnly}
+            panels={{ theory, files: explorer, code: editor, preview }}
+          />
         </main>
         {dialog}
       </div>

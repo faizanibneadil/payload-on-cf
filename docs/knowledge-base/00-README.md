@@ -12,6 +12,7 @@ Purpose: reference knowledge for AI coding agents and contributors working on th
 7. `07-github-actions-env-secrets.md`
 8. `09-shadcn-base-ui.md`
 9. `10-checklist.md`
+10. `11-panel-layout.mdx` (panel layout, preview tabs, theory toolbar)
 
 ## Rules for agents
 - Official docs and installed package type definitions beat this file. If they disagree, follow them and report the difference in your final summary.
