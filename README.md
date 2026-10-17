@@ -1,16 +1,16 @@
 # Playground (Next.js + Payload CMS + Cloudflare D1)
 
-A playground for frontend students: write HTML, CSS and JavaScript across multiple files and folders, see a live preview and a JavaScript console, read the lecture theory next to the code, then save, share and fork projects.
+A playground for frontend students and teachers. Teachers prepare lectures on an infinite canvas (theory), and students practise in a VS Code-style editor with a live preview. The app is being rebuilt iteration by iteration; see `docs/knowledge-base/12-iterations.md` for the status and `docs/knowledge-base/01-architecture-and-decisions.md` for the target design.
 
-## Features
+## Target features
 
-- **Theory panel:** lecture notes written in Tiptap (headings, lists, links, tables, highlighted code blocks with a copy button). Editable only by the owner.
-- **Practice panel:** file explorer (files + folders, powered by `@payloadcms/plugin-nested-docs`), Monaco editor, Sandpack live preview and console. Every panel is resizable; on mobile the panels become tabs.
-- **Accounts:** students register and sign in with **username and password only**.
-- **Ownership, sharing and forking:** each student sees their own playgrounds. A shared link (`/p/[slug]`) opens read-only for everyone else; they can **fork** it into their own playground.
-- **Legacy links:** old URL-state links (`/?playgroundId=…&shortURL=…` and old share links `/?shortURL=…`) are imported once into the new structure (see `src/lib/legacy-import.ts`).
-- **Security:** every permission is enforced on the server with Payload access control.
-- **Stack:** Next.js, Tailwind CSS, shadcn/ui (Base UI), Payload CMS, Cloudflare Worker + D1, Biome, pnpm.
+- **Theory canvas:** infinite canvas with markdown text blocks (Lexical, "/" block menu, code blocks), drawing tools, shapes and images.
+- **Editor:** VS Code-style UI, Monaco, multiple preview tabs, a terminal for React and Next.js templates (Vivari runtime).
+- **Accounts:** username and password only, in a sign-in modal.
+- **Sharing:** a playground is private until shared; anyone with the link can open it (theory read-only, code editable locally), and only the owner can save. There is no forking.
+- **Limits:** per-student limits on new playgrounds and saves, configurable by the super admin in a Payload Global.
+- **Legacy links:** old URL-state links are imported once (see `src/lib/legacy-import.ts`).
+- **Stack:** Next.js, Tailwind CSS, shadcn/ui (Base UI), Payload CMS, Cloudflare Worker + D1 + R2, Biome, pnpm.
 
 ---
 
@@ -30,7 +30,6 @@ cp .env.example .env
 Required `.env` variables:
 ```env
 PAYLOAD_SECRET=your-32-byte-random-payload-secret
-NEXT_PUBLIC_SERVER_URL=http://localhost:3000
 ```
 
 ### 3. Run Development Server
@@ -46,7 +45,7 @@ Access the admin dashboard at [http://localhost:3000/admin](http://localhost:300
 
 1. The first account created becomes the **admin** (username + password). On an existing database with no admin, migration `20261015_060000_promote_first_user_to_admin` promotes the oldest account to admin, so `/admin` is reachable. Sign in at `/admin/login` with that username.
    CI/CD also runs `pnpm deploy:seed` (`scripts/seed-admin.ts`) after the migrations: if the database has **no admin**, it creates the user `admin` with password `admin` (override with `ADMIN_USERNAME` / `ADMIN_PASSWORD`). If an admin already exists it does nothing. **Change the default password right after the first login.** The username `admin` is reserved at registration.
-2. Students create their own accounts at `/register` and sign in at `/login`. They do not use the Payload admin panel.
+2. Students and teachers create accounts and sign in through the modal in the app header (coming in Iteration 1). They do not use the Payload admin panel.
 3. Admins can manage users in `/admin` under **Users**.
 
 ---
@@ -84,7 +83,7 @@ To deploy via GitHub Actions, add the following to your repository (**Settings >
 5. `SMTP_HOST`, `SMTP_PORT`, `SMTP_USER`, `SMTP_PASS`, `SMTP_FROM_ADDRESS`, `SMTP_FROM_NAME`: (Optional) Email transport settings.
 
 ### Repository Variables
-1. `NEXT_PUBLIC_SERVER_URL`: Production domain URL (e.g. `https://payload-on-cf.workers.dev`).
+None are required right now.
 
 ---
 

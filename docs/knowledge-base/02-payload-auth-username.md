@@ -50,3 +50,9 @@ const payload = await getPayload({ config })
 const { user } = await payload.auth({ headers: await getHeaders() })
 ```
 **[Docs/Verify]** (`payload.auth` is the documented way to resolve the user from request headers.)
+
+## Username rules and screens (target, Iteration 1)
+- Allowed: `a-z`, `0-9`, `_`; length 3-20; numeric-only usernames are valid (for example a roll number); case-insensitive and unique (lowercase before saving). Password: at least 8 characters.
+- Validate on the client and on the server (field `validate` and the registration server action).
+- Sign in and Register live in one modal (two tabs) opened from the header. There are no `/login` or `/register` pages. The Payload admin login at `/admin/login` stays for the super admin.
+
