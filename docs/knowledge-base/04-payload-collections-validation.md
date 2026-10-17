@@ -1,30 +1,30 @@
-# 04. Collections, unique fields, validation, hooks
+# 04. Collections, Global and validation
 
-Docs: https://payloadcms.com/docs/configuration/collections , https://payloadcms.com/docs/fields/overview , https://payloadcms.com/docs/hooks/overview
+Official docs: https://payloadcms.com/docs/fields/overview , https://payloadcms.com/docs/hooks/overview
 
-## Collections (current)
-- `playgrounds`: `title` (max 50, normalized), `slug` (unique, generated in `beforeValidate`, collision gets a random suffix), `owner` (relationship, pinned server-side in `beforeChange`), `theory` (json), `forkedFrom` (relationship). `afterDelete` removes the playground's files.
-- `playground-files`: `playground` (relationship), `name`, `type` (`file` | `folder`), `content`, `size`. `parent` and `breadcrumbs` come from `@payloadcms/plugin-nested-docs`. Hooks enforce unique sibling names, no cycles, max depth, max nodes per playground and max file size (see `src/lib/file-rules.ts`).
-- `users`: username + password, `role` (`admin` | `user`, saved to the JWT).
+> Status: the collections currently in the repo (`playgrounds` + `playground-files` with `nested-docs`) are the OLD design. Iteration 1 replaces them with the schema below through new forward migrations. Do not build on the old files.
 
-- `unique: true` creates a DB unique index. With D1/SQLite this is a real constraint; still catch the duplicate error and return a friendly message.
-- `validate` receives `(value, options)` and returns `true` or an error string.
-- Schema changes on D1 require a migration (`pnpm payload migrate:create`) committed to the repo. See file 06.
+## Target schema (Iteration 1)
+- `users`: auth with `loginWithUsername` (`allowEmailLogin: false`), `role` (`admin` | `user`). Username validation in a field `validate` and in the registration server action.
+- `playgrounds`:
+  - `title` (max 50, normalized), `slug` (unique, indexed, generated in `beforeValidate`, collision gets a random suffix), `owner` (relationship, indexed, pinned in `beforeChange`), `isShared` (checkbox, default false).
+  - `template` (`vanilla` | `react` | `nextjs`, set at creation, never changed).
+  - `data` (json): `{ files: <tree of source files>, canvas: <scene> }`. One row write per Save. Size is checked in `beforeValidate` against the `settings` Global limit (default 1.8 MB; D1 row limit is 2 MB).
+  - `saveCount`, `saveWindowStartedAt` (hook-managed rate limit counters).
+  - Indexes: `slug`, and `owner` + `createdAt` (for the "10 playgrounds per 24 h" count query).
+- `media`: images pasted on the canvas (R2), owner only.
+- Global `settings`: see `03-payload-access-control.md`.
 
-## ONE shared slug helper (`src/lib/title-slug.ts`)
-Used by: the title input (client), the Payload field `validate`/hook, and any API route.
-```ts
-export const MAX_SLUG = 50
-export const normalizeSlug = (v: string) =>
-  v.toLowerCase().replace(/\s+/g, '-').replace(/[^a-z0-9-]/g, '').slice(0, MAX_SLUG)
-export const validateSlug = (v?: string) =>
-  !v ? 'Title is required'
-  : v.length > MAX_SLUG ? `Max ${MAX_SLUG} characters`
-  : !/^[a-z0-9-]+$/.test(v) ? 'Only lowercase letters, numbers and hyphens'
-  : true
-```
-Decide and document how to treat consecutive/leading/trailing hyphens (suggest: allow while typing, trim on save).
-Fallback when empty on Save: `untitled-<short-random-id>`.
+## Rate limit rules (hooks, server side)
+- Create: count the user's playgrounds with `createdAt` inside the window (indexed query). If the count is at the limit, reject.
+- Update (Save): if `now - saveWindowStartedAt` is past the window, reset `saveCount` to 0 and set a new window start. If `saveCount` is at the limit, reject. Otherwise `saveCount += 1`. The counter change is part of the same row write as the Save.
+- Skip all of this for `admin`.
 
-## Availability check
-Only on Save. Endpoint: a route handler or Payload `find` with `where: { slug: { equals } }` excluding the current document id. The DB unique index is the final authority (handles races).
+## Validation rules
+- Only source files are stored: reject paths under `node_modules`, `.next`, `dist`, `build`, and the lockfiles. Limit file count (about 100) and depth, and reject unsafe names (`..`, absolute paths).
+- Reject `data` larger than the configured max bytes with a clear error message that the UI shows.
+
+## Cost notes (D1 free plan)
+- Rows read are counted by rows scanned: every filtered or sorted column needs an index.
+- Rows written are counted per affected row, and each indexed column adds one: keep indexes to the ones above.
+- No polling and no autosave. One Save writes one `playgrounds` row.

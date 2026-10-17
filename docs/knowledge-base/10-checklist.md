@@ -1,39 +1,41 @@
-# 10. Agent checklist (verify before finishing)
+# 10. Agent checklist (verify before finishing an iteration)
 
-## Setup
-- [ ] Read AGENTS.md and every skill in `.agents/`
-- [ ] Neon/Postgres removed; D1 adapter in use; existing wrangler/payload config preserved
-- [ ] `cn` npm package NOT installed; `lib/utils.ts` has shadcn `cn()`
+## Always
+- [ ] Work only on the iteration branch (from `dev`); never touch `main` or the production D1/R2; never merge
+- [ ] Read `AGENTS.md`, `01-architecture-and-decisions.md` and the skills in `.agents/`
+- [ ] `pnpm exec tsc --noEmit`, `pnpm lint` (all Biome errors fixed), `pnpm test:int` pass
 - [ ] No Radix imports anywhere (`grep -R "radix" src package.json`)
+- [ ] Code comments in Roman Urdu; commits and PR text in English
+- [ ] No new tests unless the owner asks; remove only tests of deleted behaviour
+- [ ] Migrations are new forward migrations, committed, and never edit an applied migration
+- [ ] PR description contains "what to test on the dev deployment"
 
 ## Auth and permissions
-- [ ] `auth.loginWithUsername` configured with `allowEmailLogin: false`; Register and Sign-in screens work; logout works
-- [ ] Students cannot enter the Payload admin panel (admin role only)
-- [ ] `owner` set server-side; update/delete restricted to owner/admin on playgrounds and playground-files
-- [ ] Non-owner sees read-only code and theory and gets a Fork button; anonymous Save/Fork goes to login
+- [ ] Username-only login (`allowEmailLogin: false`); username rules enforced on client and server
+- [ ] Sign in / Register modal works; logout works; no `/login` or `/register` pages
+- [ ] Only the `admin` role can enter `/admin`
+- [ ] `owner` is set server-side; update/delete restricted to owner/admin
+- [ ] Private by default; shared playgrounds are readable by anyone with the link; non-owners can never save
 
-## Behavior
-- [ ] **No autosave** (no debounced writes, no API calls while typing). Save is one server action sending only the diff
-- [ ] Unsaved-changes indicator and `beforeunload` warning present
-- [ ] Title: live normalization, max 50, unique slug, fallback `untitled-<id>`
-- [ ] `/` serves the Playground; `/p/[slug]` shows a saved playground; unknown slug returns 404
-- [ ] Share uses `navigator.share` with clipboard fallback
-- [ ] Dark theme only (no light theme, no theme toggle, no `next-themes`)
-- [ ] Theory read-only for non-owners; code editor, preview and console work; all panels resize; mobile tabs work
-- [ ] Monaco and Tiptap are dynamically imported (the sandboxed preview also loads lazily)
-- [ ] Panels: Theory/Files/Code/Preview collapse to a 40px rail, dragging below min collapses, Code or Preview always stays open (see `11-panel-layout.mdx`)
-- [ ] Preview supports up to 10 tabs, each with its own address bar and console; mobile shows a dropdown
-- [ ] Theory uses a bubble toolbar and a "/" menu; read-only users see no toolbar
+## Behaviour
+- [ ] No autosave anywhere (no debounced writes, no API calls while typing); one "Save all" saves canvas and code in one row write
+- [ ] Unsaved-changes indicator and `beforeunload` warning
+- [ ] Rate limits read from the `settings` Global (cached); admin exempt and counters untouched for admin
+- [ ] Limits: 10 new playgrounds and 10 saves per playground per 24 h for students (defaults)
+- [ ] Content size limit enforced with a clear UI error
+- [ ] Theme: light default, toggle at the bottom of the primary bar, no flash on load
+- [ ] Heavy modules (Monaco, Lexical canvas, Vivari runtime) are dynamically imported
+- [ ] Visitor edits stay in the browser; "Reset to original" works
+- [ ] Runtime fallback: unsupported device shows a clear message, editor stays usable, Vanilla always works
 
 ## Legacy import
-- [ ] Old `?playgroundId=&shortURL=` link opens as a draft; first Save creates the playground and deletes the old record; failures are silent
+- [ ] Old `?playgroundId=&shortURL=` link opens as an unsaved draft; first Save creates the playground and deletes the old record (owner links only); failures are silent; module isolated in `src/lib/legacy-import.ts`
 
 ## Deployment
-- [ ] Migrations created and committed; workflow applies them to the **remote** D1
-- [ ] Workflow pushes runtime secrets to Cloudflare, not only GitHub
-- [ ] Build-time `NEXT_PUBLIC_*` provided to the build step
-- [ ] Fail-fast env check present; `env.manifest` and `.env.example` match the workflow
-- [ ] README lists secrets and the "add a new env" steps
+- [ ] Migrations applied to the remote dev D1 by the workflow; secrets pushed to Cloudflare, not only GitHub
+- [ ] Fail-fast env check present; `.env.example` matches the workflow
+- [ ] Smoke test passes on the dev deployment
+- [ ] Cross-origin isolation headers only on playground pages, not `/admin` or `/api`
 
 ## Final summary must include
-Implemented items, what was verified (commands run), deviations with reasons, the exact GitHub secrets list, open questions.
+Implemented items, what was verified (commands run), deviations with reasons, open questions, and the list of things the owner should test on the dev deployment.
