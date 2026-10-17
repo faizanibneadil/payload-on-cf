@@ -19,6 +19,7 @@ import { Button, buttonVariants } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuGroup,
   DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
@@ -196,7 +197,10 @@ export default function TitleBar({
               <span className="hidden truncate sm:inline">{user.username}</span>
             </DropdownMenuTrigger>
             <DropdownMenuContent align="end" className="min-w-44">
-              <DropdownMenuLabel>Signed in as {user.username}</DropdownMenuLabel>
+              {/* Base UI me GroupLabel ko Group ke andar hona zaroori hai */}
+              <DropdownMenuGroup>
+                <DropdownMenuLabel>Signed in as {user.username}</DropdownMenuLabel>
+              </DropdownMenuGroup>
               <DropdownMenuSeparator />
               <DropdownMenuItem onClick={onOpenPlaygrounds}>
                 <FolderGit2 /> My playgrounds
