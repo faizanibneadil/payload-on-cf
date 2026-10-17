@@ -1,10 +1,5 @@
 import { describe, expect, it } from 'vitest'
-import {
-  generateFallbackTitle,
-  generateForkTitle,
-  normalizeTitle,
-  validateTitle,
-} from '@/lib/title-slug'
+import { generateFallbackTitle, normalizeTitle, validateTitle } from '@/lib/title-slug'
 
 describe('Title and Slug Utilities', () => {
   it('normalizes title correctly', () => {
@@ -24,15 +19,5 @@ describe('Title and Slug Utilities', () => {
   it('generates fallback title', () => {
     const fallback = generateFallbackTitle()
     expect(fallback).toMatch(/^untitled-[a-z0-9]{6}$/)
-  })
-
-  it('generates fork title maintaining 50 character limit', () => {
-    expect(generateForkTitle('my-playground')).toBe('my-playground-fork')
-    expect(generateForkTitle('my-playground', 2)).toBe('my-playground-fork-2')
-
-    const longTitle = 'a'.repeat(50)
-    const forkTitle = generateForkTitle(longTitle, 1)
-    expect(forkTitle.length).toBeLessThanOrEqual(50)
-    expect(forkTitle.endsWith('-fork-1')).toBe(true)
   })
 })

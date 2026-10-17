@@ -3,8 +3,8 @@ import { Providers } from '@/components/providers'
 import '../globals.css'
 
 export const metadata: Metadata = {
-  title: 'Playground — HTML, CSS & JS',
-  description: 'Write HTML, CSS and JavaScript with a live preview. Save, share and fork projects.',
+  title: 'Playground',
+  description: 'A playground for frontend lectures and practice.',
 }
 
 export const viewport: Viewport = {

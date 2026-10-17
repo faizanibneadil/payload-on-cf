@@ -18,17 +18,6 @@ export function generateFallbackTitle(): string {
   return `untitled-${shortId}`
 }
 
-export function generateForkTitle(originalTitle: string, suffixCount?: number): string {
-  const suffix = suffixCount && suffixCount > 0 ? `-fork-${suffixCount}` : '-fork'
-  const maxOriginalLength = 50 - suffix.length
-
-  let base = normalizeTitle(originalTitle) || 'untitled'
-  if (base.length > maxOriginalLength) {
-    base = base.slice(0, maxOriginalLength).replace(/-+$/, '')
-  }
-  return `${base}${suffix}`
-}
-
 export function validateTitle(value: unknown): true | string {
   if (typeof value !== 'string' || !value.trim()) {
     return 'Title is required'

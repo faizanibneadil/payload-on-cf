@@ -26,10 +26,10 @@ After init and after every `add`, verify. Search the repo:
 - Prefer the generated shadcn wrappers over importing Base UI primitives directly in app code.
 
 ## Components likely needed
-Button, Tabs, Input, Tooltip, Toggle/ToggleGroup (theme), Dropdown/Menu, Dialog or AlertDialog (fork confirm, unsaved changes), Sonner/Toast (save feedback), Skeleton, ScrollArea, Resizable panels (file/code/preview layout) **[Verify availability on Base UI variant]**.
+Button, Tabs, Input, Tooltip, Toggle/ToggleGroup (theme), Dropdown/Menu, Dialog or AlertDialog (unsaved changes, sign-in modal), Sonner/Toast (save feedback), Skeleton, ScrollArea, Resizable panels (file/code/preview layout) **[Verify availability on Base UI variant]**.
 
 ## Theme
-The app ships a single **dark** theme. There is no light theme and no theme switching: no `next-themes`, no toggle. Dark tokens live in `:root` (`globals.css`), `<html class="dark">` is static so shadcn's `dark:` utilities apply, Monaco uses `vs-dark`, and Payload admin is forced to dark with `admin.theme: 'dark'`. The preview iframe keeps a white canvas, like a normal browser page. Do not add a light theme unless the owner asks.
+The app uses the shadcn preset `b5rR41Mtnc` (applied in Iteration 1, after checking that it keeps the Base UI variant). **Light is the default**, with a Light/Dark toggle at the bottom of the primary bar. The choice is stored in the browser and applied before first paint to avoid a flash. Monaco, the canvas and the terminal follow the theme. The preview iframe keeps a white canvas, like a normal browser page.
 
 ## UI performance
-Server Components by default. Mark only interactive pieces `"use client"`. Do not wrap the whole layout in a client component. Lazy-load Monaco and Tiptap (and the preview).
+Server Components by default. Mark only interactive pieces `"use client"`. Do not wrap the whole layout in a client component. Lazy-load Monaco, the Lexical canvas and the Vivari runtime (and the preview).
