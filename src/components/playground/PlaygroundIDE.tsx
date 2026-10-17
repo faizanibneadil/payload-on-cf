@@ -359,7 +359,7 @@ export default function PlaygroundIDE({
     </div>
   )
 
-  const preview = <PreviewPane files={ide.previewFiles} />
+  const preview = <PreviewPane files={ide.previewFiles} compact={desktop === false} />
 
   const theory = (
     <TheoryEditor content={state.theory} editable={!readOnly} onChange={ide.setTheory} />
