@@ -116,6 +116,8 @@ export function SlashMenu({ editor }: { editor: Editor }) {
   if (!open || !slash) return null
 
   const coords = editor.view.coordsAtPos(slash.end)
+  // Neeche jagah kam ho (khaas kar mobile) to menu cursor ke upar khulta hai
+  const flip = coords.bottom + 230 > window.innerHeight
   const pick = (item: SlashItem) => {
     editor.chain().focus().deleteRange({ from: slash.start, to: slash.end }).run()
     item.run(editor)
@@ -125,8 +127,11 @@ export function SlashMenu({ editor }: { editor: Editor }) {
     <div
       role="listbox"
       aria-label="Insert block"
-      className="fixed z-40 w-56 rounded-lg border bg-popover p-1 text-popover-foreground shadow-md"
-      style={{ left: coords.left, top: coords.bottom + 6 }}
+      className="fixed z-40 w-52 sm:w-60 rounded-lg border bg-popover p-1 text-popover-foreground shadow-md"
+      style={{
+        left: Math.min(coords.left, window.innerWidth - 232),
+        ...(flip ? { bottom: window.innerHeight - coords.top + 6 } : { top: coords.bottom + 6 }),
+      }}
     >
       {items.map((item, i) => (
         <button
@@ -144,7 +149,7 @@ export function SlashMenu({ editor }: { editor: Editor }) {
         >
           <item.icon className="size-4 shrink-0 text-muted-foreground" />
           <span className="flex-1">{item.label}</span>
-          <span className="text-muted-foreground text-xs">{item.hint}</span>
+          <span className="hidden text-muted-foreground text-xs sm:inline">{item.hint}</span>
         </button>
       ))}
     </div>
