@@ -1,8 +1,9 @@
 'use server'
 
 import { cookies } from 'next/headers'
-import { getPayload } from 'payload'
+// import { getPayload } from 'payload'
 import config from '@/payload.config'
+import { login, logout } from '@payloadcms/next/auth'
 
 export async function loginUserAction(_prevState: any, formData: FormData) {
   const username = String(formData.get('username') || '').trim()
@@ -13,46 +14,23 @@ export async function loginUserAction(_prevState: any, formData: FormData) {
   }
 
   try {
-    const payload = await getPayload({ config })
-    const res = await payload.login({
+    const result = await login({
       collection: 'users',
-      data: {
-        username,
-        password,
-      },
+      config,
+      username,
+      password,
     })
-
-    if (res?.token) {
-      const cookieStore = await cookies()
-      cookieStore.set('payload-token', res.token, {
-        httpOnly: true,
-        secure: process.env.NODE_ENV === 'production',
-        sameSite: 'lax',
-        path: '/',
-        ...(res.exp ? { expires: new Date(res.exp * 1000) } : {}),
-      })
-      return { success: true }
-    }
-
-    return { success: false, error: 'Invalid credentials' }
-  } catch (err: any) {
-    // Galat credentials aur account lock ke ilawa baaqi errors server ke masle hain — unhe log karo
-    if (err?.name === 'LockedAuth') {
-      return {
-        success: false,
-        error: 'Too many failed attempts. Please try again in a few minutes.',
-      }
-    }
-    if (err?.name !== 'AuthenticationError') {
-      console.error('[loginUserAction] failed', err)
-      return { success: false, error: 'Something went wrong. Please try again.' }
-    }
-    return { success: false, error: 'Invalid username or password' }
+    return result
+  } catch (error) {
+    throw new Error(
+      `Login failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
+    )
   }
 }
 
 export async function logoutUserAction() {
-  const cookieStore = await cookies()
-  cookieStore.delete('payload-token')
+  // const cookieStore = await cookies()
+  // cookieStore.delete('payload-token')
+  logout({ config, allSessions: false })
   return { success: true }
 }

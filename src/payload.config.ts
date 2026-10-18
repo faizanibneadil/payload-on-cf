@@ -99,6 +99,7 @@ export default buildConfig({
   secret: payloadSecret,
   cors: ["http://lecture.devslix.com"],
   csrf: ["http://lecture.devslix.com"],
+  serverURL: "http://lecture.devslix.com",
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
