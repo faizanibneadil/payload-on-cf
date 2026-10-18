@@ -32,6 +32,6 @@ export async function loginUserAction(_prevState: any, formData: FormData) {
 export async function logoutUserAction() {
   // const cookieStore = await cookies()
   // cookieStore.delete('payload-token')
-  logout({ config, allSessions: false })
+  await logout({ config, allSessions: false })
   return { success: true }
 }
