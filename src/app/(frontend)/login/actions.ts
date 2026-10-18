@@ -20,11 +20,12 @@ export async function loginUserAction(_prevState: any, formData: FormData) {
       username,
       password,
     })
-    return result
+    return { success: true }
   } catch (error) {
-    throw new Error(
-      `Login failed: ${error instanceof Error ? error.message : 'Unknown error'}`,
-    )
+    return {
+      success: false,
+      error: `Login failed: ${error instanceof Error ? error.message : 'Unknown error'}`
+    }
   }
 }
 
