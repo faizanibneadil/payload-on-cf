@@ -63,7 +63,7 @@ const cloudflareLogger = {
   warn: createLog('warn', console.warn),
   error: createLog('error', console.error),
   fatal: createLog('fatal', console.error),
-  silent: () => {},
+  silent: () => { },
 } as any // Use PayloadLogger type when it's exported
 
 const smtpHost = env.SMTP_HOST || 'smtp.gmail.com'
@@ -97,9 +97,9 @@ export default buildConfig({
     }),
   ],
   secret: payloadSecret,
-  cors: ["http://lecture.devslix.com"],
-  csrf: ["http://lecture.devslix.com"],
-  serverURL: "http://lecture.devslix.com",
+  cors: ["https://lecture.devslix.com"],
+  csrf: ["https://lecture.devslix.com"],
+  serverURL: "https://lecture.devslix.com",
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },
@@ -110,18 +110,18 @@ export default buildConfig({
   email:
     smtpUser && smtpPass
       ? nodemailerAdapter({
-          defaultFromAddress: smtpFromAddress,
-          defaultFromName: smtpFromName,
-          transportOptions: {
-            host: smtpHost,
-            port: smtpPort,
-            secure: smtpPort === 465,
-            auth: {
-              user: smtpUser,
-              pass: smtpPass,
-            },
-          } as any,
-        })
+        defaultFromAddress: smtpFromAddress,
+        defaultFromName: smtpFromName,
+        transportOptions: {
+          host: smtpHost,
+          port: smtpPort,
+          secure: smtpPort === 465,
+          auth: {
+            user: smtpUser,
+            pass: smtpPass,
+          },
+        } as any,
+      })
       : undefined,
   onInit: async (payload) => {
     if (smtpUser && smtpPass) {
