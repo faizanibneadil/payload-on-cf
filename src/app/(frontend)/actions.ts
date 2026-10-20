@@ -71,7 +71,7 @@ export async function createPlaygroundAction(input: CreateInput) {
     await createNodes(payload, user, created.id, nodes)
 
     // Legacy record best-effort delete (fail ho to skip)
-    if (input.legacyRecordId) await deleteLegacyRecord(input.legacyRecordId)
+    // if (input.legacyRecordId) await deleteLegacyRecord(input.legacyRecordId)
 
     return { success: true as const, slug: created.slug }
   } catch (err) {
@@ -80,7 +80,7 @@ export async function createPlaygroundAction(input: CreateInput) {
     if (createdId !== undefined) {
       await payload
         .delete({ collection: 'playgrounds', id: createdId, user, overrideAccess: false })
-        .catch(() => {})
+        .catch(() => { })
     }
     return {
       success: false as const,

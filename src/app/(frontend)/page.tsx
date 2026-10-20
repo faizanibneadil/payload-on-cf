@@ -14,23 +14,25 @@ export default async function HomePage({ searchParams }: { searchParams: Promise
   const [user, playgrounds] = await Promise.all([getCurrentUser(), getUserPlaygrounds()])
 
   // Purane URL-state link (?playgroundId=…&shortURL=…) ka one-time import — fail ho to normal scratch
-  const legacy = await importLegacyPlayground({
-    playgroundId: first(params.playgroundId),
-    shortURL: first(params.shortURL),
-  })
+  // const legacy = await importLegacyPlayground({
+  //   playgroundId: first(params.playgroundId),
+  //   shortURL: first(params.shortURL),
+  // })
 
   return (
     <PlaygroundIDE
-      key={legacy?.key ?? 'draft'}
+      key={'draft'}
       user={user ? { id: user.id, username: user.username ?? '', role: user.role } : null}
       playground={null}
       initial={{
-        nodes: legacy?.nodes ?? createDefaultNodes(),
-        title: legacy?.projectName ?? generateFallbackTitle(),
-        theory: legacy?.theory ?? null,
+        // nodes: legacy?.nodes ?? createDefaultNodes(),
+        // title: legacy?.projectName ?? generateFallbackTitle(),
+        nodes: createDefaultNodes(),
+        title: generateFallbackTitle(),
+        theory: null,
       }}
-      legacyRecordId={legacy?.recordId}
-      fromLegacy={Boolean(legacy)}
+      legacyRecordId={""}
+      fromLegacy={false}
       playgrounds={playgrounds}
     />
   )
