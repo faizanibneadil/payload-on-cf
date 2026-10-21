@@ -9,17 +9,20 @@ Status values: `planned` -> `in progress` -> `ready for review` (branch pushed) 
 - The next iteration starts only after the previous one is reviewed.
 - `main` and the production D1/R2 are never touched. Only the `dev` environment (its own D1 and R2) is used. The owner merges `dev` into `main` at the end.
 - Schema changes use new forward migrations only; never edit an applied migration.
+- Every task ends with browser testing and screenshots (see `09-checklist.md`, section "Testing and reporting"). No feature or bug may reach production untested.
+- Before the final merge to `main`: decide caching for board reads with the owner (open decision in `01`).
 
 ## Iterations
 
 | # | Branch | Scope | Status |
 |---|---|---|---|
 | 0 | `feat/iteration-0-setup-cleanup` | `dev` branch, CI/CD check, remove old frontend, fork code, unused files; placeholder `/` | merged to dev |
-| 0b | `dev` | Boards pivot: remove the code editor and everything around it (playground-files, nested-docs, legacy import, Monaco, resizable, cmdk), comment out the startup email, rewrite the knowledge base | ready for review |
+| 0b | `dev` | Boards pivot: remove the code editor and everything around it (playground-files, nested-docs, legacy import, Monaco, resizable, cmdk), comment out the startup email, rewrite the knowledge base | verified in dev |
 | 1 | `feat/iteration-1-foundation` | shadcn preset `b5rR41Mtnc`, light/dark theme (light default, toggle in the header), users (`admin` / `instructor`, username rules, public Register as instructor), `boards` collection replacing `playgrounds`, `settings` Global, access control, migrations on dev, header, sign-in modal, `/` with My boards | planned |
 | 2 | `feat/iteration-2-save-share-limits` | Save (one row write), unsaved indicator + `beforeunload`, rate limits (Global, cached), Share toggle and link, `/b/<slug>` read-only for others | planned |
 | 3 | `feat/iteration-3-canvas-core` | infinite canvas: pan/zoom, culling, text blocks with live markdown (`#`, `-`, `1.`), move/resize/delete, undo/redo | planned |
 | 4 | research with the owner | Lexical or not, Excalidraw / tldraw vs own engine, drawing tools, images, presenting; decides the next iterations | planned |
+| 5 | decide with the owner | caching for shared board reads (Next.js vs Cloudflare cache) and its implementation | planned |
 
 ## Per-iteration log
 (Filled in as work completes: steps done, what to test in the dev preview, issues found.)

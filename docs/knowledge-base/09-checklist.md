@@ -11,6 +11,13 @@
 - [ ] Migrations are new forward migrations, committed, and never edit an applied migration
 - [ ] PR description (or summary) contains "what to test on the dev deployment"
 
+## Testing and reporting (owner rule, every task)
+- [ ] Run the app locally (`pnpm dev`) and test every new or changed feature in a real browser (Playwright with the pre-installed Chromium), as the owner decided it should behave: happy path, wrong input, permissions (signed out, other user, owner, admin), light and dark theme, desktop and mobile width
+- [ ] Take screenshots of each tested screen and state and send them to the owner with the final report
+- [ ] Check the browser console and server log for errors during the test
+- [ ] After the push, check that the GitHub Actions run is green and smoke-test the dev URL
+- [ ] Report: what was tested, how, the result of each check (pass/fail), screenshots, and any bug found (fixed, or why not). Nothing untested is reported as done
+
 ## Auth and permissions
 - [ ] Username-only login (`allowEmailLogin: false`); username rules enforced on client and server
 - [ ] Sign in / Register modal works; Register always creates an `instructor`; logout works; no `/login` or `/register` pages

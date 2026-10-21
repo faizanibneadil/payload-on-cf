@@ -3,14 +3,20 @@ name: Deploy Payload v4 to Cloudflare Workers
 on:
   push:
     branches: [main, dev]
+    # Sirf docs badlen to deploy ki zaroorat nahi (Actions ke runs bachte hain)
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
   workflow_dispatch:
 
 permissions:
   contents: read
 
+# Chalta hua deploy beech me cancel nahi hota (warna D1 migration adhi reh sakti hai).
+# Naya push queue me wait karta hai; queue me sirf sab se naya run rehta hai.
 concurrency:
   group: payload-cf-deploy-${{ github.ref }}
-  cancel-in-progress: true
+  cancel-in-progress: false
 
 jobs:
   deploy:

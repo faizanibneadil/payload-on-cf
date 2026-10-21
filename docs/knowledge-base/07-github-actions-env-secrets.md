@@ -66,3 +66,9 @@ There is no separate `env.manifest`. The list in `scripts/check-env.mjs`, `.env.
 | any further runtime secret the code reads | pushed to the Worker by the workflow |
 
 The agent must list the final, exact set in the README and the final summary. Never print secrets in logs.
+
+## Why GitHub Actions and not Cloudflare Workers Builds (decided October 2026)
+- The repo is **public**. GitHub-hosted standard runners are free and have no minute limit for public repositories (free plan: up to 20 concurrent jobs). One deploy run takes about 4 minutes.
+- If the repo ever becomes private, the free plan gives 2,000 minutes per month (about 500 runs of 4 minutes). Check the usage under GitHub Settings > Billing then, and only then consider Cloudflare Workers Builds (connects the repo in the Cloudflare dashboard, builds on push per branch, has its own monthly build-minute quota).
+- Saving runs: pushes that change only `docs/**` or `*.md` do not trigger a deploy (`paths-ignore`). A running deploy is never cancelled (`cancel-in-progress: false`) so a D1 migration is never cut in half; newer pushes wait and only the latest queued run is kept.
+- A deploy is live only when the run is green. Every iteration is verified on the dev URL after its push.
