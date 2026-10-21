@@ -22,6 +22,8 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 40
+    outputs:
+      url: ${{ steps.deploy_worker.outputs.url }}
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -136,6 +138,7 @@ jobs:
           fi
 
       - name: Build and Deploy Worker
+        id: deploy_worker
         run: |
           set -o pipefail
           if [ "$CF_ENV" = "dev" ]; then
@@ -146,6 +149,7 @@ jobs:
           # Wrangler deploy ke output se asli workers.dev URL nikalo (account subdomain ke saath)
           url=$(grep -oE 'https://[A-Za-z0-9.-]+\.workers\.dev' /tmp/deploy.log | tail -1 || true)
           echo "DEPLOYED_URL=$url" >> $GITHUB_ENV
+          echo "url=$url" >> $GITHUB_OUTPUT
 
       - name: Smoke test deployed worker endpoints
         run: |
@@ -162,3 +166,42 @@ jobs:
               exit 1
             fi
           done
+
+  # Deploy ke baad asal dev URL par Chromium se poora user flow (register, board, sign out,
+  # refresh, cancel karke refresh, sign in). Screenshots aur log artifact me milte hain.
+  live-check:
+    needs: deploy
+    if: github.ref == 'refs/heads/dev' && needs.deploy.outputs.url != ''
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10.29.1
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.19.0
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run live check
+        run: node scripts/live-check.mjs "${{ needs.deploy.outputs.url }}"
+
+      - name: Upload screenshots and log
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: live-check-${{ github.run_id }}
+          path: live-check-output/
+          retention-days: 14

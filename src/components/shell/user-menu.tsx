@@ -20,12 +20,8 @@ export function UserMenu({ username, role }: { username: string; role: string })
   const router = useRouter()
   const [pending, startTransition] = useTransition()
 
-  const onLogout = () =>
-    startTransition(async () => {
-      await logoutAction()
-      router.push('/')
-      router.refresh()
-    })
+  // logoutAction server par hi `/` par redirect karta hai
+  const onLogout = () => startTransition(() => logoutAction())
 
   return (
     <DropdownMenu>

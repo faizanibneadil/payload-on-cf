@@ -1,6 +1,7 @@
 'use server'
 
 import { login, logout } from '@payloadcms/next/auth'
+import { redirect } from 'next/navigation'
 import { getPayload } from 'payload'
 import {
   normalizeUsername,
@@ -18,11 +19,13 @@ async function signIn(username: string, password: string): Promise<AuthResult> {
     await login({ collection: 'users', config, username, password })
     return { ok: true }
   } catch (err) {
-    const name = (err as { name?: string })?.name
-    if (name === 'LockedAuth') {
+    // Production bundle me class names minify hote hain aur payload ki do copies ban sakti hain,
+    // isliye `err.name` / `instanceof` ki jagah HTTP status (401) aur message dekhte hain
+    const { status, message } = (err ?? {}) as { status?: number; message?: string }
+    if (status === 401 && /locked/i.test(message ?? '')) {
       return { ok: false, error: 'Too many failed attempts. Please try again in a few minutes.' }
     }
-    if (name === 'AuthenticationError') {
+    if (status === 401) {
       return { ok: false, error: 'Invalid username or password' }
     }
     // Galat credentials ke ilawa baaqi errors server ke masle hain — log karo
@@ -92,4 +95,7 @@ export async function registerAction(input: {
 
 export async function logoutAction(): Promise<void> {
   await logout({ config, allSessions: false })
+  // Server par hi home par bhejo: warna Next action ke jawab me maujooda page (jaise private board)
+  // bina login ke dobara render karta hai, wo 404 ban jata hai aur sign out adhoora reh jata hai
+  redirect('/')
 }

@@ -1,0 +1,194 @@
+/**
+ * Live check: deploy ke baad asal URL par Chromium se poora user flow chalata hai
+ * (register, board, sign out, hard refresh, cancel karke refresh, sign in) aur har qadam ka
+ * time, HTTP errors aur console errors log karta hai. Screenshots `live-check-output/` me.
+ *
+ * Usage: node scripts/live-check.mjs https://<worker>.workers.dev
+ * Har run ek naya `livecheck_<id>` account banata hai aur aakhir me apna board delete karta hai.
+ */
+import { mkdirSync, writeFileSync } from 'node:fs'
+import { chromium } from '@playwright/test'
+
+const BASE = (process.argv[2] || process.env.LIVE_URL || '').replace(/\/$/, '')
+if (!BASE) {
+  console.error('Usage: node scripts/live-check.mjs <base-url>')
+  process.exit(2)
+}
+const OUT = 'live-check-output'
+const STEP_LIMIT_MS = 15_000
+mkdirSync(OUT, { recursive: true })
+
+const results = []
+const log = []
+let shotNo = 0
+
+const record = (line) => {
+  log.push(line)
+  console.log(line)
+}
+
+const browser = await chromium.launch(
+  process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {},
+)
+const context = await browser.newContext({ viewport: { width: 1280, height: 800 } })
+const page = await context.newPage()
+page.setDefaultTimeout(STEP_LIMIT_MS)
+page.on('console', (m) => {
+  if (m.type() === 'error') record(`  console.error ${page.url()} :: ${m.text().slice(0, 300)}`)
+})
+page.on('pageerror', (e) => record(`  pageerror ${page.url()} :: ${String(e).slice(0, 300)}`))
+page.on('response', (r) => {
+  if (r.status() >= 400) {
+    record(
+      `  http ${r.status()} ${r.request().method()} ${r.url()} ray=${r.headers()['cf-ray'] ?? '-'}`,
+    )
+  }
+})
+page.on('requestfailed', (r) =>
+  record(`  requestfailed ${r.method()} ${r.url()} :: ${r.failure()?.errorText}`),
+)
+
+async function shot(name) {
+  shotNo += 1
+  await page
+    .screenshot({ path: `${OUT}/${String(shotNo).padStart(2, '0')}-${name}.png` })
+    .catch(() => {})
+}
+
+async function step(name, fn) {
+  const start = Date.now()
+  try {
+    await fn()
+    const ms = Date.now() - start
+    const ok = ms <= STEP_LIMIT_MS
+    results.push({ name, ok, ms })
+    record(`${ok ? 'PASS' : 'SLOW'} ${name} (${ms} ms)`)
+  } catch (err) {
+    const ms = Date.now() - start
+    results.push({ name, ok: false, ms, error: String(err).split('\n')[0] })
+    record(`FAIL ${name} (${ms} ms) ${String(err).split('\n')[0]}`)
+  }
+  await shot(name.replace(/[^a-z0-9]+/gi, '-').toLowerCase())
+}
+
+// Hydration se pehle click zaya ho sakta hai — dialog nazar aane tak dobara click
+async function openAuth(testId) {
+  for (let i = 0; i < 20; i++) {
+    await page.getByTestId(testId).click()
+    if (
+      await page
+        .getByTestId('auth-dialog')
+        .isVisible()
+        .catch(() => false)
+    )
+      return
+    await page.waitForTimeout(500)
+  }
+  throw new Error(`auth dialog did not open via ${testId}`)
+}
+
+const id = `${Date.now().toString(36)}`.slice(-8)
+const username = `livecheck_${id}`
+const password = `pw-${id}-check`
+let boardPath = ''
+
+await step('open home', () => page.goto(BASE, { waitUntil: 'networkidle' }))
+
+await step('register', async () => {
+  await openAuth('intro-register')
+  const form = page.getByTestId('register-form')
+  await form.getByLabel('Username').fill(username)
+  await form.getByLabel('Password', { exact: true }).fill(password)
+  await form.getByLabel('Confirm password').fill(password)
+  await form.getByRole('button', { name: 'Create account' }).click()
+  await page.getByTestId('user-menu-trigger').waitFor()
+})
+
+await step('create board', async () => {
+  await page.getByRole('button', { name: 'New board' }).first().click()
+  const dialog = page.getByTestId('new-board-dialog')
+  await dialog.getByLabel('Title').fill(`Live check ${id}`)
+  await dialog.getByRole('button', { name: 'Create board' }).click()
+  await page.waitForURL(/\/b\//)
+  await page.getByTestId('board-title').waitFor()
+  boardPath = new URL(page.url()).pathname
+})
+
+await step('hard refresh on board (signed in)', async () => {
+  await page.reload({ waitUntil: 'load' })
+  await page.getByTestId('board-title').waitFor()
+})
+
+await step('sign out from board page', async () => {
+  await page.getByTestId('user-menu-trigger').click()
+  await page.getByTestId('logout').click()
+  await page.getByTestId('header-signin').waitFor()
+})
+record(`  url after sign out: ${page.url()}`)
+
+for (let i = 1; i <= 3; i++) {
+  await step(`hard refresh ${i} after sign out`, async () => {
+    await page.reload({ waitUntil: 'load' })
+    await page.getByTestId('header-signin').waitFor()
+  })
+}
+
+await step('private board signed out = 404 page', async () => {
+  const res = await page.goto(`${BASE}${boardPath}`, { waitUntil: 'load' })
+  if (res?.status() !== 404) throw new Error(`expected 404, got ${res?.status()}`)
+  await page.getByText('Not found').waitFor()
+})
+
+// Aadha load hua refresh cancel karna, phir dobara refresh (owner ka reported scenario)
+await step('cancelled refresh then refresh again', async () => {
+  await page.goto(BASE, { waitUntil: 'commit' }).catch(() => {})
+  await page.evaluate(() => window.stop()).catch(() => {})
+  await page.reload({ waitUntil: 'load' })
+  await page.getByTestId('header-signin').waitFor()
+})
+
+await step('raw requests with aborted predecessors', async () => {
+  for (let i = 0; i < 5; i++) {
+    const controller = new AbortController()
+    setTimeout(() => controller.abort(), 150)
+    await fetch(`${BASE}/?abort=${i}`, { signal: controller.signal }).catch(() => {})
+    const start = Date.now()
+    const res = await fetch(`${BASE}/?after-abort=${i}`, {
+      signal: AbortSignal.timeout(STEP_LIMIT_MS),
+    })
+    record(
+      `  after abort ${i}: HTTP ${res.status} in ${Date.now() - start} ms ray=${res.headers.get('cf-ray')}`,
+    )
+    if (!res.ok) throw new Error(`HTTP ${res.status}`)
+  }
+})
+
+await step('sign in again', async () => {
+  await openAuth('header-signin')
+  const form = page.getByTestId('signin-form')
+  await form.getByLabel('Username').fill(username)
+  await form.getByLabel('Password').fill(password)
+  await form.getByRole('button', { name: 'Sign in' }).click()
+  await page.getByTestId('user-menu-trigger').waitFor()
+})
+
+await step('delete test board (cleanup)', async () => {
+  const slug = boardPath.split('/').pop()
+  const found = await (
+    await page.request.get(`${BASE}/api/boards?where[slug][equals]=${slug}&depth=0`)
+  ).json()
+  const boardId = found.docs?.[0]?.id
+  if (!boardId) throw new Error('test board not found')
+  const res = await page.request.delete(`${BASE}/api/boards/${boardId}`)
+  if (!res.ok()) throw new Error(`delete failed: HTTP ${res.status()}`)
+})
+
+await browser.close()
+
+const failed = results.filter((r) => !r.ok)
+record(
+  `\n${results.length - failed.length}/${results.length} steps passed (limit ${STEP_LIMIT_MS} ms per step)`,
+)
+writeFileSync(`${OUT}/report.json`, JSON.stringify({ base: BASE, username, results }, null, 2))
+writeFileSync(`${OUT}/log.txt`, `${log.join('\n')}\n`)
+process.exit(failed.length ? 1 : 0)

@@ -1,6 +1,6 @@
 'use server'
 
-import { getPayload, ValidationError } from 'payload'
+import { getPayload } from 'payload'
 import { getCurrentUser } from '@/lib/session'
 import { validateTitle } from '@/lib/title-slug'
 import config from '@/payload.config'
@@ -32,9 +32,9 @@ export async function createBoardAction(input: { title: string }): Promise<Creat
     })
     return { ok: true, slug: board.slug }
   } catch (err) {
-    if (err instanceof ValidationError) {
-      return { ok: false, error: err.data.errors[0]?.message ?? 'Invalid board' }
-    }
+    // Payload ValidationError (instanceof production bundle me bharosemand nahi — shape dekho)
+    const fieldError = (err as { data?: { errors?: { message?: string }[] } })?.data?.errors?.[0]
+    if (fieldError?.message) return { ok: false, error: fieldError.message }
     console.error('[createBoardAction] failed', err)
     return { ok: false, error: 'Could not create the board. Please try again.' }
   }

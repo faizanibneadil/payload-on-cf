@@ -15,7 +15,8 @@
 - [ ] Run the app locally (`pnpm dev`) and test every new or changed feature in a real browser (Playwright with the pre-installed Chromium), as the owner decided it should behave: happy path, wrong input, permissions (signed out, other user, owner, admin), light and dark theme, desktop and mobile width
 - [ ] Take screenshots of each tested screen and state and send them to the owner with the final report
 - [ ] Check the browser console and server log for errors during the test
-- [ ] After the push, check that the GitHub Actions run is green and smoke-test the dev URL
+- [ ] Before pushing a change that touches server code, also test the production Worker build locally: `opennextjs-cloudflare build`, then `wrangler dev` with a copy of `wrangler.jsonc` whose D1 binding has `"remote": false` (`wrangler.preview.jsonc`, gitignored) and `.dev.vars` with `PAYLOAD_SECRET`. `next dev` hides production-only bugs (minified class names, server action timing)
+- [ ] After the push, check that the GitHub Actions run is green, including the `live-check` job (real browser on the dev URL, `scripts/live-check.mjs`); download its artifact for screenshots and the log
 - [ ] Report: what was tested, how, the result of each check (pass/fail), screenshots, and any bug found (fixed, or why not). Nothing untested is reported as done
 
 ## Auth and permissions

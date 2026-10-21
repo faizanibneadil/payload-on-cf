@@ -72,3 +72,6 @@ The agent must list the final, exact set in the README and the final summary. Ne
 - If the repo ever becomes private, the free plan gives 2,000 minutes per month (about 500 runs of 4 minutes). Check the usage under GitHub Settings > Billing then, and only then consider Cloudflare Workers Builds (connects the repo in the Cloudflare dashboard, builds on push per branch, has its own monthly build-minute quota).
 - Saving runs: pushes that change only `docs/**` or `*.md` do not trigger a deploy (`paths-ignore`). A running deploy is never cancelled (`cancel-in-progress: false`) so a D1 migration is never cut in half; newer pushes wait and only the latest queued run is kept.
 - A deploy is live only when the run is green. Every iteration is verified on the dev URL after its push.
+
+## Live check after every dev deploy
+`deploy.yml` has a second job, `live-check`, that runs only for `dev`: it opens the deployed URL in Chromium and runs `scripts/live-check.mjs` (register a fresh `livecheck_<id>` account, create a board, refresh, sign out, refresh three times, private board 404, cancelled refresh, sign in, delete the test board). Each step must finish within 15 s. Screenshots, `log.txt` and `report.json` are uploaded as the `live-check-<run id>` artifact (kept 14 days). Test accounts stay in the dev database (their boards are deleted).

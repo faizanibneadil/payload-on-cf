@@ -53,3 +53,8 @@ node_modules/
 # OpenNext
 .open-next
 .wrangler
+
+# Local preview aur live check ki files
+.dev.vars
+wrangler.preview.jsonc
+live-check-output/

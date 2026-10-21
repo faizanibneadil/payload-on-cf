@@ -55,3 +55,10 @@ Status values: `planned` -> `in progress` -> `ready for review` (branch pushed) 
 - Not done: shadcn preset `b5rR41Mtnc` — `ui.shadcn.com` is blocked by the agent's network. The existing base-nova neutral theme is used for light and dark; apply the preset with `pnpm dlx shadcn@latest init --preset b5rR41Mtnc` from a machine with access (or allow the host) and re-check the Base UI variant
 - Verified: tsc, Biome, `pnpm test:int` (9/9), migrations on a fresh DB and over old-shape data (roles converted, old tables dropped), schema drift check clean, browser test 48/48 checks (Playwright + Chromium, desktop and mobile, light and dark), screenshots sent to the owner
 - Test on the dev deployment: register a new account (gets "Instructor"), sign out / sign in, create two boards with the same title (second slug gets a suffix), open a board as another user or signed out (private = 404), toggle dark theme and reload, `/admin` with the admin account (Boards, Settings, Users with roles), `/admin` with an instructor (unauthorized)
+
+### Fix: sign out and production-only bugs (after the owner's dev test)
+- Owner report: on dev, sign out did not finish, a hard refresh showed 404, a later refresh kept loading for minutes
+- Cause found: the sign-out server action deletes the cookie, so Next re-rendered the current page (a private board) without a user inside the action response; that render is a 404 and the action response broke, so the client never navigated. Fix: `logoutAction` now redirects to `/` on the server
+- Also found only in the production build: auth errors were matched by class name (`err.name`), which is minified in the Worker bundle, so a wrong password showed "Something went wrong". Fix: match by HTTP status and message (also for board validation errors)
+- The minutes-long loading could not be reproduced locally (local workerd, cancelled and repeated requests all answer in < 1 s). The new `live-check` job tests the real dev URL after every deploy to catch it if it happens again
+- Verified on the production Worker build (local workerd): iteration 1 suite 49/49, live check 13/13
