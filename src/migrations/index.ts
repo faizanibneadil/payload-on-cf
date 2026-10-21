@@ -6,6 +6,7 @@ import * as migration_20261009_081818_drop_files_column from './20261009_081818_
 import * as migration_20261014_055711_nested_files_and_access from './20261014_055711_nested_files_and_access'
 import * as migration_20261015_060000_promote_first_user_to_admin from './20261015_060000_promote_first_user_to_admin'
 import * as migration_20261021_193036_drop_playground_files from './20261021_193036_drop_playground_files'
+import * as migration_20261021_201333_boards_and_instructor_role from './20261021_201333_boards_and_instructor_role'
 
 export const migrations = [
   {
@@ -47,5 +48,10 @@ export const migrations = [
     up: migration_20261021_193036_drop_playground_files.up,
     down: migration_20261021_193036_drop_playground_files.down,
     name: '20261021_193036_drop_playground_files',
+  },
+  {
+    up: migration_20261021_201333_boards_and_instructor_role.up,
+    down: migration_20261021_201333_boards_and_instructor_role.down,
+    name: '20261021_201333_boards_and_instructor_role',
   },
 ]

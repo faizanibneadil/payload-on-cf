@@ -25,7 +25,7 @@
 | Cost control | D1 free plan: 5M rows read/day, 100k rows written/day. Index every filtered column, one row write per Save, no polling. Workers free plan also has 100k requests/day and 10 ms CPU per request |
 | Caching | **Open decision, decide with the owner after the main features are done.** Boards are read far more often than written (an instructor shares a board with many students), so reads of shared boards must be cached. Candidates: Next.js caching (`"use cache"` / Cache Components, only if it works on the Worker) or Cloudflare caching (Cache API / CDN cache with purge on Save, or KV). Until then: no caching layer, but keep the read path in one place (`getBoardBySlug`) so a cache can be added later without touching callers |
 | CI/CD | GitHub Actions only (`.github/workflows/deploy.yml`): a push to `dev` deploys the dev Worker, a push to `main` deploys production. The repo is public, so standard GitHub-hosted runners are free with no minute limit. Cloudflare Workers Builds is not needed (see `07`) |
-| Theme | Frontend: shadcn preset `b5rR41Mtnc`, light is the default, light/dark toggle in the header, no flash on load. The Payload admin panel stays as it is (`admin.theme: 'dark'`) |
+| Theme | Frontend: shadcn preset `b5rR41Mtnc`, light is the default, light/dark toggle in the header, no flash on load (the choice is stored in a cookie and the server layout renders `<html class="dark">`). The Payload admin panel stays as it is (`admin.theme: 'dark'`) |
 | Email | The email adapter config stays, but the `onInit` startup email is commented out |
 | Routes | `/` = landing / my boards, `/b/<slug>` = a board. No `/login` or `/register` pages |
 | UI kit | shadcn/ui on Base UI only. No Radix |

@@ -26,7 +26,7 @@ After init and after every `add`, verify. Search the repo:
 Button, Input, Tooltip, Toggle (theme), Dropdown/Menu (user menu), Dialog or AlertDialog (sign-in modal, unsaved changes), Tabs (Sign in / Register), Sonner/Toast (save feedback), Skeleton, Badge ("View only"). `command` and `resizable` were removed with the code editor.
 
 ## Theme
-The frontend uses the shadcn preset `b5rR41Mtnc` (applied in Iteration 1, after checking that it keeps the Base UI variant). **Light is the default**, with a Light/Dark toggle in the header. The choice is stored in the browser and applied before first paint to avoid a flash. The canvas follows the theme. The Payload admin panel is not themed by this (it stays `admin.theme: 'dark'`).
+The frontend uses the shadcn preset `b5rR41Mtnc` (applied in Iteration 1, after checking that it keeps the Base UI variant). **Light is the default**, with a Light/Dark toggle in the header. The choice is stored in the `boards-theme` cookie and the server layout renders the `dark` class, so there is no flash and no inline script. The canvas follows the theme. The Payload admin panel is not themed by this (it stays `admin.theme: 'dark'`).
 
 ## UI performance
 Server Components by default. Mark only interactive pieces `"use client"`. Do not wrap the whole layout in a client component. Lazy-load the canvas on the board page.

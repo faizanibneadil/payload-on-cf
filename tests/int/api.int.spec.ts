@@ -14,9 +14,9 @@ describe('API', () => {
     }
   })
 
-  it('loads payload config with playgrounds and users collections', async () => {
+  it('loads payload config with boards and users collections', async () => {
     const payloadConfig = await config
-    expect(payloadConfig.collections.map((c) => c.slug)).toContain('playgrounds')
+    expect(payloadConfig.collections.map((c) => c.slug)).toContain('boards')
     expect(payloadConfig.collections.map((c) => c.slug)).toContain('users')
   })
 })

@@ -69,7 +69,7 @@ export interface Config {
   collections: {
     users: User;
     media: Media;
-    playgrounds: Playground;
+    boards: Board;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -79,7 +79,7 @@ export interface Config {
   collectionsSelect: {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
-    playgrounds: PlaygroundsSelect<false> | PlaygroundsSelect<true>;
+    boards: BoardsSelect<false> | BoardsSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -89,8 +89,12 @@ export interface Config {
     defaultIDType: number;
   };
   fallbackLocale: null;
-  globals: {};
-  globalsSelect: {};
+  globals: {
+    settings: Setting;
+  };
+  globalsSelect: {
+    settings: SettingsSelect<false> | SettingsSelect<true>;
+  };
   locale: null;
   widgets: {
     collections: CollectionsWidget;
@@ -123,7 +127,7 @@ export interface UserAuthOperations {
  */
 export interface User {
   id: number;
-  role: 'admin' | 'user';
+  role: 'admin' | 'instructor';
   updatedAt: string;
   createdAt: string;
   email?: string | null;
@@ -164,14 +168,15 @@ export interface Media {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "playgrounds".
+ * via the `definition` "boards".
  */
-export interface Playground {
+export interface Board {
   id: number;
   title: string;
   slug: string;
   owner: number | User;
-  theory?:
+  isShared?: boolean | null;
+  data?:
     | {
         [k: string]: unknown;
       }
@@ -180,7 +185,8 @@ export interface Playground {
     | number
     | boolean
     | null;
-  forkedFrom?: (number | null) | Playground;
+  saveCount?: number | null;
+  saveWindowStartedAt?: string | null;
   updatedAt: string;
   createdAt: string;
 }
@@ -217,8 +223,8 @@ export interface PayloadLockedDocument {
         value: number | Media;
       } | null)
     | ({
-        relationTo: 'playgrounds';
-        value: number | Playground;
+        relationTo: 'boards';
+        value: number | Board;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -305,14 +311,16 @@ export interface MediaSelect<T extends boolean = true> {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "playgrounds_select".
+ * via the `definition` "boards_select".
  */
-export interface PlaygroundsSelect<T extends boolean = true> {
+export interface BoardsSelect<T extends boolean = true> {
   title?: T;
   slug?: T;
   owner?: T;
-  theory?: T;
-  forkedFrom?: T;
+  isShared?: T;
+  data?: T;
+  saveCount?: T;
+  saveWindowStartedAt?: T;
   updatedAt?: T;
   createdAt?: T;
 }
@@ -355,6 +363,46 @@ export interface PayloadMigrationsSelect<T extends boolean = true> {
   batch?: T;
   updatedAt?: T;
   createdAt?: T;
+}
+/**
+ * Limits for instructors. Admins are never limited.
+ *
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "settings".
+ */
+export interface Setting {
+  id: number;
+  /**
+   * Length of the limit window in hours.
+   */
+  windowHours: number;
+  /**
+   * New boards an instructor may create per window.
+   */
+  maxBoardsPerWindow: number;
+  /**
+   * Saves per board per window.
+   */
+  maxSavesPerBoardPerWindow: number;
+  /**
+   * Maximum size of one board (canvas JSON) in bytes.
+   */
+  maxContentBytes: number;
+  updatedAt?: string | null;
+  createdAt?: string | null;
+}
+/**
+ * This interface was referenced by `Config`'s JSON-Schema
+ * via the `definition` "settings_select".
+ */
+export interface SettingsSelect<T extends boolean = true> {
+  windowHours?: T;
+  maxBoardsPerWindow?: T;
+  maxSavesPerBoardPerWindow?: T;
+  maxContentBytes?: T;
+  updatedAt?: T;
+  createdAt?: T;
+  globalType?: T;
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema

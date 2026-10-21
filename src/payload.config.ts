@@ -7,9 +7,10 @@ import { sqliteD1Adapter } from '@payloadcms/db-d1-sqlite'
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
 import { buildConfig } from 'payload'
 import type { GetPlatformProxyOptions } from 'wrangler'
+import { Boards } from './collections/Boards'
 import { Media } from './collections/Media'
-import { Playgrounds } from './collections/Playgrounds'
 import { Users } from './collections/Users'
+import { Settings } from './globals/Settings'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -80,12 +81,9 @@ export default buildConfig({
     importMap: {
       baseDir: path.resolve(dirname),
     },
-    components: {
-      beforeLogin: ['@/components/payload-auth-custom#BeforeLoginComponent'],
-      afterLogin: ['@/components/payload-auth-custom#AfterLoginComponent'],
-    },
   },
-  collections: [Users, Media, Playgrounds],
+  collections: [Users, Media, Boards],
+  globals: [Settings],
   secret: payloadSecret,
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
