@@ -43,22 +43,15 @@ Each name listed under `secrets:` must also be provided under `env:` with the sa
 6. deploy to Cloudflare + sync runtime secrets
 
 ## Fail-fast env check
-A small script (`scripts/check-env.mjs`) reads the required list and exits non-zero with every missing name:
-```js
-const required = (await import('node:fs')).readFileSync('env.manifest', 'utf8')
-  .split('\n').map(s => s.trim()).filter(s => s && !s.startsWith('#'))
-const missing = required.filter(k => !process.env[k])
-if (missing.length) { console.error('Missing env:', missing.join(', ')); process.exit(1) }
-```
-Run it in the workflow with the needed values mapped from `secrets.*` / `vars.*`.
+`scripts/check-env.mjs` holds the required list (`requiredEnvs`) and exits non-zero with every missing name. Today it requires `PAYLOAD_SECRET`, plus `CLOUDFLARE_API_TOKEN` and `CLOUDFLARE_ACCOUNT_ID` when `CI` is set. The workflow runs it right after install.
 
 ## Single source of truth for envs
-Keep one `env.manifest` (names only, each tagged build/runtime/secret). The check script, `.env.example`, the workflow `env:`/`secrets:` blocks and `wrangler.jsonc` `vars` must all match it.
+There is no separate `env.manifest`. The list in `scripts/check-env.mjs`, `.env.example`, the workflow `env:` block and `wrangler.jsonc` `vars` must match each other.
 
-### How to add a new env later (put this in the README)
-1. Add the name to `env.manifest` and `.env.example`.
+### How to add a new env later (also in the README)
+1. Add the name to `scripts/check-env.mjs` (if required) and `.env.example`.
 2. Add the GitHub secret/variable in repo settings.
-3. Map it in the workflow `env:` (and under `secrets:` if runtime-secret).
+3. Map it in the workflow `env:` (and push it to the Worker in the secrets step if it is a runtime secret).
 4. If non-secret runtime, add to `wrangler.jsonc` `vars`.
 5. Read it in code through the supported runtime path.
 
@@ -68,6 +61,8 @@ Keep one `env.manifest` (names only, each tagged build/runtime/secret). The chec
 | `CLOUDFLARE_API_TOKEN` | Deploy + D1 migrations (permissions: Workers edit, D1 edit) |
 | `CLOUDFLARE_ACCOUNT_ID` | Identify the account |
 | `PAYLOAD_SECRET` | Payload signing secret (runtime + needed by CI where config loads) |
+| `ADMIN_USERNAME`, `ADMIN_PASSWORD` | Optional, default admin created by `pnpm deploy:seed` when none exists |
+| `SMTP_*` | Optional email transport (the startup email in `onInit` is commented out) |
 | any further runtime secret the code reads | pushed to the Worker by the workflow |
 
 The agent must list the final, exact set in the README and the final summary. Never print secrets in logs.

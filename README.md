@@ -1,15 +1,13 @@
-# Playground (Next.js + Payload CMS + Cloudflare D1)
+# Boards (Next.js + Payload CMS + Cloudflare D1)
 
-A playground for frontend students and teachers. Teachers prepare lectures on an infinite canvas (theory), and students practise in a VS Code-style editor with a live preview. The app is being rebuilt iteration by iteration; see `docs/knowledge-base/12-iterations.md` for the status and `docs/knowledge-base/01-architecture-and-decisions.md` for the target design.
+An infinite canvas for instructors to prepare and share interactive lectures. The app is being rebuilt iteration by iteration; see `docs/knowledge-base/11-iterations.md` for the status and `docs/knowledge-base/01-architecture-and-decisions.md` for the target design.
 
 ## Target features
 
-- **Theory canvas:** infinite canvas with markdown text blocks (Lexical, "/" block menu, code blocks), drawing tools, shapes and images.
-- **Editor:** VS Code-style UI, Monaco, multiple preview tabs, a terminal for React and Next.js templates (Vivari runtime).
-- **Accounts:** username and password only, in a sign-in modal.
-- **Sharing:** a playground is private until shared; anyone with the link can open it (theory read-only, code editable locally), and only the owner can save. There is no forking.
-- **Limits:** per-student limits on new playgrounds and saves, configurable by the super admin in a Payload Global.
-- **Legacy links:** old URL-state links are imported once (see `src/lib/legacy-import.ts`).
+- **Board canvas:** infinite canvas with pan and zoom and text blocks with live markdown (`#` headings, `-` bullets, `1.` numbered lists). Further tools are decided in a research iteration.
+- **Accounts:** username and password only, in a sign-in modal. Anyone can register; new accounts are instructors.
+- **Sharing:** a board is private until shared; anyone with the link can view it read-only (pan and zoom), and only the owner can save. There is no forking.
+- **Limits:** per-instructor limits on new boards and saves, configurable by the super admin in a Payload Global.
 - **Stack:** Next.js, Tailwind CSS, shadcn/ui (Base UI), Payload CMS, Cloudflare Worker + D1 + R2, Biome, pnpm.
 
 ---
@@ -45,7 +43,7 @@ Access the admin dashboard at [http://localhost:3000/admin](http://localhost:300
 
 1. The first account created becomes the **admin** (username + password). On an existing database with no admin, migration `20261015_060000_promote_first_user_to_admin` promotes the oldest account to admin, so `/admin` is reachable. Sign in at `/admin/login` with that username.
    CI/CD also runs `pnpm deploy:seed` (`scripts/seed-admin.ts`) after the migrations: if the database has **no admin**, it creates the user `admin` with password `admin` (override with `ADMIN_USERNAME` / `ADMIN_PASSWORD`). If an admin already exists it does nothing. **Change the default password right after the first login.** The username `admin` is reserved at registration.
-2. Students and teachers create accounts and sign in through the modal in the app header (coming in Iteration 1). They do not use the Payload admin panel.
+2. Instructors create accounts and sign in through the modal in the app header (coming in Iteration 1). They do not use the Payload admin panel.
 3. Admins can manage users in `/admin` under **Users**.
 
 ---

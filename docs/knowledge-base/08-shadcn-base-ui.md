@@ -6,10 +6,7 @@ Docs:
 - Base UI: https://base-ui.com
 
 ## Setup
-```bash
-pnpm dlx shadcn@latest init --preset b0
-```
-Run non-interactively where possible (see `pnpm dlx shadcn@latest init --help`). Add components with `pnpm dlx shadcn@latest add <name>`.
+shadcn is already initialised (`components.json`, Base UI variant). Iteration 1 applies the preset `b5rR41Mtnc` (check `pnpm dlx shadcn@latest init --help` for the current preset flag) and must keep the Base UI variant. Add components with `pnpm dlx shadcn@latest add <name>`.
 
 ## Tailwind v4 packages required by the brief
 `tailwindcss@^4`, `@tailwindcss/postcss@^4`, `tw-animate-css@^1.4.0`. Do **not** install the npm package `cn`; shadcn generates `cn()` in `lib/utils.ts` using `clsx` + `tailwind-merge`.
@@ -26,10 +23,10 @@ After init and after every `add`, verify. Search the repo:
 - Prefer the generated shadcn wrappers over importing Base UI primitives directly in app code.
 
 ## Components likely needed
-Button, Tabs, Input, Tooltip, Toggle/ToggleGroup (theme), Dropdown/Menu, Dialog or AlertDialog (unsaved changes, sign-in modal), Sonner/Toast (save feedback), Skeleton, ScrollArea, Resizable panels (file/code/preview layout) **[Verify availability on Base UI variant]**.
+Button, Input, Tooltip, Toggle (theme), Dropdown/Menu (user menu), Dialog or AlertDialog (sign-in modal, unsaved changes), Tabs (Sign in / Register), Sonner/Toast (save feedback), Skeleton, Badge ("View only"). `command` and `resizable` were removed with the code editor.
 
 ## Theme
-The app uses the shadcn preset `b5rR41Mtnc` (applied in Iteration 1, after checking that it keeps the Base UI variant). **Light is the default**, with a Light/Dark toggle at the bottom of the primary bar. The choice is stored in the browser and applied before first paint to avoid a flash. Monaco, the canvas and the terminal follow the theme. The preview iframe keeps a white canvas, like a normal browser page.
+The frontend uses the shadcn preset `b5rR41Mtnc` (applied in Iteration 1, after checking that it keeps the Base UI variant). **Light is the default**, with a Light/Dark toggle in the header. The choice is stored in the browser and applied before first paint to avoid a flash. The canvas follows the theme. The Payload admin panel is not themed by this (it stays `admin.theme: 'dark'`).
 
 ## UI performance
-Server Components by default. Mark only interactive pieces `"use client"`. Do not wrap the whole layout in a client component. Lazy-load Monaco, the Lexical canvas and the Vivari runtime (and the preview).
+Server Components by default. Mark only interactive pieces `"use client"`. Do not wrap the whole layout in a client component. Lazy-load the canvas on the board page.

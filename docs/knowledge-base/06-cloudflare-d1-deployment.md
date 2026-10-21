@@ -39,4 +39,4 @@ deploy:app      = opennextjs-cloudflare build && opennextjs-cloudflare deploy
 
 ## Pitfalls
 - Missing secret at runtime = app fails after a "successful" deploy. See file 07.
-- The preview runs in a sandboxed iframe (no allow-same-origin), so no COOP/COEP headers are needed. Do not add `Cross-Origin-Embedder-Policy: require-corp` to `/admin` or `/api`.
+- No cross-origin isolation headers (COOP/COEP) anywhere: the code runtime is removed, so nothing needs them. Never add `Cross-Origin-Embedder-Policy: require-corp`; it would break `/admin` and `/api`.
