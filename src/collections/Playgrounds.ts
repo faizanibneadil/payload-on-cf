@@ -80,17 +80,6 @@ export const Playgrounds: CollectionConfig = {
         return data
       },
     ],
-    // Playground delete hone par uski files orphan na rahein
-    afterDelete: [
-      async ({ req, id }) => {
-        await req.payload.delete({
-          collection: 'playground-files',
-          where: { playground: { equals: id } },
-          overrideAccess: true,
-          req,
-        })
-      },
-    ],
   },
   fields: [
     {
@@ -126,7 +115,7 @@ export const Playgrounds: CollectionConfig = {
       },
     },
     {
-      // Tiptap ka JSON document (lecture theory) — sirf owner edit kar sakta hai
+      // Purana theory JSON — Iteration 1 me boards ke canvas data se replace hoga
       name: 'theory',
       type: 'json',
     },

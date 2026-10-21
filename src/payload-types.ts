@@ -70,7 +70,6 @@ export interface Config {
     users: User;
     media: Media;
     playgrounds: Playground;
-    'playground-files': PlaygroundFile;
     'payload-kv': PayloadKv;
     'payload-locked-documents': PayloadLockedDocument;
     'payload-preferences': PayloadPreference;
@@ -81,7 +80,6 @@ export interface Config {
     users: UsersSelect<false> | UsersSelect<true>;
     media: MediaSelect<false> | MediaSelect<true>;
     playgrounds: PlaygroundsSelect<false> | PlaygroundsSelect<true>;
-    'playground-files': PlaygroundFilesSelect<false> | PlaygroundFilesSelect<true>;
     'payload-kv': PayloadKvSelect<false> | PayloadKvSelect<true>;
     'payload-locked-documents': PayloadLockedDocumentsSelect<false> | PayloadLockedDocumentsSelect<true>;
     'payload-preferences': PayloadPreferencesSelect<false> | PayloadPreferencesSelect<true>;
@@ -188,29 +186,6 @@ export interface Playground {
 }
 /**
  * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "playground-files".
- */
-export interface PlaygroundFile {
-  id: number;
-  playground: number | Playground;
-  name: string;
-  type: 'file' | 'folder';
-  content?: string | null;
-  size: number;
-  parent?: (number | null) | PlaygroundFile;
-  breadcrumbs?:
-    | {
-        doc?: (number | null) | PlaygroundFile;
-        url?: string | null;
-        label?: string | null;
-        id?: string | null;
-      }[]
-    | null;
-  updatedAt: string;
-  createdAt: string;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
  * via the `definition` "payload-kv".
  */
 export interface PayloadKv {
@@ -244,10 +219,6 @@ export interface PayloadLockedDocument {
     | ({
         relationTo: 'playgrounds';
         value: number | Playground;
-      } | null)
-    | ({
-        relationTo: 'playground-files';
-        value: number | PlaygroundFile;
       } | null);
   globalSlug?: string | null;
   user: {
@@ -342,28 +313,6 @@ export interface PlaygroundsSelect<T extends boolean = true> {
   owner?: T;
   theory?: T;
   forkedFrom?: T;
-  updatedAt?: T;
-  createdAt?: T;
-}
-/**
- * This interface was referenced by `Config`'s JSON-Schema
- * via the `definition` "playground-files_select".
- */
-export interface PlaygroundFilesSelect<T extends boolean = true> {
-  playground?: T;
-  name?: T;
-  type?: T;
-  content?: T;
-  size?: T;
-  parent?: T;
-  breadcrumbs?:
-    | T
-    | {
-        doc?: T;
-        url?: T;
-        label?: T;
-        id?: T;
-      };
   updatedAt?: T;
   createdAt?: T;
 }

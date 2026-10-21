@@ -5,6 +5,7 @@ import * as migration_20261008_064007_add_playgrounds_and_users from './20261008
 import * as migration_20261009_081818_drop_files_column from './20261009_081818_drop_files_column'
 import * as migration_20261014_055711_nested_files_and_access from './20261014_055711_nested_files_and_access'
 import * as migration_20261015_060000_promote_first_user_to_admin from './20261015_060000_promote_first_user_to_admin'
+import * as migration_20261021_193036_drop_playground_files from './20261021_193036_drop_playground_files'
 
 export const migrations = [
   {
@@ -41,5 +42,10 @@ export const migrations = [
     up: migration_20261015_060000_promote_first_user_to_admin.up,
     down: migration_20261015_060000_promote_first_user_to_admin.down,
     name: '20261015_060000_promote_first_user_to_admin',
+  },
+  {
+    up: migration_20261021_193036_drop_playground_files.up,
+    down: migration_20261021_193036_drop_playground_files.down,
+    name: '20261021_193036_drop_playground_files',
   },
 ]

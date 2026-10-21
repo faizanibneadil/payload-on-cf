@@ -5,11 +5,9 @@ import { fileURLToPath } from 'node:url'
 import { type CloudflareContext, getCloudflareContext } from '@opennextjs/cloudflare'
 import { sqliteD1Adapter } from '@payloadcms/db-d1-sqlite'
 import { nodemailerAdapter } from '@payloadcms/email-nodemailer'
-import { nestedDocsPlugin } from '@payloadcms/plugin-nested-docs'
 import { buildConfig } from 'payload'
 import type { GetPlatformProxyOptions } from 'wrangler'
 import { Media } from './collections/Media'
-import { PlaygroundFiles } from './collections/PlaygroundFiles'
 import { Playgrounds } from './collections/Playgrounds'
 import { Users } from './collections/Users'
 
@@ -87,15 +85,7 @@ export default buildConfig({
       afterLogin: ['@/components/payload-auth-custom#AfterLoginComponent'],
     },
   },
-  collections: [Users, Media, Playgrounds, PlaygroundFiles],
-  plugins: [
-    // Files aur folders ka tree (parent + breadcrumbs) — path = breadcrumb url
-    nestedDocsPlugin({
-      collections: ['playground-files'],
-      generateLabel: (_, doc) => String(doc.name ?? ''),
-      generateURL: (docs) => docs.reduce((url, doc) => `${url}/${doc.name}`, ''),
-    }),
-  ],
+  collections: [Users, Media, Playgrounds],
   secret: payloadSecret,
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
@@ -120,19 +110,21 @@ export default buildConfig({
           } as any,
         })
       : undefined,
-  onInit: async (payload) => {
-    if (smtpUser && smtpPass) {
-      try {
-        await payload.sendEmail({
-          to: 'faizanibneadil1@gmail.com',
-          subject: 'Cloudflare deployments status: SUCCESS',
-          text: 'Cloudflare deployment is successful so u can use the project.',
-        })
-      } catch (err) {
-        console.warn('Failed to send startup email:', err)
-      }
-    }
-  },
+  // Startup email filhal band hai (owner ka faisla). Email adapter config upar waise hi rakhi hai;
+  // dobara chahiye ho to yeh block uncomment kar dein.
+  // onInit: async (payload) => {
+  //   if (smtpUser && smtpPass) {
+  //     try {
+  //       await payload.sendEmail({
+  //         to: 'faizanibneadil1@gmail.com',
+  //         subject: 'Cloudflare deployments status: SUCCESS',
+  //         text: 'Cloudflare deployment is successful so u can use the project.',
+  //       })
+  //     } catch (err) {
+  //       console.warn('Failed to send startup email:', err)
+  //     }
+  //   }
+  // },
 })
 
 // Adapted from https://github.com/opennextjs/opennextjs-cloudflare/blob/d00b3a13e42e65aad76fba41774815726422cc39/packages/cloudflare/src/api/cloudflare-context.ts#L328C36-L328C46
