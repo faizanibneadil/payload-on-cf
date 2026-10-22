@@ -8,6 +8,9 @@ export const MAX_ZOOM = 4
 export const MIN_BLOCK_WIDTH = 120
 export const MAX_BLOCK_WIDTH = 2000
 export const MAX_BLOCK_HEIGHT = 10000
+// Text ka size (1 = 15px). Kone se resize karne par text bhi isi hisaab se chhota/bara hota hai
+export const MIN_TEXT_SCALE = 0.25
+export const MAX_TEXT_SCALE = 8
 const MAX_COORD = 1_000_000
 
 export interface Viewport {
@@ -25,6 +28,8 @@ export interface TextObject {
   height: number
   zIndex: number
   markdown: string
+  /** Text ka size; na ho to 1 (purane boards) */
+  scale?: number
 }
 
 export type SceneObject = TextObject
@@ -93,6 +98,12 @@ export function validateScene(data: unknown): true | string {
       return 'Invalid block width'
     if (!isNum(obj.height, MAX_BLOCK_HEIGHT) || (obj.height as number) < 1) {
       return 'Invalid block height'
+    }
+    if (
+      obj.scale !== undefined &&
+      (!isNum(obj.scale, MAX_TEXT_SCALE) || (obj.scale as number) < MIN_TEXT_SCALE)
+    ) {
+      return 'Invalid text size'
     }
     if (typeof obj.markdown !== 'string') return 'Invalid block text'
     if (obj.markdown.length > MAX_MARKDOWN_CHARS) {

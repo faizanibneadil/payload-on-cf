@@ -149,7 +149,8 @@
 
 /* Canvas text blocks: har line ek div[data-type] (editor aur read view dono) */
 .md-lines {
-  font-size: 15px;
+  /* --text-scale block par lagta hai (kone se resize) */
+  font-size: calc(15px * var(--text-scale, 1));
   line-height: 1.55;
   overflow-wrap: anywhere;
   white-space: pre-wrap;

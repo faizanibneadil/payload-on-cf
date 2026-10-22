@@ -5,7 +5,9 @@ import { memo, useEffect, useMemo, useRef } from 'react'
 import {
   MAX_BLOCK_HEIGHT,
   MAX_BLOCK_WIDTH,
+  MAX_TEXT_SCALE,
   MIN_BLOCK_WIDTH,
+  MIN_TEXT_SCALE,
   parseMarkdown,
   type TextObject,
 } from '@/lib/scene'
@@ -28,11 +30,19 @@ export const MarkdownView = memo(function MarkdownView({ markdown }: { markdown:
   )
 })
 
+export interface BlockRect {
+  x: number
+  y: number
+  width: number
+  height: number
+  scale?: number
+}
+
 export interface BlockHandlers {
   select: (id: string) => void
   startEdit: (id: string) => void
   move: (id: string, x: number, y: number) => void
-  resize: (id: string, rect: { x: number; y: number; width: number; height: number }) => void
+  resize: (id: string, rect: BlockRect) => void
   change: (id: string, markdown: string) => void
   exitEdit: (id: string) => void
   /** Asal (rendered) oonchai — culling aur Fit ke liye; scene me save nahi hoti */
@@ -124,8 +134,9 @@ export const TextBlock = memo(function TextBlock({
     el.addEventListener('pointercancel', onUp)
   }
 
-  // Border lines aur kone: width aur height dono; upar/baayein se kheenchne par x/y bhi.
-  // Height content se kam nahi ho sakti (text kabhi na kate) — zyada karke khali jagah ban sakti hai.
+  // Kinare (border lines): sirf width/height badalti hai, text wahi size rehta hai aur dobara wrap hota hai.
+  // Kone: poora block text samet ek hi nisbat se chhota/bara hota hai (text ka size bhi).
+  // Upar/baayein se kheenchne par x/y bhi badalte hain. Height content se kam nahi hoti (text na kate).
   const onResizeDown = (edge: Edge) => (event: React.PointerEvent) => {
     if (event.button !== 0) return
     event.stopPropagation()
@@ -136,38 +147,64 @@ export const TextBlock = memo(function TextBlock({
     const handle = event.currentTarget as HTMLElement
     if (!el || !content) return
     const start = { x: event.clientX, y: event.clientY }
-    const startRect = { x: obj.x, y: obj.y, width: obj.width, height: el.offsetHeight }
+    const startScale = obj.scale ?? 1
+    const startRect: BlockRect = {
+      x: obj.x,
+      y: obj.y,
+      width: obj.width,
+      height: el.offsetHeight,
+      scale: startScale,
+    }
     let rect = { ...startRect }
     const east = edge.includes('e')
     const west = edge.includes('w')
     const north = edge.startsWith('n')
     const south = edge.startsWith('s')
+    const corner = edge.length === 2
     handle.setPointerCapture(event.pointerId)
 
     const onMove = (e: PointerEvent) => {
       const zoomNow = getZoom()
       const dx = (e.clientX - start.x) / zoomNow
       const dy = (e.clientY - start.y) / zoomNow
-      const clampW = (w: number) => Math.min(MAX_BLOCK_WIDTH, Math.max(MIN_BLOCK_WIDTH, w))
-      let { x, width } = startRect
-      if (east) width = clampW(startRect.width + dx)
-      if (west) {
-        width = clampW(startRect.width - dx)
-        x = startRect.x + startRect.width - width
+      let { x, y, width, height, scale } = startRect
+      if (corner) {
+        // Mouse ki harkat ko block ke diagonal par project karo: ek hi nisbat k
+        const w0 = startRect.width
+        const h0 = startRect.height
+        const pw = w0 + (east ? dx : -dx)
+        const ph = h0 + (south ? dy : -dy)
+        let k = (pw * w0 + ph * h0) / (w0 * w0 + h0 * h0)
+        const kMin = Math.max(MIN_TEXT_SCALE / startScale, MIN_BLOCK_WIDTH / w0)
+        const kMax = Math.min(
+          MAX_TEXT_SCALE / startScale,
+          MAX_BLOCK_WIDTH / w0,
+          MAX_BLOCK_HEIGHT / h0,
+        )
+        k = kMin > kMax ? 1 : Math.min(kMax, Math.max(kMin, k))
+        width = w0 * k
+        height = h0 * k
+        scale = Math.round(startScale * k * 1000) / 1000
+        el.style.setProperty('--text-scale', String(scale))
+      } else {
+        const clampW = (w: number) => Math.min(MAX_BLOCK_WIDTH, Math.max(MIN_BLOCK_WIDTH, w))
+        if (east) width = clampW(startRect.width + dx)
+        if (west) width = clampW(startRect.width - dx)
+        if (south) height = startRect.height + dy
+        if (north) height = startRect.height - dy
       }
-      // Pehle width lagao, phir naye width par content ki oonchai naapo
+      // Pehle width (aur text size) lagao, phir naye size par content ki oonchai naapo
       el.style.width = `${width}px`
       const minHeight = content.offsetHeight + PADDING_Y
-      let { y, height } = startRect
-      if (south) height = startRect.height + dy
-      if (north) height = startRect.height - dy
       height = Math.min(MAX_BLOCK_HEIGHT, Math.max(minHeight, height))
+      if (west) x = startRect.x + startRect.width - width
       if (north) y = startRect.y + startRect.height - height
       rect = {
         x: Math.round(x),
         y: Math.round(y),
         width: Math.round(width),
         height: Math.round(height),
+        scale,
       }
       el.style.left = `${rect.x}px`
       el.style.top = `${rect.y}px`
@@ -181,8 +218,12 @@ export const TextBlock = memo(function TextBlock({
         rect.x !== obj.x ||
         rect.y !== obj.y ||
         rect.width !== obj.width ||
-        rect.height !== startRect.height
-      if (changed) handlers.resize(obj.id, rect)
+        rect.height !== startRect.height ||
+        rect.scale !== startScale
+      if (!changed) return
+      // Text size 1 ho to field save hi na karo (purane boards jaisa)
+      const { scale, ...box } = rect
+      handlers.resize(obj.id, scale === 1 ? { ...box, scale: undefined } : rect)
     }
     handle.addEventListener('pointermove', onMove)
     handle.addEventListener('pointerup', onUp)
@@ -204,13 +245,16 @@ export const TextBlock = memo(function TextBlock({
         canEdit && 'hover:ring-1 hover:ring-primary/30',
       )}
       // height = kam se kam oonchai; content zyada ho to block khud bara hota hai
-      style={{
-        left: obj.x,
-        top: obj.y,
-        width: obj.width,
-        minHeight: obj.height,
-        zIndex: obj.zIndex,
-      }}
+      style={
+        {
+          left: obj.x,
+          top: obj.y,
+          width: obj.width,
+          minHeight: obj.height,
+          zIndex: obj.zIndex,
+          '--text-scale': obj.scale ?? 1,
+        } as React.CSSProperties
+      }
       onPointerDown={onPointerDown}
       onDoubleClick={(event) => {
         if (!canEdit) return
