@@ -176,8 +176,11 @@ await step('canvas: add markdown block, save, reload', async () => {
   await page.keyboard.type('- ')
   await page.keyboard.type('point')
   await page.keyboard.press('Escape')
+  await page.getByTestId('unsaved-indicator').waitFor()
   await page.getByTestId('save-button').click()
-  await page.locator('[data-sonner-toast]', { hasText: 'Saved' }).last().waitFor()
+  // Pichle step ka "Saved" toast abhi dikh sakta hai; isliye unsaved nishan hatne ka intezar
+  // karo (wo sirf kamyab save ke baad hatta hai), warna reload chalti save ko kaat deta hai
+  await page.getByTestId('unsaved-indicator').waitFor({ state: 'detached' })
   await page.reload({ waitUntil: 'load' })
   const block = page.getByTestId('text-block').first()
   await block.waitFor()
