@@ -3,8 +3,8 @@ name: Live check (browser)
 # Asal deployment par Chromium se poora user flow (register, board, sign out, refresh,
 # cancel karke refresh, sign in). Har push par NAHI chalta, taake deploy tez rahe:
 # - Actions tab me "Run workflow" se haath se (jaise main me merge se pehle), ya
-# - dev push ki commit message me "[live-check]" likho to deploy ke baad khud chalta hai.
-# Alag workflow hai, isliye deploy ki queue isay wait nahi karti.
+# - dev push ki commit message me "[live-check]" likho to deploy.yml deploy ke baad isay bulata hai.
+# Bina "[live-check]" ke deploy ki queue isay kabhi wait nahi karti.
 on:
   workflow_dispatch:
     inputs:
@@ -12,35 +12,26 @@ on:
         description: Deployment URL
         required: true
         default: https://payload-on-cf-dev.faizanibneadil1.workers.dev
-  workflow_run:
-    workflows: [Deploy Payload v4 to Cloudflare Workers]
-    types: [completed]
-    branches: [dev]
+  workflow_call:
+    inputs:
+      url:
+        required: true
+        type: string
 
 permissions:
   contents: read
 
-concurrency:
-  group: live-check
-  cancel-in-progress: true
-
 jobs:
   live-check:
-    if: >-
-      github.event_name == 'workflow_dispatch' ||
-      (github.event.workflow_run.conclusion == 'success' &&
-       contains(github.event.workflow_run.head_commit.message, '[live-check]'))
     runs-on: ubuntu-latest
     timeout-minutes: 10
     env:
-      LIVE_URL: ${{ inputs.url || 'https://payload-on-cf-dev.faizanibneadil1.workers.dev' }}
+      LIVE_URL: ${{ inputs.url }}
       # GitHub runner par Google Chrome pehle se install hai: Chromium download nahi karna parta
       CHROMIUM_PATH: /usr/bin/google-chrome
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.workflow_run.head_sha || github.sha }}
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -58,7 +49,7 @@ jobs:
 
       # Naya Worker version Cloudflare ki har jagah pahunchne me kuch second leta hai
       - name: Wait for the new version to reach all edges
-        if: github.event_name == 'workflow_run'
+        if: github.event_name == 'push'
         run: sleep 20
 
       - name: Run live check

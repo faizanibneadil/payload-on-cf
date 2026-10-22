@@ -175,3 +175,11 @@ jobs:
               exit 1
             fi
           done
+
+  # Browser live-check sirf tab jab dev commit message me "[live-check]" ho (har push par nahi)
+  live-check:
+    needs: deploy
+    if: github.ref == 'refs/heads/dev' && needs.deploy.outputs.url != '' && contains(github.event.head_commit.message, '[live-check]')
+    uses: ./.github/workflows/live-check.yml
+    with:
+      url: ${{ needs.deploy.outputs.url }}
