@@ -110,13 +110,50 @@ await step('create board', async () => {
   await dialog.getByLabel('Title').fill(`Live check ${id}`)
   await dialog.getByRole('button', { name: 'Create board' }).click()
   await page.waitForURL(/\/b\//)
-  await page.getByTestId('board-title').waitFor()
+  await page.getByTestId('board-title-input').waitFor()
   boardPath = new URL(page.url()).pathname
 })
 
 await step('hard refresh on board (signed in)', async () => {
   await page.reload({ waitUntil: 'load' })
-  await page.getByTestId('board-title').waitFor()
+  await page.getByTestId('board-title-input').waitFor()
+})
+
+await step('rename and save', async () => {
+  await page.getByTestId('board-title-input').fill(`Live check ${id} saved`)
+  await page.getByTestId('unsaved-indicator').waitFor()
+  await page.getByTestId('save-button').click()
+  await page.locator('[data-sonner-toast]', { hasText: 'Saved' }).waitFor()
+  await page.getByTestId('unsaved-indicator').waitFor({ state: 'detached' })
+})
+
+// Bina cookie ke request = signed-out visitor
+const visitorStatus = async () =>
+  (await fetch(`${BASE}${boardPath}`, { signal: AbortSignal.timeout(STEP_LIMIT_MS) })).status
+
+async function setShare(on) {
+  if (
+    !(await page
+      .getByTestId('share-popover')
+      .isVisible()
+      .catch(() => false))
+  ) {
+    await page.getByTestId('share-button').click()
+    await page.getByTestId('share-popover').waitFor()
+  }
+  await page.getByTestId('share-switch').click()
+  // Server ka jawab aane tak (switch optimistic hai) — status poll karo
+  for (let i = 0; i < 40; i++) {
+    if ((await visitorStatus()) === (on ? 200 : 404)) return
+    await page.waitForTimeout(250)
+  }
+  throw new Error(`visitor did not get ${on ? 200 : 404} after share ${on ? 'on' : 'off'}`)
+}
+
+await step('share on: visitor can open the link', () => setShare(true))
+await step('share off: visitor gets 404', async () => {
+  await setShare(false)
+  await page.keyboard.press('Escape')
 })
 
 await step('sign out from board page', async () => {

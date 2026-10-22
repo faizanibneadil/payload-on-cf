@@ -1,8 +1,8 @@
 import { LayoutGrid } from 'lucide-react'
-import Link from 'next/link'
 import type { ReactNode } from 'react'
 import { getCurrentUser } from '@/lib/session'
 import { AuthButton, AuthDialog } from './auth-dialog'
+import { GuardedLink } from './guarded-link'
 import { NewBoardDialog } from './new-board-dialog'
 import { ThemeToggle } from './theme-toggle'
 import { UserMenu } from './user-menu'
@@ -16,12 +16,12 @@ export async function SiteHeader({ title, actions }: { title?: ReactNode; action
 
   return (
     <header className="flex h-12 shrink-0 items-center gap-2 border-b bg-background px-3">
-      <Link href="/" className="flex shrink-0 items-center gap-2 font-semibold">
+      <GuardedLink href="/" className="flex shrink-0 items-center gap-2 font-semibold">
         <span className="flex size-6 items-center justify-center rounded-md bg-primary text-primary-foreground">
           <LayoutGrid className="size-3.5" />
         </span>
         <span className={title ? 'hidden sm:inline' : undefined}>Boards</span>
-      </Link>
+      </GuardedLink>
       {title ? (
         <>
           <span className="hidden text-muted-foreground sm:inline">/</span>

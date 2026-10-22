@@ -3,8 +3,10 @@
 > Status: target design. Built in Iteration 1 (shell) and Iteration 3 (canvas). The Theory / Editor / Both tabs, the primary bar and the editor tab are removed.
 
 ## Header
-- Left: product name + the board title (an input for the owner: English characters, spaces become hyphens, max 50; plain text for everyone else).
-- Right (owner): unsaved indicator, Save, Share (toggle + copy link), theme toggle, user menu (My boards, New board, Logout).
+- Left: product name + the board title (an input for the owner: free text, max 50 characters, must contain at least one letter or digit; plain text for everyone else).
+- Right (owner): Share (popover: switch + link + Copy, Copy only while shared), Save (disabled when nothing changed, Ctrl/Cmd+S), theme toggle, user menu (My boards, New board, Sign out). An amber dot + "Unsaved changes" sits next to the title input.
+- Unsaved changes: browser reload/close shows the native warning; the logo and user menu items ask for confirmation first (`components/shell/leave-guard.ts`).
+- On mobile the username is hidden in the header (icon only) so the title has room.
 - Right (signed-in non-owner): "View only" badge + theme toggle + user menu. Right (signed out): theme toggle + Sign in button that opens the modal (Sign in / Register tabs).
 - Compact, one row, works on mobile.
 

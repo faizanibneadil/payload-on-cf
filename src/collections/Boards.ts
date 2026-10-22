@@ -1,4 +1,4 @@
-import { type CollectionConfig, ValidationError, type Where } from 'payload'
+import { APIError, type CollectionConfig, type Payload, ValidationError, type Where } from 'payload'
 import { getLimitSettings } from '../globals/Settings'
 import { normalizeTitle, validateTitle } from '../lib/title-slug'
 
@@ -20,6 +20,74 @@ const ownerOrAdmin = ({ req: { user } }: { req: { user: any } }): boolean | Wher
 const adminOnlyField = {
   create: ({ req: { user } }: { req: { user: any } }) => isAdminUser(user),
   update: ({ req: { user } }: { req: { user: any } }) => isAdminUser(user),
+}
+
+const HOUR_MS = 60 * 60 * 1000
+
+function formatWait(ms: number) {
+  const minutes = Math.max(1, Math.ceil(ms / 60_000))
+  if (minutes < 60) return `${minutes} minute${minutes === 1 ? '' : 's'}`
+  const hours = Math.ceil(minutes / 60)
+  return `${hours} hour${hours === 1 ? '' : 's'}`
+}
+
+// 429 — action aur REST dono me saaf message ke saath
+const limitError = (message: string) => new APIError(message, 429, null, true)
+
+/** Instructor window (default 24 h) me max boards bana sakta hai (owner + createdAt index) */
+async function assertCanCreate(payload: Payload, userId: number | string) {
+  const { windowHours, maxBoardsPerWindow } = await getLimitSettings(payload)
+  const windowMs = windowHours * HOUR_MS
+  const since = new Date(Date.now() - windowMs).toISOString()
+  const recent = await payload.find({
+    collection: 'boards',
+    where: { and: [{ owner: { equals: userId } }, { createdAt: { greater_than: since } }] },
+    sort: 'createdAt',
+    limit: 1,
+    depth: 0,
+    select: { createdAt: true },
+    overrideAccess: true,
+  })
+  if (recent.totalDocs >= maxBoardsPerWindow) {
+    const oldest = recent.docs[0]?.createdAt
+    const waitMs = oldest ? new Date(oldest).getTime() + windowMs - Date.now() : windowMs
+    throw limitError(
+      `You can create up to ${maxBoardsPerWindow} boards every ${windowHours} hours. Try again in ${formatWait(waitMs)}.`,
+    )
+  }
+}
+
+function contentChanged(data: Record<string, any>, originalDoc: Record<string, any>) {
+  if (data.title !== undefined && data.title !== originalDoc.title) return true
+  if (data.data !== undefined && JSON.stringify(data.data) !== JSON.stringify(originalDoc.data)) {
+    return true
+  }
+  return false
+}
+
+/** Har board par window me max saves; counter isi row write ka hissa hai (koi extra write nahi) */
+async function applySaveLimit(
+  payload: Payload,
+  data: Record<string, any>,
+  originalDoc: Record<string, any>,
+) {
+  const { windowHours, maxSavesPerBoardPerWindow } = await getLimitSettings(payload)
+  const windowMs = windowHours * HOUR_MS
+  const now = Date.now()
+  const started = originalDoc.saveWindowStartedAt
+    ? new Date(originalDoc.saveWindowStartedAt).getTime()
+    : 0
+  const windowOver = !started || now - started >= windowMs
+  const count = windowOver ? 0 : (originalDoc.saveCount ?? 0)
+  if (count >= maxSavesPerBoardPerWindow) {
+    throw limitError(
+      `This board can be saved ${maxSavesPerBoardPerWindow} times every ${windowHours} hours. Try again in ${formatWait(started + windowMs - now)}.`,
+    )
+  }
+  data.saveCount = count + 1
+  data.saveWindowStartedAt = windowOver
+    ? new Date(now).toISOString()
+    : originalDoc.saveWindowStartedAt
 }
 
 export const Boards: CollectionConfig = {
@@ -64,14 +132,13 @@ export const Boards: CollectionConfig = {
           }
         }
 
-        if (!data.title) return data
-        if (operation === 'update' && originalDoc?.title === data.title) {
-          data.slug = originalDoc.slug
+        // Slug sirf create par banta hai aur phir kabhi nahi badalta — share kiya hua link title
+        // badalne par bhi chalta rahe
+        if (operation !== 'create') {
+          if (originalDoc?.slug) data.slug = originalDoc.slug
           return data
         }
-
-        // Create par Payload originalDoc ko khali object deta hai — id sirf update par hoti hai
-        const selfId = originalDoc?.id
+        if (!data.title) return data
         const base = normalizeTitle(data.title)
 
         // Slug globally unique hona chahiye (URL: /b/[slug]); collision par suffix lagao
@@ -79,14 +146,7 @@ export const Boards: CollectionConfig = {
         for (let attempt = 1; attempt < 20; attempt++) {
           const existing = await req.payload.find({
             collection: 'boards',
-            where: {
-              and: [
-                { slug: { equals: slug } },
-                ...(selfId !== undefined && selfId !== null
-                  ? [{ id: { not_equals: selfId } }]
-                  : []),
-              ],
-            },
+            where: { slug: { equals: slug } },
             limit: 1,
             depth: 0,
             overrideAccess: true,
@@ -101,14 +161,23 @@ export const Boards: CollectionConfig = {
       },
     ],
     beforeChange: [
-      ({ req, operation, data, originalDoc }) => {
+      async ({ req, operation, data, originalDoc }) => {
         if (!req.user) return data
 
         if (operation === 'create') {
           // Non-admin hamesha apna hi owner hoga
           if (!data.owner || !isAdminUser(req.user)) data.owner = req.user.id
-        } else if (operation === 'update' && !isAdminUser(req.user) && originalDoc) {
+          if (!isAdminUser(req.user)) await assertCanCreate(req.payload, req.user.id)
+          data.saveCount = 0
+          return data
+        }
+
+        if (operation === 'update' && !isAdminUser(req.user) && originalDoc) {
           data.owner = ownerId(originalDoc.owner)
+          // Sirf content (title ya canvas) badle to Save count hota hai — Share on/off nahi
+          if (contentChanged(data, originalDoc)) {
+            await applySaveLimit(req.payload, data, originalDoc)
+          }
         }
         return data
       },

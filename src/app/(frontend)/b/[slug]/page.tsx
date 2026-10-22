@@ -1,10 +1,10 @@
-import { Eye } from 'lucide-react'
 import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { getPayload } from 'payload'
 import { cache } from 'react'
+import { BoardActions, BoardTitle } from '@/components/board/board-header'
+import { BoardProvider } from '@/components/board/board-store'
 import { SiteHeader } from '@/components/shell/site-header'
-import { Badge } from '@/components/ui/badge'
 import { getCurrentUser } from '@/lib/session'
 import config from '@/payload.config'
 
@@ -22,6 +22,7 @@ const getBoardBySlug = cache(async (slug: string) => {
     where: { slug: { equals: slug } },
     limit: 1,
     depth: 0,
+    select: { title: true, slug: true, owner: true, isShared: true, data: true },
     user,
     overrideAccess: false,
   })
@@ -43,22 +44,15 @@ export default async function BoardPage({ params }: Props) {
   const canEdit = Boolean(user && (user.role === 'admin' || ownerId === user.id))
 
   return (
-    <>
-      <SiteHeader
-        title={
-          <span className="font-medium" data-testid="board-title">
-            {board.title}
-          </span>
-        }
-        actions={
-          canEdit ? null : (
-            <Badge variant="outline" data-testid="view-only">
-              <Eye />
-              View only
-            </Badge>
-          )
-        }
-      />
+    <BoardProvider
+      id={board.id}
+      slug={board.slug}
+      canEdit={canEdit}
+      initialTitle={board.title}
+      initialData={board.data ?? null}
+      initialShared={Boolean(board.isShared)}
+    >
+      <SiteHeader title={<BoardTitle />} actions={<BoardActions />} />
       <main
         className="relative min-h-0 flex-1 overflow-hidden bg-muted/30 bg-[radial-gradient(circle,var(--border)_1px,transparent_1px)] [background-size:20px_20px]"
         data-testid="board-canvas"
@@ -67,6 +61,6 @@ export default async function BoardPage({ params }: Props) {
           The canvas is coming in the next iteration.
         </p>
       </main>
-    </>
+    </BoardProvider>
   )
 }

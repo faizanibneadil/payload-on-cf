@@ -2,12 +2,12 @@
 
 Official docs: https://payloadcms.com/docs/fields/overview , https://payloadcms.com/docs/hooks/overview
 
-> Status: the repo still has the OLD `playgrounds` collection (with `theory` and `forkedFrom`). `playground-files` and `nested-docs` are already removed (migration `20261021_193036_drop_playground_files`). Iteration 1 replaces `playgrounds` with `boards` through new forward migrations. Do not build on the old collection.
+> Status: built in Iteration 1 (schema, migration `20261021_201333_boards_and_instructor_role`) and Iteration 2 (limits). The old `playgrounds` and `playground-files` collections are gone.
 
-## Target schema (Iteration 1)
+## Schema
 - `users`: auth with `loginWithUsername` (`allowEmailLogin: false`), `role` (`admin` | `instructor`, default `instructor`). Username validation in a field `validate` and in the registration server action.
 - `boards`:
-  - `title` (max 50, normalized), `slug` (unique, indexed, generated in `beforeValidate`, collision gets a random suffix; reuse `src/lib/title-slug.ts`), `owner` (relationship, indexed, pinned in `beforeChange`), `isShared` (checkbox, default false).
+  - `title` (max 50, normalized), `slug` (unique, indexed, generated once on create in `beforeValidate`, collision gets a random suffix; never changes afterwards, so a shared link keeps working after a rename; reuse `src/lib/title-slug.ts`), `owner` (relationship, indexed, pinned in `beforeChange`), `isShared` (checkbox, default false).
   - `data` (json): `{ canvas: <scene> }` (see `05-board-canvas.md`). One row write per Save. Size is checked in `beforeValidate` against the `settings` Global limit (default 1.8 MB; D1 row limit is 2 MB).
   - `saveCount`, `saveWindowStartedAt` (hook-managed rate limit counters).
   - Indexes: `slug`, and `owner` + `createdAt` (for the "10 boards per 24 h" count query).
@@ -16,7 +16,9 @@ Official docs: https://payloadcms.com/docs/fields/overview , https://payloadcms.
 
 ## Rate limit rules (hooks, server side)
 - Create: count the user's boards with `createdAt` inside the window (indexed query). If the count is at the limit, reject.
-- Update (Save): if `now - saveWindowStartedAt` is past the window, reset `saveCount` to 0 and set a new window start. If `saveCount` is at the limit, reject. Otherwise `saveCount += 1`. The counter change is part of the same row write as the Save.
+- Update (Save): only when the content changes (title or `data`); turning Share on/off is not a save. If `now - saveWindowStartedAt` is past the window, reset `saveCount` to 0 and set a new window start. If `saveCount` is at the limit, reject. Otherwise `saveCount += 1`. The counter change is part of the same row write as the Save.
+- Limit errors are `APIError` with status 429 and a message that says when to try again; server actions read `status` / `message` (never `instanceof`, see `09`).
+- The `settings` Global is cached for 10 s per Worker isolate, so a changed limit can take up to 10 s to apply everywhere.
 - Skip all of this for `admin`.
 
 ## Validation rules

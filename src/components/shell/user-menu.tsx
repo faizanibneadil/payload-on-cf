@@ -14,6 +14,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
+import { confirmLeave } from './leave-guard'
 import { openNewBoardDialog } from './new-board-dialog'
 
 export function UserMenu({ username, role }: { username: string; role: string }) {
@@ -21,17 +22,25 @@ export function UserMenu({ username, role }: { username: string; role: string })
   const [pending, startTransition] = useTransition()
 
   // logoutAction server par hi `/` par redirect karta hai
-  const onLogout = () => startTransition(() => logoutAction())
+  const onLogout = () => {
+    if (confirmLeave()) startTransition(() => logoutAction())
+  }
 
   return (
     <DropdownMenu>
       <DropdownMenuTrigger
         render={
-          <Button variant="ghost" size="sm" className="gap-1.5" data-testid="user-menu-trigger" />
+          <Button
+            variant="ghost"
+            size="sm"
+            className="gap-1.5"
+            aria-label={`Account menu (${username})`}
+            data-testid="user-menu-trigger"
+          />
         }
       >
         <UserRound />
-        <span className="max-w-32 truncate">{username}</span>
+        <span className="hidden max-w-32 truncate sm:inline">{username}</span>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="min-w-48">
         <DropdownMenuGroup>
@@ -41,11 +50,11 @@ export function UserMenu({ username, role }: { username: string; role: string })
           </DropdownMenuLabel>
         </DropdownMenuGroup>
         <DropdownMenuSeparator />
-        <DropdownMenuItem onClick={() => router.push('/')}>
+        <DropdownMenuItem onClick={() => confirmLeave() && router.push('/')}>
           <LayoutGrid />
           My boards
         </DropdownMenuItem>
-        <DropdownMenuItem onClick={openNewBoardDialog}>
+        <DropdownMenuItem onClick={() => confirmLeave() && openNewBoardDialog()}>
           <Plus />
           New board
         </DropdownMenuItem>

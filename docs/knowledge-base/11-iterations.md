@@ -18,8 +18,8 @@ Status values: `planned` -> `in progress` -> `ready for review` (branch pushed) 
 |---|---|---|---|
 | 0 | `feat/iteration-0-setup-cleanup` | `dev` branch, CI/CD check, remove old frontend, fork code, unused files; placeholder `/` | merged to dev |
 | 0b | `dev` | Boards pivot: remove the code editor and everything around it (playground-files, nested-docs, legacy import, Monaco, resizable, cmdk), comment out the startup email, rewrite the knowledge base | verified in dev |
-| 1 | `dev` | shadcn preset `b5rR41Mtnc`, light/dark theme (light default, toggle in the header), users (`admin` / `instructor`, username rules, public Register as instructor), `boards` collection replacing `playgrounds`, `settings` Global, access control, migrations on dev, header, sign-in modal, `/` with My boards | ready for review |
-| 2 | `feat/iteration-2-save-share-limits` | Save (one row write), unsaved indicator + `beforeunload`, rate limits (Global, cached), Share toggle and link, `/b/<slug>` read-only for others | planned |
+| 1 | `dev` | shadcn preset `b5rR41Mtnc`, light/dark theme (light default, toggle in the header), users (`admin` / `instructor`, username rules, public Register as instructor), `boards` collection replacing `playgrounds`, `settings` Global, access control, migrations on dev, header, sign-in modal, `/` with My boards | verified in dev |
+| 2 | `dev` | Save (one row write), unsaved indicator + `beforeunload`, rate limits (Global, cached), Share toggle and link, `/b/<slug>` read-only for others | ready for review |
 | 3 | `feat/iteration-3-canvas-core` | infinite canvas: pan/zoom, culling, text blocks with live markdown (`#`, `-`, `1.`), move/resize/delete, undo/redo | planned |
 | 4 | research with the owner | Lexical or not, Excalidraw / tldraw vs own engine, drawing tools, images, presenting; decides the next iterations | planned |
 | 5 | decide with the owner | caching for shared board reads (Next.js vs Cloudflare cache) and its implementation | planned |
@@ -62,3 +62,15 @@ Status values: `planned` -> `in progress` -> `ready for review` (branch pushed) 
 - Also found only in the production build: auth errors were matched by class name (`err.name`), which is minified in the Worker bundle, so a wrong password showed "Something went wrong". Fix: match by HTTP status and message (also for board validation errors)
 - The minutes-long loading could not be reproduced locally (local workerd, cancelled and repeated requests all answer in < 1 s). The new `live-check` job tests the real dev URL after every deploy to catch it if it happens again
 - Verified on the production Worker build (local workerd): iteration 1 suite 49/49, live check 13/13
+
+### Iteration 2 (Save / Share / Limits)
+- [x] Board editor state (`components/board/board-store.tsx`): title + canvas data and the saved snapshot; Save writes both in one row (`saveBoardAction`), no autosave; Ctrl/Cmd+S
+- [x] Unsaved indicator, Save disabled when clean or the title is invalid, `beforeunload` warning, confirm before leaving through the logo or the user menu
+- [x] Share popover: switch (saved at once, not counted as a save), full link, Copy (only while shared); others see the board read-only with "View only"; turning Share off makes the link 404 again
+- [x] Limits in the Boards hooks, read from the cached `settings` Global: boards per window on create, saves per board per window on content change, 429 with "try again in ..." message; admin exempt and counters untouched; size limit message
+- [x] Slug no longer changes on rename (shared links stay valid)
+- [x] New shadcn-style `switch` and `popover` components (Base UI); username hidden in the mobile header
+- [x] `live-check` now also renames + saves and turns Share on/off (visitor 200, then 404)
+- Bugs found by the tests and fixed before push: Save failed with "This field is required" (slug removed on update)
+- Verified: tsc, Biome, `pnpm test:int`; browser suites on `next dev` and on the production Worker build (local workerd): iteration 2 44/44, iteration 1 49/49, live check 16/16
+- Test on the dev deployment: rename a board (unsaved dot appears), reload (browser warns), Save (toast with saves left), reload (title kept, same link), Share on + Copy link, open the link in a private window (view only), Share off (404), in `/admin` > Settings lower "saves per board" to test the limit message, then set it back
