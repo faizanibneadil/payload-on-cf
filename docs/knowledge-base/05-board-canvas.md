@@ -1,6 +1,6 @@
 # 05. Board canvas (text blocks with live markdown)
 
-> Status: target design, built in Iteration 3. Lexical, Tiptap and the "/" menu are not used. Further tools are decided in the research iteration (see the end of this file).
+> Status: built in Iteration 3 (`src/components/canvas/`, `src/lib/scene.ts`). Lexical, Tiptap and the "/" menu are not used. Further tools are decided in the research iteration (see the end of this file).
 
 ## Goal
 An instructor prepares a lecture on an infinite canvas: places text blocks anywhere, types markdown that turns into formatted text while typing, and moves around the board with pan and zoom. It must feel professional and stay fast and light on memory with many blocks.
@@ -40,6 +40,14 @@ object = { id, type: 'text', x, y, width, height, zIndex, markdown }
 
 ## Read-only mode
 Everyone except the owner and admin: pan and zoom only. No selection, no editing, no hover handles.
+
+## As built (Iteration 3)
+- Viewport is not part of "unsaved changes"; the current viewport is stored with every Save. The owner opens the board at the saved view (or fit, if no block would be visible); visitors always open it fitted to the content (max 100 %) so every screen size sees the whole lecture.
+- Pan: drag empty space (any tool), Hand tool, Space + drag, wheel / trackpad scroll, one-finger touch. Zoom: Ctrl/Cmd + wheel or trackpad pinch (at the cursor), two-finger touch pinch, toolbar buttons, click on % = 100 %, Fit.
+- Blocks: double-click empty space or Text tool to add; click selects; drag moves; right-edge handle sets the width; Enter edits the selected block; Delete removes it; mini toolbar: bring to front, send to back, delete. An empty block is removed when you leave it. Undo/redo (Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z or Ctrl+Y, toolbar), 100 steps, local only.
+- Editor (`text-editor.tsx`): own `contentEditable`, one `div[data-type]` per line, shortcuts work on any line, Enter continues lists, Enter on an empty list item ends the list, Backspace at line start turns the line back into text, paste is plain text with markdown applied per line, bold/italic formatting is blocked. Numbered lists are numbered with CSS counters.
+- Server: `validateScene` (`src/lib/scene.ts`) runs in the Boards `beforeValidate` hook (known block type, finite numbers, max 500 blocks, max 20,000 characters per block).
+- Measured on the production build: a 300-block board mounts only the blocks near the screen (4-6 at 100 %), 40 wheel-pan steps take ~1.6 s in a headless browser, and all 300 blocks on screen add about 1.5 MB of JS heap over a 2-block board. The dot grid spaces out when zoomed out.
 
 ## Open research (Iteration 4, with the owner)
 - Is a Lexical-based editor needed for richer text, or is the plain block editor enough?

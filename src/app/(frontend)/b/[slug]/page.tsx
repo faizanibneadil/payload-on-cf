@@ -4,6 +4,7 @@ import { getPayload } from 'payload'
 import { cache } from 'react'
 import { BoardActions, BoardTitle } from '@/components/board/board-header'
 import { BoardProvider } from '@/components/board/board-store'
+import { CanvasLoader } from '@/components/canvas/canvas-loader'
 import { SiteHeader } from '@/components/shell/site-header'
 import { getCurrentUser } from '@/lib/session'
 import config from '@/payload.config'
@@ -54,12 +55,10 @@ export default async function BoardPage({ params }: Props) {
     >
       <SiteHeader title={<BoardTitle />} actions={<BoardActions />} />
       <main
-        className="relative min-h-0 flex-1 overflow-hidden bg-muted/30 bg-[radial-gradient(circle,var(--border)_1px,transparent_1px)] [background-size:20px_20px]"
+        className="relative min-h-0 flex-1 overflow-hidden bg-muted/30"
         data-testid="board-canvas"
       >
-        <p className="absolute inset-x-0 bottom-4 text-center text-sm text-muted-foreground">
-          The canvas is coming in the next iteration.
-        </p>
+        <CanvasLoader />
       </main>
     </BoardProvider>
   )

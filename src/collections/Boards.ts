@@ -1,5 +1,6 @@
 import { APIError, type CollectionConfig, type Payload, ValidationError, type Where } from 'payload'
 import { getLimitSettings } from '../globals/Settings'
+import { validateScene } from '../lib/scene'
 import { normalizeTitle, validateTitle } from '../lib/title-slug'
 
 const ownerId = (owner: unknown): number | string | undefined =>
@@ -116,6 +117,15 @@ export const Boards: CollectionConfig = {
 
         // Board ka size limit (D1 row limit 2 MB) — settings Global se, cache ke saath
         if (data.data !== undefined) {
+          // Canvas ki shape (block types, numbers, limits) — galat data D1 me na jaye
+          const sceneCheck = validateScene(data.data)
+          if (sceneCheck !== true) {
+            throw new ValidationError({
+              collection: 'boards',
+              errors: [{ path: 'data', message: sceneCheck }],
+              req,
+            })
+          }
           const { maxContentBytes } = await getLimitSettings(req.payload)
           const bytes = new TextEncoder().encode(JSON.stringify(data.data ?? null)).length
           if (bytes > maxContentBytes) {

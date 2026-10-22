@@ -19,8 +19,8 @@ Status values: `planned` -> `in progress` -> `ready for review` (branch pushed) 
 | 0 | `feat/iteration-0-setup-cleanup` | `dev` branch, CI/CD check, remove old frontend, fork code, unused files; placeholder `/` | merged to dev |
 | 0b | `dev` | Boards pivot: remove the code editor and everything around it (playground-files, nested-docs, legacy import, Monaco, resizable, cmdk), comment out the startup email, rewrite the knowledge base | verified in dev |
 | 1 | `dev` | shadcn preset `b5rR41Mtnc`, light/dark theme (light default, toggle in the header), users (`admin` / `instructor`, username rules, public Register as instructor), `boards` collection replacing `playgrounds`, `settings` Global, access control, migrations on dev, header, sign-in modal, `/` with My boards | verified in dev |
-| 2 | `dev` | Save (one row write), unsaved indicator + `beforeunload`, rate limits (Global, cached), Share toggle and link, `/b/<slug>` read-only for others | ready for review |
-| 3 | `feat/iteration-3-canvas-core` | infinite canvas: pan/zoom, culling, text blocks with live markdown (`#`, `-`, `1.`), move/resize/delete, undo/redo | planned |
+| 2 | `dev` | Save (one row write), unsaved indicator + `beforeunload`, rate limits (Global, cached), Share toggle and link, `/b/<slug>` read-only for others | verified in dev |
+| 3 | `dev` | infinite canvas: pan/zoom, culling, text blocks with live markdown (`#`, `-`, `1.`), move/resize/delete, undo/redo | ready for review |
 | 4 | research with the owner | Lexical or not, Excalidraw / tldraw vs own engine, drawing tools, images, presenting; decides the next iterations | planned |
 | 5 | decide with the owner | caching for shared board reads (Next.js vs Cloudflare cache) and its implementation | planned |
 
@@ -74,3 +74,12 @@ Status values: `planned` -> `in progress` -> `ready for review` (branch pushed) 
 - Bugs found by the tests and fixed before push: Save failed with "This field is required" (slug removed on update)
 - Verified: tsc, Biome, `pnpm test:int`; browser suites on `next dev` and on the production Worker build (local workerd): iteration 2 44/44, iteration 1 49/49, live check 16/16
 - Test on the dev deployment: rename a board (unsaved dot appears), reload (browser warns), Save (toast with saves left), reload (title kept, same link), Share on + Copy link, open the link in a private window (view only), Share off (404), in `/admin` > Settings lower "saves per board" to test the limit message, then set it back
+
+### Iteration 3 (Canvas core)
+- [x] Scene model, server validation and markdown parse/serialize in `src/lib/scene.ts` (unit tests in `tests/int/scene.int.spec.ts`)
+- [x] Infinite canvas (`board-canvas.tsx`, lazy-loaded): pan, zoom at cursor / pinch, Fit, 100 %, adaptive dot grid, culling, tools Select / Hand / Text, undo/redo, keyboard shortcuts (V, H, T, Space, Enter, Delete, Esc, Ctrl/Cmd+Z/Y)
+- [x] Text blocks (`text-block.tsx`, `text-editor.tsx`): live markdown (`#`, `##`, `###`, `-`, `1.`), move, width resize, z-order, delete, empty block removed on exit
+- [x] Board store now holds scene objects; viewport saved with each Save but not counted as a change; visitors open fitted to the content
+- Bugs found by the tests and fixed before push: Text tool block lost focus (browser mousedown), list line could not become a heading, pasted first line lost its heading, one Ctrl+wheel notch zoomed to 400 %, dense grid at 10 %, mobile visitor saw the board off screen
+- Verified on the production Worker build (local workerd): canvas suite 50/50, iteration 2 44/44, iteration 1 49/49, live check 17/17 (now also adds a markdown block, saves and reloads); `next dev` canvas suite too
+- Test on the dev deployment: double-click the canvas, type `# Title`, Enter, text, `- item`, Enter, Enter, `1. step`; Esc; drag the block; resize with the right handle; Ctrl+Z / Ctrl+Shift+Z; Ctrl + wheel zoom; Fit; Save and reload; share and open the link on a phone (whole board visible, pinch zoom, one-finger pan)

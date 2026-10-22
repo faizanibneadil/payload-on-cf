@@ -13,11 +13,12 @@ import {
 import { toast } from 'sonner'
 import { saveBoardAction, setBoardSharedAction } from '@/app/(frontend)/actions/boards'
 import { setUnsavedChanges } from '@/components/shell/leave-guard'
+import { readScene, SCENE_VERSION, type SceneObject, type Viewport } from '@/lib/scene'
 import { validateTitle } from '@/lib/title-slug'
 
-export interface BoardSnapshot {
+interface Snapshot {
   title: string
-  data: unknown
+  objects: SceneObject[]
 }
 
 interface BoardState {
@@ -25,14 +26,17 @@ interface BoardState {
   slug: string
   canEdit: boolean
   title: string
-  data: unknown
+  objects: SceneObject[]
+  initialViewport: Viewport
   isShared: boolean
   dirty: boolean
   saving: boolean
   sharing: boolean
   titleError: string | null
   setTitle: (title: string) => void
-  setData: (data: unknown) => void
+  setObjects: (objects: SceneObject[]) => void
+  /** Canvas apna live viewport dene ka tareeqa register karta hai (Save ke waqt liya jata hai) */
+  setViewportSource: (source: () => Viewport) => void
   save: () => Promise<void>
   setShared: (isShared: boolean) => Promise<void>
 }
@@ -69,14 +73,20 @@ export function BoardProvider({
   initialShared: boolean
   children: ReactNode
 }) {
+  const [scene] = useState(() => readScene(initialData))
   const [title, setTitleState] = useState(initialTitle)
-  const [data, setData] = useState<unknown>(initialData)
-  const [saved, setSaved] = useState<BoardSnapshot>({ title: initialTitle, data: initialData })
+  const [objects, setObjects] = useState<SceneObject[]>(scene.objects)
+  const [saved, setSaved] = useState<Snapshot>({ title: initialTitle, objects: scene.objects })
+  // Pan/zoom board ko "unsaved" nahi banata — viewport sirf Save ke waqt saath chala jata hai
+  const viewportSource = useRef<() => Viewport>(() => scene.viewport)
+  const setViewportSource = useCallback((source: () => Viewport) => {
+    viewportSource.current = source
+  }, [])
   const [isShared, setIsShared] = useState(initialShared)
   const [saving, setSaving] = useState(false)
   const [sharing, setSharing] = useState(false)
 
-  const dirty = canEdit && (title !== saved.title || !sameJson(data, saved.data))
+  const dirty = canEdit && (title !== saved.title || !sameJson(objects, saved.objects))
   const titleCheck = validateTitle(title)
   const titleError = titleCheck === true ? null : titleCheck
 
@@ -93,8 +103,8 @@ export function BoardProvider({
   }, [dirty])
   useEffect(() => () => setUnsavedChanges(false), [])
 
-  const latest = useRef({ title, data, dirty, saving, titleError })
-  latest.current = { title, data, dirty, saving, titleError }
+  const latest = useRef({ title, objects, dirty, saving, titleError })
+  latest.current = { title, objects, dirty, saving, titleError }
 
   const save = useCallback(async () => {
     const current = latest.current
@@ -104,8 +114,15 @@ export function BoardProvider({
       return
     }
     setSaving(true)
-    const snapshot = { title: current.title.trim(), data: current.data }
-    const result = await saveBoardAction({ id, ...snapshot })
+    const snapshot = { title: current.title.trim(), objects: current.objects }
+    const data = {
+      canvas: {
+        version: SCENE_VERSION,
+        viewport: viewportSource.current(),
+        objects: snapshot.objects,
+      },
+    }
+    const result = await saveBoardAction({ id, title: snapshot.title, data })
     setSaving(false)
     if (!result.ok) {
       toast.error(result.error ?? 'Could not save the board.')
@@ -160,18 +177,35 @@ export function BoardProvider({
       slug,
       canEdit,
       title,
-      data,
+      objects,
+      initialViewport: scene.viewport,
       isShared,
       dirty,
       saving,
       sharing,
       titleError,
       setTitle: setTitleState,
-      setData,
+      setObjects,
+      setViewportSource,
       save,
       setShared,
     }),
-    [id, slug, canEdit, title, data, isShared, dirty, saving, sharing, titleError, save, setShared],
+    [
+      id,
+      slug,
+      canEdit,
+      title,
+      objects,
+      scene.viewport,
+      isShared,
+      dirty,
+      saving,
+      sharing,
+      titleError,
+      setViewportSource,
+      save,
+      setShared,
+    ],
   )
 
   return <BoardContext.Provider value={value}>{children}</BoardContext.Provider>

@@ -150,6 +150,29 @@ async function setShare(on) {
   throw new Error(`visitor did not get ${on ? 200 : 404} after share ${on ? 'on' : 'off'}`)
 }
 
+await step('canvas: add markdown block, save, reload', async () => {
+  await page.getByTestId('canvas-surface').dblclick({ position: { x: 400, y: 250 } })
+  await page.getByTestId('text-editor').waitFor()
+  await page.keyboard.type('# ')
+  await page.keyboard.type('Live heading')
+  await page.keyboard.press('Enter')
+  await page.keyboard.type('- ')
+  await page.keyboard.type('point')
+  await page.keyboard.press('Escape')
+  await page.getByTestId('save-button').click()
+  await page.locator('[data-sonner-toast]', { hasText: 'Saved' }).last().waitFor()
+  await page.reload({ waitUntil: 'load' })
+  const block = page.getByTestId('text-block').first()
+  await block.waitFor()
+  const types = await block.evaluate((el) =>
+    Array.from(el.querySelector('.md-lines')?.children ?? []).map((c) =>
+      c.getAttribute('data-type'),
+    ),
+  )
+  if (types.join(',') !== 'h1,ul')
+    throw new Error(`unexpected lines after reload: ${types.join(',')}`)
+})
+
 await step('share on: visitor can open the link', () => setShare(true))
 await step('share off: visitor gets 404', async () => {
   await setShare(false)
