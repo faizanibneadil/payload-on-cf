@@ -37,6 +37,7 @@ Every correction or instruction from the owner is recorded here, with what it me
 | Oct 2026 | Flow per iteration: finalise the shape together -> agent plans and splits into small tasks -> implements -> pushes to dev -> owner checks and verifies -> next | Never start implementing an iteration before its shape is final |
 | Oct 2026 | Iteration 4 answers: tools OK, no Duplicate button, style panel only for a stylable selection, alignment guides, pen yes, arrows and frames later, images shrunk for instructors (originals on a future paid plan), 10 images per board (admin unlimited), images served by this project only (no extra domain), rebuild text blocks on Lexical with its markdown converters, dynamic block width, shadcn-style code block with line numbers and copy, Playwright Test + Playwright MCP | Details and remaining open points in `13-iteration-4-plan.md` |
 | Oct 2026 | Do not bring in outside services or domains the owner does not have | Everything runs inside this project (Worker, D1, R2) |
+| Oct 2026 | Remove images from the canvas plan completely; keep R2 config; images only via the Payload admin. Type-anywhere and Lexical storage accepted. Callout demo yes. Links with label/target/rel and a hover/focus popover (Edit/Remove) | `13-iteration-4-plan.md` |
 
 ## Choices made without the owner (need confirmation)
 These were decided by the agent before rule 1 existed. Each one stays as it is until the owner chooses, and the owner can change any of them.
