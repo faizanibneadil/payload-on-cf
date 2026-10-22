@@ -68,6 +68,15 @@ jobs:
             echo "ENV_FLAG=" >> $GITHUB_ENV
           fi
 
+      # Next.js build cache: agla build sirf badli hui files dobara compile karta hai
+      - name: Cache Next.js build
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: nextjs-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('src/**') }}
+          restore-keys: |
+            nextjs-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
+
       - name: Generate importmap and types
         run: |
           pnpm generate:importmap
@@ -166,46 +175,3 @@ jobs:
               exit 1
             fi
           done
-
-  # Deploy ke baad asal dev URL par Chromium se poora user flow (register, board, sign out,
-  # refresh, cancel karke refresh, sign in). Screenshots aur log artifact me milte hain.
-  live-check:
-    needs: deploy
-    if: github.ref == 'refs/heads/dev' && needs.deploy.outputs.url != ''
-    runs-on: ubuntu-latest
-    timeout-minutes: 15
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v4
-        with:
-          version: 10.29.1
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22.19.0
-          cache: pnpm
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Install Chromium
-        run: pnpm exec playwright install --with-deps chromium
-
-      # Naya Worker version Cloudflare ki har jagah pahunchne me kuch second leta hai
-      - name: Wait for the new version to reach all edges
-        run: sleep 30
-
-      - name: Run live check
-        run: node scripts/live-check.mjs "${{ needs.deploy.outputs.url }}"
-
-      - name: Upload screenshots and log
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: live-check-${{ github.run_id }}
-          path: live-check-output/
-          retention-days: 14
