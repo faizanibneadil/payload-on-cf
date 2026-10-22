@@ -54,6 +54,12 @@ describe('scene validation', () => {
     expect(validateScene({ canvas: { objects: [block({ type: 'script' })] } })).not.toBe(true)
     expect(validateScene({ canvas: { objects: [block({ x: Number.NaN })] } })).not.toBe(true)
     expect(validateScene({ canvas: { objects: [block(), block()] } })).toBe('Duplicate block id')
+    expect(validateScene({ canvas: { objects: [block({ height: 0 })] } })).toBe(
+      'Invalid block height',
+    )
+    expect(validateScene({ canvas: { objects: [block({ height: 20_000 })] } })).toBe(
+      'Invalid block height',
+    )
     expect(
       validateScene({ canvas: { objects: [block({ markdown: 'a'.repeat(20_001) })] } }),
     ).not.toBe(true)

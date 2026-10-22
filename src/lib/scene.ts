@@ -7,6 +7,7 @@ export const MIN_ZOOM = 0.1
 export const MAX_ZOOM = 4
 export const MIN_BLOCK_WIDTH = 120
 export const MAX_BLOCK_WIDTH = 2000
+export const MAX_BLOCK_HEIGHT = 10000
 const MAX_COORD = 1_000_000
 
 export interface Viewport {
@@ -90,6 +91,9 @@ export function validateScene(data: unknown): true | string {
     }
     if (!isNum(obj.width, MAX_BLOCK_WIDTH) || (obj.width as number) < 1)
       return 'Invalid block width'
+    if (!isNum(obj.height, MAX_BLOCK_HEIGHT) || (obj.height as number) < 1) {
+      return 'Invalid block height'
+    }
     if (typeof obj.markdown !== 'string') return 'Invalid block text'
     if (obj.markdown.length > MAX_MARKDOWN_CHARS) {
       return `A text block can have at most ${MAX_MARKDOWN_CHARS} characters`

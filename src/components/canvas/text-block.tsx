@@ -1,8 +1,14 @@
 'use client'
 
 import { ArrowDownToLine, ArrowUpToLine, Trash2 } from 'lucide-react'
-import { memo, useMemo, useRef } from 'react'
-import { MAX_BLOCK_WIDTH, MIN_BLOCK_WIDTH, parseMarkdown, type TextObject } from '@/lib/scene'
+import { memo, useEffect, useMemo, useRef } from 'react'
+import {
+  MAX_BLOCK_HEIGHT,
+  MAX_BLOCK_WIDTH,
+  MIN_BLOCK_WIDTH,
+  parseMarkdown,
+  type TextObject,
+} from '@/lib/scene'
 import { cn } from '@/lib/utils'
 import { TextEditor } from './text-editor'
 
@@ -26,15 +32,31 @@ export interface BlockHandlers {
   select: (id: string) => void
   startEdit: (id: string) => void
   move: (id: string, x: number, y: number) => void
-  resize: (id: string, width: number) => void
+  resize: (id: string, rect: { x: number; y: number; width: number; height: number }) => void
   change: (id: string, markdown: string) => void
-  exitEdit: (id: string, height: number) => void
+  exitEdit: (id: string) => void
+  /** Asal (rendered) oonchai — culling aur Fit ke liye; scene me save nahi hoti */
+  measure: (id: string, height: number) => void
   bringToFront: (id: string) => void
   sendToBack: (id: string) => void
   remove: (id: string) => void
 }
 
 const DRAG_THRESHOLD = 3
+// Block ki padding (py-2) — content ki asal oonchai me jodni hai
+const PADDING_Y = 16
+
+type Edge = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw'
+const EDGES: { edge: Edge; className: string }[] = [
+  { edge: 'nw', className: 'top-0 left-0 -translate-x-1/2 -translate-y-1/2 cursor-nwse-resize' },
+  { edge: 'n', className: 'top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 cursor-ns-resize' },
+  { edge: 'ne', className: 'top-0 right-0 translate-x-1/2 -translate-y-1/2 cursor-nesw-resize' },
+  { edge: 'e', className: 'top-1/2 right-0 translate-x-1/2 -translate-y-1/2 cursor-ew-resize' },
+  { edge: 'se', className: 'bottom-0 right-0 translate-x-1/2 translate-y-1/2 cursor-nwse-resize' },
+  { edge: 's', className: 'bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 cursor-ns-resize' },
+  { edge: 'sw', className: 'bottom-0 left-0 -translate-x-1/2 translate-y-1/2 cursor-nesw-resize' },
+  { edge: 'w', className: 'top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 cursor-ew-resize' },
+]
 
 export const TextBlock = memo(function TextBlock({
   obj,
@@ -54,6 +76,16 @@ export const TextBlock = memo(function TextBlock({
   getZoom: () => number
 }) {
   const ref = useRef<HTMLDivElement>(null)
+  const contentRef = useRef<HTMLDivElement>(null)
+
+  // Asal oonchai canvas ko batao (content min-height se bara ho sakta hai)
+  useEffect(() => {
+    const el = ref.current
+    if (!el) return
+    const observer = new ResizeObserver(() => handlers.measure(obj.id, el.offsetHeight))
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [handlers, obj.id])
 
   // Drag: sirf DOM transform badlo (koi re-render nahi), chhorne par ek commit
   const onPointerDown = (event: React.PointerEvent) => {
@@ -87,29 +119,63 @@ export const TextBlock = memo(function TextBlock({
     el.addEventListener('pointercancel', onUp)
   }
 
-  // Right edge handle se width
-  const onResizeDown = (event: React.PointerEvent) => {
+  // 8 handles: kone aur kinare. Width aur height dono; upar/baayein se kheenchne par x/y bhi.
+  // Height content se kam nahi ho sakti (text kabhi na kate) — zyada karke khali jagah ban sakti hai.
+  const onResizeDown = (edge: Edge) => (event: React.PointerEvent) => {
     event.stopPropagation()
+    event.preventDefault()
     const el = ref.current
+    const content = contentRef.current
     const handle = event.currentTarget as HTMLElement
-    if (!el) return
-    const startX = event.clientX
-    let width = obj.width
+    if (!el || !content) return
+    const start = { x: event.clientX, y: event.clientY }
+    const startRect = { x: obj.x, y: obj.y, width: obj.width, height: el.offsetHeight }
+    let rect = { ...startRect }
+    const east = edge.includes('e')
+    const west = edge.includes('w')
+    const north = edge.startsWith('n')
+    const south = edge.startsWith('s')
     handle.setPointerCapture(event.pointerId)
+
     const onMove = (e: PointerEvent) => {
-      width = Math.round(
-        Math.min(
-          MAX_BLOCK_WIDTH,
-          Math.max(MIN_BLOCK_WIDTH, obj.width + (e.clientX - startX) / getZoom()),
-        ),
-      )
+      const zoomNow = getZoom()
+      const dx = (e.clientX - start.x) / zoomNow
+      const dy = (e.clientY - start.y) / zoomNow
+      const clampW = (w: number) => Math.min(MAX_BLOCK_WIDTH, Math.max(MIN_BLOCK_WIDTH, w))
+      let { x, width } = startRect
+      if (east) width = clampW(startRect.width + dx)
+      if (west) {
+        width = clampW(startRect.width - dx)
+        x = startRect.x + startRect.width - width
+      }
+      // Pehle width lagao, phir naye width par content ki oonchai naapo
       el.style.width = `${width}px`
+      const minHeight = content.offsetHeight + PADDING_Y
+      let { y, height } = startRect
+      if (south) height = startRect.height + dy
+      if (north) height = startRect.height - dy
+      height = Math.min(MAX_BLOCK_HEIGHT, Math.max(minHeight, height))
+      if (north) y = startRect.y + startRect.height - height
+      rect = {
+        x: Math.round(x),
+        y: Math.round(y),
+        width: Math.round(width),
+        height: Math.round(height),
+      }
+      el.style.left = `${rect.x}px`
+      el.style.top = `${rect.y}px`
+      el.style.minHeight = `${rect.height}px`
     }
     const onUp = () => {
       handle.removeEventListener('pointermove', onMove)
       handle.removeEventListener('pointerup', onUp)
       handle.removeEventListener('pointercancel', onUp)
-      if (width !== obj.width) handlers.resize(obj.id, width)
+      const changed =
+        rect.x !== obj.x ||
+        rect.y !== obj.y ||
+        rect.width !== obj.width ||
+        rect.height !== startRect.height
+      if (changed) handlers.resize(obj.id, rect)
     }
     handle.addEventListener('pointermove', onMove)
     handle.addEventListener('pointerup', onUp)
@@ -129,7 +195,14 @@ export const TextBlock = memo(function TextBlock({
         (selected || editing) && 'ring-2 ring-primary/60',
         canEdit && !selected && !editing && 'hover:ring-1 hover:ring-primary/30',
       )}
-      style={{ left: obj.x, top: obj.y, width: obj.width, zIndex: obj.zIndex }}
+      // height = kam se kam oonchai; content zyada ho to block khud bara hota hai
+      style={{
+        left: obj.x,
+        top: obj.y,
+        width: obj.width,
+        minHeight: obj.height,
+        zIndex: obj.zIndex,
+      }}
       onPointerDown={onPointerDown}
       onDoubleClick={(event) => {
         if (!canEdit) return
@@ -137,24 +210,35 @@ export const TextBlock = memo(function TextBlock({
         handlers.startEdit(obj.id)
       }}
     >
-      {editing ? (
-        <TextEditor
-          initialMarkdown={obj.markdown}
-          onChange={(markdown) => handlers.change(obj.id, markdown)}
-          onExit={() => handlers.exitEdit(obj.id, ref.current?.offsetHeight ?? obj.height)}
-        />
-      ) : (
-        <MarkdownView markdown={obj.markdown} />
-      )}
+      {/* flow-root: heading ki margin bahar collapse na ho, taake content ki oonchai sahi naape */}
+      <div ref={contentRef} className="flow-root">
+        {editing ? (
+          <TextEditor
+            initialMarkdown={obj.markdown}
+            onChange={(markdown) => handlers.change(obj.id, markdown)}
+            onExit={() => handlers.exitEdit(obj.id)}
+          />
+        ) : (
+          <MarkdownView markdown={obj.markdown} />
+        )}
+      </div>
 
       {canEdit && selected && !editing ? (
         <>
-          <span
-            role="presentation"
-            data-testid="resize-handle"
-            className="absolute top-1/2 -right-1.5 h-8 w-3 -translate-y-1/2 cursor-ew-resize rounded-sm border bg-background shadow-sm"
-            onPointerDown={onResizeDown}
-          />
+          {EDGES.map(({ edge, className }) => (
+            // Handles screen par hamesha ek hi size ke (zoom se chhote/bade na hon)
+            <span
+              key={edge}
+              role="presentation"
+              data-testid={`resize-${edge}`}
+              className={cn(
+                'absolute z-10 rounded-[2px] border border-primary bg-background shadow-sm',
+                className,
+              )}
+              style={{ width: 10 / zoom, height: 10 / zoom, borderWidth: 1.5 / zoom }}
+              onPointerDown={onResizeDown(edge)}
+            />
+          ))}
           {/* Mini toolbar zoom ke saath chhota/bada na ho */}
           <div
             className="absolute bottom-full left-0 mb-2 flex origin-bottom-left gap-0.5 rounded-md border bg-popover p-0.5 shadow-md"

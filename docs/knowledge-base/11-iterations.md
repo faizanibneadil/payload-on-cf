@@ -23,6 +23,8 @@ Status values: `planned` -> `in progress` -> `ready for review` (branch pushed) 
 | 3 | `dev` | infinite canvas: pan/zoom, culling, text blocks with live markdown (`#`, `-`, `1.`), move/resize/delete, undo/redo | ready for review |
 | 4 | research with the owner | Lexical or not, Excalidraw / tldraw vs own engine, drawing tools, images, presenting; decides the next iterations | planned |
 | 5 | decide with the owner | caching for shared board reads (Next.js vs Cloudflare cache) and its implementation | planned |
+| 6 | decide with the owner | emoji library on the board (options compared together first) | planned |
+| 7 | last, with the owner | typography: font family, font size (shadcn typeset style) for lecture text | planned |
 
 ## Per-iteration log
 (Filled in as work completes: steps done, what to test in the dev preview, issues found.)
@@ -83,3 +85,9 @@ Status values: `planned` -> `in progress` -> `ready for review` (branch pushed) 
 - Bugs found by the tests and fixed before push: Text tool block lost focus (browser mousedown), list line could not become a heading, pasted first line lost its heading, one Ctrl+wheel notch zoomed to 400 %, dense grid at 10 %, mobile visitor saw the board off screen
 - Verified on the production Worker build (local workerd): canvas suite 50/50, iteration 2 44/44, iteration 1 49/49, live check 17/17 (now also adds a markdown block, saves and reloads); `next dev` canvas suite too
 - Test on the dev deployment: double-click the canvas, type `# Title`, Enter, text, `- item`, Enter, Enter, `1. step`; Esc; drag the block; resize with the right handle; Ctrl+Z / Ctrl+Shift+Z; Ctrl + wheel zoom; Fit; Save and reload; share and open the link on a phone (whole board visible, pinch zoom, one-finger pan)
+
+### Fix: resize in both directions (owner request after Iteration 3)
+- [x] 8 resize handles (corners + edges) instead of the right-edge width handle; top/left handles move x/y; height is a minimum height that can never go below the text; the block still grows while typing
+- [x] Real rendered heights are tracked (ResizeObserver) for culling and Fit; `validateScene` checks height (1-10,000)
+- Verified on the production Worker build: canvas suite 60/60 (new: 8 handles, corner, bottom, top, left, top-left, clamp at text height, undo, Save + reload, auto-grow), iteration 2 44/44, iteration 1 49/49, live check 17/17, unit tests 15/15
+- Test on the dev deployment: select a block, drag each corner and edge, try to make it shorter than its text (it stops), make it taller (space below), Ctrl+Z, Save and reload

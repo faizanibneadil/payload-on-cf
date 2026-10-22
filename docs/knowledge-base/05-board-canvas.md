@@ -8,7 +8,7 @@ An instructor prepares a lecture on an infinite canvas: places text blocks anywh
 ## Scene model (stored in `boards.data.canvas`)
 ```
 { version: 1, viewport: { x, y, zoom }, objects: [ ... ] }
-object = { id, type: 'text', x, y, width, height, zIndex, markdown }
+object = { id, type: 'text', x, y, width, height, zIndex, markdown }   // height = minimum height (max 10,000), width 120-2,000
 ```
 - `markdown` is the source of truth for a text block (a plain string). The rendered view is derived from it.
 - New object types (shapes, pen, images, ...) are added later with a `version` bump and a small migration function on load.
@@ -44,10 +44,14 @@ Everyone except the owner and admin: pan and zoom only. No selection, no editing
 ## As built (Iteration 3)
 - Viewport is not part of "unsaved changes"; the current viewport is stored with every Save. The owner opens the board at the saved view (or fit, if no block would be visible); visitors always open it fitted to the content (max 100 %) so every screen size sees the whole lecture.
 - Pan: drag empty space (any tool), Hand tool, Space + drag, wheel / trackpad scroll, one-finger touch. Zoom: Ctrl/Cmd + wheel or trackpad pinch (at the cursor), two-finger touch pinch, toolbar buttons, click on % = 100 %, Fit.
-- Blocks: double-click empty space or Text tool to add; click selects; drag moves; right-edge handle sets the width; Enter edits the selected block; Delete removes it; mini toolbar: bring to front, send to back, delete. An empty block is removed when you leave it. Undo/redo (Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z or Ctrl+Y, toolbar), 100 steps, local only.
+- Blocks: double-click empty space or Text tool to add; click selects; drag moves; 8 resize handles (4 corners, 4 edges) change width and height, and dragging the top or left side moves that side (x/y change too). `height` is the block's minimum height: it can be made taller than the text (empty space below), never shorter than the text (text is never cut off), and the block still grows by itself while typing; Enter edits the selected block; Delete removes it; mini toolbar: bring to front, send to back, delete. An empty block is removed when you leave it. Undo/redo (Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z or Ctrl+Y, toolbar), 100 steps, local only.
 - Editor (`text-editor.tsx`): own `contentEditable`, one `div[data-type]` per line, shortcuts work on any line, Enter continues lists, Enter on an empty list item ends the list, Backspace at line start turns the line back into text, paste is plain text with markdown applied per line, bold/italic formatting is blocked. Numbered lists are numbered with CSS counters.
 - Server: `validateScene` (`src/lib/scene.ts`) runs in the Boards `beforeValidate` hook (known block type, finite numbers, max 500 blocks, max 20,000 characters per block).
 - Measured on the production build: a 300-block board mounts only the blocks near the screen (4-6 at 100 %), 40 wheel-pan steps take ~1.6 s in a headless browser, and all 300 blocks on screen add about 1.5 MB of JS heap over a 2-block board. The dot grid spaces out when zoomed out.
+
+## Later (owner requests, decide together)
+- **Emoji:** add an emoji library to the board (picker + emoji in text blocks). Compare the options with the owner first (bundle size, licence, lazy loading, offline data), then build.
+- **Typography (do this last):** let instructors style text the way shadcn typeset does: font family (a few curated fonts), font size, maybe weight and colour, per block or per selection. Needs a decision on the data model (block-level style vs inline marks) and on loading fonts without slowing the board.
 
 ## Open research (Iteration 4, with the owner)
 - Is a Lexical-based editor needed for richer text, or is the plain block editor enough?

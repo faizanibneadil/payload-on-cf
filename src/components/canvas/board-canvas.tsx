@@ -51,6 +51,12 @@ export function BoardCanvas() {
   const [historySize, setHistorySize] = useState({ past: 0, future: 0 })
   // Edit ke dauraan markdown sirf ref me — har key par poora scene update nahi
   const draft = useRef<{ id: string; markdown: string } | null>(null)
+  // Blocks ki asal rendered oonchai (content min-height se bari ho sakti hai) — culling aur Fit ke liye
+  const measured = useRef(new Map<string, number>())
+  const heightOf = useCallback(
+    (o: TextObject) => Math.max(o.height, measured.current.get(o.id) ?? 0, 24),
+    [],
+  )
 
   useEffect(() => {
     setViewportSource(() => ({ ...viewport.current }))
@@ -66,17 +72,12 @@ export function BoardCanvas() {
     const bottom = (height - y + CULL_MARGIN) / z
     const ids: string[] = []
     for (const o of objectsRef.current) {
-      if (
-        o.x < right &&
-        o.x + o.width > left &&
-        o.y < bottom &&
-        o.y + Math.max(o.height, 24) > top
-      ) {
+      if (o.x < right && o.x + o.width > left && o.y < bottom && o.y + heightOf(o) > top) {
         ids.push(o.id)
       }
     }
     return ids
-  }, [])
+  }, [heightOf])
 
   const applyViewport = useCallback(() => {
     frame.current = 0
@@ -127,7 +128,7 @@ export function BoardCanvas() {
       const minX = Math.min(...list.map((o) => o.x))
       const minY = Math.min(...list.map((o) => o.y))
       const maxX = Math.max(...list.map((o) => o.x + o.width))
-      const maxY = Math.max(...list.map((o) => o.y + o.height))
+      const maxY = Math.max(...list.map((o) => o.y + heightOf(o)))
       const pad = 80
       const z = clampZoom(
         Math.min(width / (maxX - minX + pad * 2), height / (maxY - minY + pad * 2), 1),
@@ -140,7 +141,7 @@ export function BoardCanvas() {
     }
     setZoom(viewport.current.zoom)
     scheduleViewport()
-  }, [scheduleViewport])
+  }, [scheduleViewport, heightOf])
 
   // Container ka size + pehla paint (pehla view sirf mount par tay hota hai)
   // biome-ignore lint/correctness/useExhaustiveDependencies: canEdit/fit sirf mount par chahiye
@@ -191,25 +192,19 @@ export function BoardCanvas() {
   )
 
   const finishEditing = useCallback(
-    (id: string, height?: number) => {
+    (id: string) => {
       const current = objectsRef.current.find((o) => o.id === id)
       const markdown = draft.current?.id === id ? draft.current.markdown : current?.markdown
       draft.current = null
       setEditingId(null)
       if (!current) return
-      const measured =
-        height ??
-        containerRef.current?.querySelector<HTMLElement>(`[data-block-id="${id}"]`)?.offsetHeight ??
-        current.height
       if (!markdown?.trim()) {
         // Khali block chhoro to hata do
         commit(objectsRef.current.filter((o) => o.id !== id))
         setSelectedId(null)
         return
       }
-      if (markdown !== current.markdown || measured !== current.height) {
-        update(id, { markdown, height: measured })
-      }
+      if (markdown !== current.markdown) update(id, { markdown })
     },
     [commit, update],
   )
@@ -274,11 +269,14 @@ export function BoardCanvas() {
         setEditingId(id)
       },
       move: (id, x, y) => update(id, { x, y }),
-      resize: (id, width) => update(id, { width }),
+      resize: (id, rect) => update(id, rect),
       change: (id, markdown) => {
         draft.current = { id, markdown }
       },
-      exitEdit: (id, height) => finishEditing(id, height),
+      exitEdit: (id) => finishEditing(id),
+      measure: (id, height) => {
+        measured.current.set(id, height)
+      },
       bringToFront: (id) =>
         update(id, { zIndex: Math.max(0, ...objectsRef.current.map((o) => o.zIndex)) + 1 }),
       sendToBack: (id) =>
