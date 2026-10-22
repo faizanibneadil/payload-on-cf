@@ -1,41 +1,40 @@
 import { defineConfig, devices } from '@playwright/test'
 
 /**
- * Read environment variables from file.
- * https://github.com/motdotla/dotenv
- */
-import 'dotenv/config'
-
-/**
- * See https://playwright.dev/docs/test-configuration.
+ * Browser tests (Playwright Test). Local production Worker build par chalte hain:
+ *   pnpm test:e2e            (build maujood ho to wahi, warna pehle build)
+ *   BUILD=1 pnpm test:e2e    (hamesha naya build)
+ *   pnpm test:e2e:report     (HTML report: har check, screenshots, video, trace)
+ * Har spec file apna saaf local database leti hai (`tests/e2e/server.sh`); dev/production DB kabhi nahi.
+ * CHROMIUM_PATH=/path/to/chrome se apna browser (na ho to Playwright ka installed browser).
  */
 export default defineConfig({
   testDir: './tests/e2e',
-  /* Fail the build on CI if you accidentally left test.only in the source code. */
+  testMatch: '**/*.spec.mjs',
+  // Suites ek hi local server/DB use karti hain: ek waqt me ek file
+  workers: 1,
+  fullyParallel: false,
   forbidOnly: !!process.env.CI,
-  /* Retry on CI only */
-  retries: process.env.CI ? 2 : 0,
-  /* Opt out of parallel tests on CI. */
-  workers: process.env.CI ? 1 : undefined,
-  /* Reporter to use. See https://playwright.dev/docs/test-reporters */
-  reporter: 'html',
-  /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
+  retries: 0,
+  // Har suite ek lamba flow hai
+  timeout: 15 * 60_000,
+  expect: { timeout: 10_000 },
+  reporter: [['list'], ['html', { open: 'never', outputFolder: 'playwright-report' }]],
+  globalSetup: './tests/e2e/global-setup.mjs',
+  globalTeardown: './tests/e2e/global-teardown.mjs',
+  outputDir: 'test-results/e2e',
   use: {
-    /* Base URL to use in actions like `await page.goto('/')`. */
-    // baseURL: 'http://localhost:3000',
-
-    /* Collect trace when retrying the failed test. See https://playwright.dev/docs/trace-viewer */
-    trace: 'on-first-retry',
+    baseURL: process.env.BASE_URL ?? 'http://127.0.0.1:8787',
+    // Fail hone par video, trace (har qadam, network, console) aur screenshot report me
+    video: 'retain-on-failure',
+    trace: 'retain-on-failure',
+    screenshot: 'only-on-failure',
+    launchOptions: process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {},
   },
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'], channel: 'chromium' },
+      use: { ...devices['Desktop Chrome'] },
     },
   ],
-  webServer: {
-    command: 'pnpm dev',
-    reuseExistingServer: true,
-    url: 'http://localhost:3000',
-  },
 })

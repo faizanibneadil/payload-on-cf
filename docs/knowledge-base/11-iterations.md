@@ -125,3 +125,8 @@ Status values: `planned` -> `in progress` -> `ready for review` (branch pushed) 
 - [x] `serverURL`, `cors`, `csrf` from `wrangler.jsonc` `vars`: production `https://lecture.devslix.com` (same as `main` had), dev `https://payload-on-cf-dev.faizanibneadil1.workers.dev`. Off in `next dev`. Test API calls now send `Origin` like a browser does
 - Verified locally with csrf on (`.dev.vars` origins = local URL): auth-boards 49/49, save-share 52/52 (new: save from another site refused even with the owner cookie), canvas 67/67, live check 17/17
 - Open: `*.devslix.com` wildcard (choice F in `12-owner-rules-and-learnings.md`)
+
+### Iteration 4, step 1: Playwright Test + Playwright MCP
+- [x] Browser suites moved from plain Node scripts to the Playwright Test runner (`tests/e2e/*.spec.mjs`, `pnpm test:e2e`, HTML report with every check, screenshots, failure video and trace). Old template e2e test (email login, removed feature) and its helpers deleted; `tests/browser/` replaced
+- [x] `.mcp.json` with the Playwright MCP server
+- Verified: see the step report in the conversation (all four specs green)

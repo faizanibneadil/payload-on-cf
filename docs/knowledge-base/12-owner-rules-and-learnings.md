@@ -24,7 +24,7 @@ Every correction or instruction from the owner is recorded here, with what it me
 | Oct 2026 | Live-check made every push slow (10-20 min with failures/re-runs) | CI must stay fast; heavy checks are opt-in, local testing is the main gate |
 | Oct 2026 | No surprises; keep learnings | This file; options before any unasked decision |
 | Oct 2026 | Emoji library and typography later, decided together | Do not add emoji or font changes on my own |
-| Oct 2026 | Keep the browser test files in the repo if it makes the work easier | Suites live in `tests/browser/`; `pnpm test:browser` runs all of them before every push |
+| Oct 2026 | Keep the browser test files in the repo if it makes the work easier | Suites live in `tests/e2e/` (Playwright Test); `pnpm test:e2e` runs all of them before every push |
 | Oct 2026 | Update cors/csrf for dev (dev URL) and main (lecture.devslix.com); maybe `*.devslix.com` | Origins per environment in `wrangler.jsonc` `vars` (`SERVER_URL`, `ALLOWED_ORIGINS`); wildcard is an open choice (F) |
 | Oct 2026 | Finish Iteration 3 before moving on | No new iteration until the owner signs off Iteration 3 |
 | Oct 2026 | "Tum ne sahi kia he, ab agy chalte hen" (after the Iteration 3 / origins report) | Iteration 3 is verified; choices A, B, D accepted as built (still changeable on request) |
@@ -38,6 +38,7 @@ Every correction or instruction from the owner is recorded here, with what it me
 | Oct 2026 | Iteration 4 answers: tools OK, no Duplicate button, style panel only for a stylable selection, alignment guides, pen yes, arrows and frames later, images shrunk for instructors (originals on a future paid plan), 10 images per board (admin unlimited), images served by this project only (no extra domain), rebuild text blocks on Lexical with its markdown converters, dynamic block width, shadcn-style code block with line numbers and copy, Playwright Test + Playwright MCP | Details and remaining open points in `13-iteration-4-plan.md` |
 | Oct 2026 | Do not bring in outside services or domains the owner does not have | Everything runs inside this project (Worker, D1, R2) |
 | Oct 2026 | Remove images from the canvas plan completely; keep R2 config; images only via the Payload admin. Type-anywhere and Lexical storage accepted. Callout demo yes. Links with label/target/rel and a hover/focus popover (Edit/Remove) | `13-iteration-4-plan.md` |
+| Oct 2026 | Keep Payload's `media` collection and R2 configuration; do not touch them. Only the canvas has no image features | Never change `media` / R2 setup unless asked |
 
 ## Choices made without the owner (need confirmation)
 These were decided by the agent before rule 1 existed. Each one stays as it is until the owner chooses, and the owner can change any of them.
@@ -49,4 +50,9 @@ These were decided by the agent before rule 1 existed. Each one stays as it is u
 - **E. Boards per day:** default stays 10 (owner once wrote 14 and once "1 board per day"). Editable by the admin in the `settings` Global.
 
 ## Regression protection
-All browser suites are in the repo (`tests/browser/`): `auth-boards` (iteration 1), `save-share` (iteration 2), `canvas` (iteration 3), plus `scripts/live-check.mjs`. `pnpm test:browser --build` builds the production Worker, then runs each suite on a fresh local database (`.wrangler/state`, never dev or production) and prints a pass/fail summary; logs and screenshots go to `test-results/browser/` (gitignored). Run it before every push. When a new owner request changes behaviour, update the matching checks in the same commit.
+Browser tests run on the Playwright Test runner (`playwright.config.ts`, specs in `tests/e2e/`):
+- `auth-boards.spec.mjs` (iteration 1), `save-share.spec.mjs` (iteration 2), `canvas.spec.mjs` (iteration 3), `live-check.spec.mjs` (runs `scripts/live-check.mjs` locally).
+- `pnpm test:e2e` builds the production Worker if needed (`BUILD=1` forces it), gives each spec file a fresh local database (`tests/e2e/server.sh`, only `.wrangler/state`, never dev or production) and runs everything with one worker.
+- Every check is listed in the HTML report (`pnpm test:e2e:report`, annotations pass/FAIL). On a failure the report has the screenshot, a video of every browser window (`tests/e2e/contexts.mjs`) and a trace (each step, network, console). Passing tests keep no videos.
+- Run it before every push; when an owner request changes behaviour, update the matching checks in the same commit.
+- Playwright MCP (`.mcp.json`, `@playwright/mcp@0.0.83`) lets the agent drive a browser while debugging. In a container running as root (like the cloud sessions) set `PLAYWRIGHT_MCP_SANDBOX=false` and `PLAYWRIGHT_MCP_EXECUTABLE_PATH=/opt/pw-browsers/chromium` in the environment; on a normal computer no settings are needed. The MCP server is loaded when a session starts.

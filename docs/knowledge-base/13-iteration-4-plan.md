@@ -9,7 +9,7 @@ Items marked **open** wait for the owner's answer. Nothing is built until the ow
 - **Style panel:** opens only while a shape or another stylable element is selected (stroke colour, fill, stroke width, opacity).
 - **Alignment guides** while moving and resizing.
 - **Engine:** own engine (no tldraw/Excalidraw packages). Shapes are SVG inside the existing world layer; a shape registry, tool state machine, selection/transform, spatial index, and a scene store outside React.
-- **Images on the canvas: removed from the plan** (owner, October 2026). No image tool, no paste/upload of images on the canvas, no R2 image pipeline. The R2 binding and the `@payloadcms/storage-r2` package stay. Images, if needed, are uploaded by the admin in the Payload admin panel (open question below about the `media` collection).
+- **Images on the canvas: removed from the plan** (owner, October 2026). No image tool, no paste/upload of images on the canvas, no R2 image pipeline. The R2 binding and the `@payloadcms/storage-r2` package stay. Payload's `media` collection and the R2 configuration stay exactly as they are and are not touched (owner decision).
 - **Text blocks rebuilt on Lexical** (replaces the custom editor):
   - Lexical markdown converters keep the `#`, `-`, `1.` shortcuts.
   - Code block in the style of shadcn's `code-block` (Base UI version: plain code, line numbers, copy button; highlighting with Shiki's JavaScript engine, loaded per language).
@@ -38,11 +38,11 @@ Items marked **open** wait for the owner's answer. Nothing is built until the ow
 - **Width after a manual resize:** a block grows with the text until the instructor drags its side border; from then on it has that width and wraps (tldraw behaviour).
 - **Storage format:** markdown through Lexical's converters, plus small custom converters for tables, code, to-do lists and UI components. Markdown is compact (about 1.8 MB is several hundred pages of text), so text-heavy lectures fit in the row (accepted: "Lexical ka tareeqa sahi he").
 - **UI component mechanism:** a Lexical decorator node plus a slash-menu entry, with a Callout demo (accepted).
-- **`media` collection (open):** the R2 storage plugin is installed but **not configured** today, so admin uploads would not reach R2 (Workers have no disk). Options: (a) keep `media` and configure `@payloadcms/storage-r2` so admin uploads go to R2; (b) remove the `media` collection (needs a migration), keep R2 config for later.
+- **`media` collection (decided):** keep it and the R2 config untouched. (Note given to the owner: the R2 storage plugin is installed but not configured in `payload.config.ts`.)
 - **Links in read-only view (open):** proposal: visitors just click the link (opens with its target); the popover is only for the owner while editing.
 
 ## Proposed order (each step: build, all tests, push to dev, owner verifies)
-1. Playwright Test runner (move the suites, videos/traces/report) + Playwright MCP config.
+1. Playwright Test runner (move the suites, videos/traces/report) + Playwright MCP config. **Done (pushed to dev, waiting for owner check).**
 2. Text blocks on Lexical: same features as today first (live markdown, dynamic width, type anywhere), then inline toolbar, slash menu, to-do list.
 3. Code block (shadcn style) and tables in text blocks.
 4. Engine upgrade: scene store, multi-select, selection box, copy/paste, alignment guides.
