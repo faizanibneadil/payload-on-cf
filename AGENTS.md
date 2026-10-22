@@ -1,5 +1,7 @@
 # Agents
 
+Before any task read `docs/knowledge-base/12-owner-rules-and-learnings.md` (owner rules: no surprises, give options for anything not asked; keep learnings; do not break earlier features) and keep it updated.
+
 This project uses the Payload CMS skill at `.agents/skills/payload/`.
 Start with `.agents/skills/payload/SKILL.md` for a quick reference, then see `.agents/skills/payload/reference/` for detailed docs.
 

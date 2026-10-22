@@ -3,6 +3,7 @@
 Purpose: reference knowledge for AI coding agents and contributors working on this repo. It adds to the task prompt; it does not replace the official docs.
 
 ## Reading order
+0. `12-owner-rules-and-learnings.md` (owner rules and every past correction; read first, update after every owner request)
 1. `01-architecture-and-decisions.md` (what we are building, fixed decisions)
 2. `02-payload-auth-username.md`
 3. `03-payload-access-control.md`
