@@ -104,3 +104,8 @@ Status values: `planned` -> `in progress` -> `ready for review` (branch pushed) 
 - Fix: page reads no longer load Payload. `getCurrentUser` verifies Payload's JWT with `jose` (same secret derivation and auth version) and checks the session in `users_sessions` with one D1 query (request-cached); board page and My boards read D1 directly with the collection's access rule
 - Verified: old token after sign out is rejected, tampered token rejected; production build suites: iteration 1 49/49, iteration 2 51/51 (size limit now checked through the save endpoint the UI uses), canvas 60/60, live check 17/17
 - Still heavy on the free plan: register (~400 ms CPU for password hashing) and sign in (~100 ms); these are rare, but can occasionally return 1102
+
+### Fix: resize by the border lines (owner request)
+- [x] The 8 visible handle squares are gone. Resizing works by dragging the block's border lines (top, bottom, left, right) and corners: invisible grab areas centred on the border (8 screen px on edges, 14 px on corners, same size at any zoom) with `ns`/`ew`/`nwse`/`nesw` resize cursors. They are active on every editable block (no need to select first), never while editing and never for visitors
+- [x] Selected and editing blocks use the same thin border as hover (`ring-1 ring-primary/30`) instead of the thick ring
+- Verified on the production Worker build: canvas suite 64/64 (new: selected border equals hover border, no visible handles, cursors on every edge/corner and move cursor inside, unselected block resizes straight from its right border, visitor has no grab areas; all resize checks now drag the real border lines), iteration 2 51/51, iteration 1 49/49

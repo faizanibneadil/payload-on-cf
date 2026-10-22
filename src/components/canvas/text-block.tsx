@@ -47,16 +47,21 @@ const DRAG_THRESHOLD = 3
 const PADDING_Y = 16
 
 type Edge = 'n' | 's' | 'e' | 'w' | 'ne' | 'nw' | 'se' | 'sw'
+// Koi nazar aane wala handle nahi: block ki border lines (aur kone) hi pakar kar resize hota hai.
+// Har patti border ke beech me hai, aadhi andar aadhi bahar.
 const EDGES: { edge: Edge; className: string }[] = [
+  { edge: 'n', className: 'inset-x-0 top-0 -translate-y-1/2 cursor-ns-resize' },
+  { edge: 's', className: 'inset-x-0 bottom-0 translate-y-1/2 cursor-ns-resize' },
+  { edge: 'e', className: 'inset-y-0 right-0 translate-x-1/2 cursor-ew-resize' },
+  { edge: 'w', className: 'inset-y-0 left-0 -translate-x-1/2 cursor-ew-resize' },
   { edge: 'nw', className: 'top-0 left-0 -translate-x-1/2 -translate-y-1/2 cursor-nwse-resize' },
-  { edge: 'n', className: 'top-0 left-1/2 -translate-x-1/2 -translate-y-1/2 cursor-ns-resize' },
   { edge: 'ne', className: 'top-0 right-0 translate-x-1/2 -translate-y-1/2 cursor-nesw-resize' },
-  { edge: 'e', className: 'top-1/2 right-0 translate-x-1/2 -translate-y-1/2 cursor-ew-resize' },
   { edge: 'se', className: 'bottom-0 right-0 translate-x-1/2 translate-y-1/2 cursor-nwse-resize' },
-  { edge: 's', className: 'bottom-0 left-1/2 -translate-x-1/2 translate-y-1/2 cursor-ns-resize' },
   { edge: 'sw', className: 'bottom-0 left-0 -translate-x-1/2 translate-y-1/2 cursor-nesw-resize' },
-  { edge: 'w', className: 'top-1/2 left-0 -translate-x-1/2 -translate-y-1/2 cursor-ew-resize' },
 ]
+// Screen pixels me: border line ke gird pakarne ki jagah, aur kone ka hissa
+const EDGE_HIT = 8
+const CORNER_HIT = 14
 
 export const TextBlock = memo(function TextBlock({
   obj,
@@ -119,11 +124,13 @@ export const TextBlock = memo(function TextBlock({
     el.addEventListener('pointercancel', onUp)
   }
 
-  // 8 handles: kone aur kinare. Width aur height dono; upar/baayein se kheenchne par x/y bhi.
+  // Border lines aur kone: width aur height dono; upar/baayein se kheenchne par x/y bhi.
   // Height content se kam nahi ho sakti (text kabhi na kate) — zyada karke khali jagah ban sakti hai.
   const onResizeDown = (edge: Edge) => (event: React.PointerEvent) => {
+    if (event.button !== 0) return
     event.stopPropagation()
     event.preventDefault()
+    handlers.select(obj.id)
     const el = ref.current
     const content = contentRef.current
     const handle = event.currentTarget as HTMLElement
@@ -192,8 +199,9 @@ export const TextBlock = memo(function TextBlock({
       className={cn(
         'absolute rounded-md px-3 py-2 text-foreground',
         canEdit && !editing && 'cursor-move',
-        (selected || editing) && 'ring-2 ring-primary/60',
-        canEdit && !selected && !editing && 'hover:ring-1 hover:ring-primary/30',
+        // Select/edit par wohi patli border jo hover par aati hai
+        (selected || editing) && 'ring-1 ring-primary/30',
+        canEdit && 'hover:ring-1 hover:ring-primary/30',
       )}
       // height = kam se kam oonchai; content zyada ho to block khud bara hota hai
       style={{
@@ -223,22 +231,32 @@ export const TextBlock = memo(function TextBlock({
         )}
       </div>
 
+      {canEdit && !editing
+        ? EDGES.map(({ edge, className }) => {
+            const corner = edge.length === 2
+            // Pakarne ki jagah screen par hamesha ek hi size ki (zoom se chhoti/bari na ho)
+            const size = (corner ? CORNER_HIT : EDGE_HIT) / zoom
+            return (
+              <span
+                key={edge}
+                role="presentation"
+                data-testid={`resize-${edge}`}
+                className={cn('absolute', corner ? 'z-20' : 'z-10', className)}
+                style={
+                  corner
+                    ? { width: size, height: size }
+                    : edge === 'n' || edge === 's'
+                      ? { height: size }
+                      : { width: size }
+                }
+                onPointerDown={onResizeDown(edge)}
+              />
+            )
+          })
+        : null}
+
       {canEdit && selected && !editing ? (
         <>
-          {EDGES.map(({ edge, className }) => (
-            // Handles screen par hamesha ek hi size ke (zoom se chhote/bade na hon)
-            <span
-              key={edge}
-              role="presentation"
-              data-testid={`resize-${edge}`}
-              className={cn(
-                'absolute z-10 rounded-[2px] border border-primary bg-background shadow-sm',
-                className,
-              )}
-              style={{ width: 10 / zoom, height: 10 / zoom, borderWidth: 1.5 / zoom }}
-              onPointerDown={onResizeDown(edge)}
-            />
-          ))}
           {/* Mini toolbar zoom ke saath chhota/bada na ho */}
           <div
             className="absolute bottom-full left-0 mb-2 flex origin-bottom-left gap-0.5 rounded-md border bg-popover p-0.5 shadow-md"
