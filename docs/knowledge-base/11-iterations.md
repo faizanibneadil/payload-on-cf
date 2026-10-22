@@ -115,3 +115,9 @@ Status values: `planned` -> `in progress` -> `ready for review` (branch pushed) 
 - [x] Corner drag scales the whole block in proportion, text included (new optional `scale` on text objects, 0.25-8, validated on the server; old boards without it stay at 1). Edge drag still changes only width/height and the text wraps again (same split as tldraw)
 - [x] CI: the browser live-check is no longer a job in `deploy.yml`. It is its own reusable workflow (`live-check.yml`), run by hand (button available once the file is on `main`) or called from `deploy.yml` when a dev commit message contains `[live-check]`, using the runner's preinstalled Google Chrome. A normal push now runs only the deploy (about 4 min) and the deploy queue never waits for the live-check. `.next/cache` is cached between builds
 - Verified on the production Worker build: canvas suite 67/67 (new: corner scales block and text in proportion, edge keeps text size, top-left corner keeps the bottom-right fixed, text size survives Save + reload), iteration 2 51/51, live check 17/17 (local), validation of `scale` (0.1, 9, "2", NaN rejected)
+
+### Browser suites in the repo + origins per environment (owner request)
+- [x] `tests/browser/` holds the three suites; `pnpm test:browser [--build]` runs them and the live-check on the production Worker build, each on a fresh local database
+- [x] `serverURL`, `cors`, `csrf` from `wrangler.jsonc` `vars`: production `https://lecture.devslix.com` (same as `main` had), dev `https://payload-on-cf-dev.faizanibneadil1.workers.dev`. Off in `next dev`. Test API calls now send `Origin` like a browser does
+- Verified locally with csrf on (`.dev.vars` origins = local URL): auth-boards 49/49, save-share 52/52 (new: save from another site refused even with the owner cookie), canvas 67/67, live check 17/17
+- Open: `*.devslix.com` wildcard (choice F in `12-owner-rules-and-learnings.md`)

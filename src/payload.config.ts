@@ -77,6 +77,17 @@ const smtpFromAddress = env.SMTP_FROM_ADDRESS || 'noreply@example.com'
 const smtpFromName = env.SMTP_FROM_NAME || 'Payload CMS'
 const payloadSecret = env.PAYLOAD_SECRET || DEV_FALLBACK_SECRET
 
+// Har environment ka apna address `wrangler.jsonc` ke `vars` me (production: lecture.devslix.com,
+// dev: workers.dev URL). Login cookie sirf in origins se aane wali requests par mana jata hai (csrf).
+// `next dev` me ye band hain, taake localhost par login chale.
+const serverURL = isProduction ? (env.SERVER_URL ?? '').trim() : ''
+const allowedOrigins = isProduction
+  ? (env.ALLOWED_ORIGINS ?? '')
+      .split(',')
+      .map((origin) => origin.trim())
+      .filter(Boolean)
+  : []
+
 export default buildConfig({
   admin: {
     // App ki tarah admin bhi sirf dark theme me (theme toggle nahi)
@@ -89,6 +100,9 @@ export default buildConfig({
   collections: [Users, Media, Boards],
   globals: [Settings],
   secret: payloadSecret,
+  serverURL,
+  cors: allowedOrigins,
+  csrf: allowedOrigins,
   typescript: {
     outputFile: path.resolve(dirname, 'payload-types.ts'),
   },

@@ -16,7 +16,7 @@
 - [ ] Take screenshots of each tested screen and state and send them to the owner with the final report
 - [ ] Check the browser console and server log for errors during the test
 - [ ] Before pushing a change that touches server code, also test the production Worker build locally: `opennextjs-cloudflare build`, then `wrangler dev` with a copy of `wrangler.jsonc` whose D1 binding has `"remote": false` (`wrangler.preview.jsonc`, gitignored) and `.dev.vars` with `PAYLOAD_SECRET`. `next dev` hides production-only bugs (minified class names, server action timing)
-- [ ] Run `scripts/live-check.mjs` locally against the production Worker build (`CHROMIUM_PATH=/opt/pw-browsers/chromium node scripts/live-check.mjs http://127.0.0.1:8787`)
+- [ ] Run `pnpm test:browser --build` (all browser suites + live-check on the production Worker build, fresh local database per suite; set `CHROMIUM_PATH` if Playwright's own browser is not installed). Every suite must pass, not only the one for the new feature
 - [ ] After the push, check that the deploy run is green. For changes to server code, auth or the deploy, put `[live-check]` in the commit message (or run the "Live check (browser)" workflow by hand) and check that it is green too
 - [ ] Report: what was tested, how, the result of each check (pass/fail), screenshots, and any bug found (fixed, or why not). Nothing untested is reported as done
 

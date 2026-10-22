@@ -30,6 +30,10 @@
       "bucket_name": "payload-on-cf"
     }
   ],
+  "vars": {
+    "SERVER_URL": "https://lecture.devslix.com",
+    "ALLOWED_ORIGINS": "https://lecture.devslix.com"
+  },
   "env": {
     "dev": {
       "name": "payload-on-cf-dev",
@@ -47,7 +51,11 @@
           "binding": "R2",
           "bucket_name": "payload-on-cf-dev"
         }
-      ]
+      ],
+      "vars": {
+        "SERVER_URL": "https://payload-on-cf-dev.faizanibneadil1.workers.dev",
+        "ALLOWED_ORIGINS": "https://payload-on-cf-dev.faizanibneadil1.workers.dev"
+      }
     }
   },
   "observability": {

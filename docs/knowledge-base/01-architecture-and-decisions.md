@@ -28,6 +28,7 @@
 | CI/CD | GitHub Actions only (`.github/workflows/deploy.yml`): a push to `dev` deploys the dev Worker, a push to `main` deploys production. The repo is public, so standard GitHub-hosted runners are free with no minute limit. Cloudflare Workers Builds is not needed (see `07`) |
 | Theme | Frontend: shadcn preset `b5rR41Mtnc`, light is the default, light/dark toggle in the header, no flash on load (the choice is stored in a cookie and the server layout renders `<html class="dark">`). The Payload admin panel stays as it is (`admin.theme: 'dark'`) |
 | Email | The email adapter config stays, but the `onInit` startup email is commented out |
+| Domains | Production: `https://lecture.devslix.com`. Dev: `https://payload-on-cf-dev.faizanibneadil1.workers.dev`. Each environment sets `SERVER_URL` and `ALLOWED_ORIGINS` (comma list) in `wrangler.jsonc` `vars`; Payload uses them for `serverURL`, `cors` and `csrf` (the login cookie is only accepted from these origins). Off in `next dev`. For local Worker tests put both in `.dev.vars` |
 | Routes | `/` = landing / my boards, `/b/<slug>` = a board. No `/login` or `/register` pages |
 | UI kit | shadcn/ui on Base UI only. No Radix |
 | Lint / format | Biome (no ESLint). Fix all errors, only the warnings that can break behaviour |

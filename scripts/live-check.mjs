@@ -32,6 +32,11 @@ const browser = await chromium.launch(
 )
 const context = await browser.newContext({ viewport: { width: 1280, height: 800 } })
 const page = await context.newPage()
+// Payload csrf: test ki API calls bhi browser ki tarah Origin bhejen, warna login cookie nahi mana jata
+for (const m of ['get', 'post', 'patch', 'delete']) {
+  const orig = page.request[m].bind(page.request)
+  page.request[m] = (url, o = {}) => orig(url, { ...o, headers: { Origin: BASE, ...o.headers } })
+}
 page.setDefaultTimeout(STEP_LIMIT_MS)
 page.on('console', (m) => {
   if (m.type() === 'error') record(`  console.error ${page.url()} :: ${m.text().slice(0, 300)}`)
