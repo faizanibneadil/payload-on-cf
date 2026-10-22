@@ -23,6 +23,11 @@
 - [ ] Anything that saves user work from a long-lived page (the board) uses a plain HTTP endpoint with JSON, never a server action (deploy skew reloads the page). Server actions are fine for short flows (sign in, register, create board)
 - [ ] A failed save (network, limit, validation) keeps the unsaved changes on the page and shows a message
 
+## Free plan CPU (10 ms per request)
+- [ ] Pages and other read paths do not import or call Payload (`getPayload`, `payload.auth`, `payload.find`); use `getCurrentUser` (`src/lib/session.ts`) and the D1 helpers in `src/lib/board-reads.ts`
+- [ ] Any new read query is one indexed D1 query; the same access rule as the Payload collection is applied in code
+- [ ] Payload stays for writes (endpoints / actions), because its hooks enforce limits, validation and access
+
 ## Auth and permissions
 - [ ] Username-only login (`allowEmailLogin: false`); username rules enforced on client and server
 - [ ] Sign in / Register modal works; Register always creates an `instructor`; logout works; no `/login` or `/register` pages

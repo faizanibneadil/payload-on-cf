@@ -97,3 +97,10 @@ Status values: `planned` -> `in progress` -> `ready for review` (branch pushed) 
 - Fix: Save and Share moved from server actions to Payload endpoints `POST /api/boards/:id/save` and `/share` (same access control and limits through the collection); the page calls them with `fetch`, and any failure only shows a message and keeps the unsaved changes
 - live-check: waits 30 s after deploy before testing, and logs server action status, navigations and the page state on any failed step
 - Verified on the production Worker build: iteration 2 51/51 (new: failed save keeps changes and does not reload, endpoint 401/403), canvas 60/60, iteration 1 49/49, live check 17/17
+
+### Fix: "Error 1102 Worker exceeded resource limits" on the free plan
+- Live check after the endpoint fix: after the private-board 404, every request returned Cloudflare error 1102 for about 30 s. The owner decided to stay on the Workers free plan (10 ms CPU per request)
+- Measured: Payload cold start ~55 ms CPU, `payload.auth` ~12-26 ms (called twice per page), `payload.find` ~20-35 ms
+- Fix: page reads no longer load Payload. `getCurrentUser` verifies Payload's JWT with `jose` (same secret derivation and auth version) and checks the session in `users_sessions` with one D1 query (request-cached); board page and My boards read D1 directly with the collection's access rule
+- Verified: old token after sign out is rejected, tampered token rejected; production build suites: iteration 1 49/49, iteration 2 51/51 (size limit now checked through the save endpoint the UI uses), canvas 60/60, live check 17/17
+- Still heavy on the free plan: register (~400 ms CPU for password hashing) and sign in (~100 ms); these are rare, but can occasionally return 1102

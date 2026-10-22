@@ -11,6 +11,7 @@ import { Boards } from './collections/Boards'
 import { Media } from './collections/Media'
 import { Users } from './collections/Users'
 import { Settings } from './globals/Settings'
+import { DEV_FALLBACK_SECRET } from './lib/runtime-env'
 
 const filename = fileURLToPath(import.meta.url)
 const dirname = path.dirname(filename)
@@ -54,6 +55,9 @@ const env = {
   ...(cloudflare?.env as unknown as Record<string, string | undefined>),
 }
 
+/** Dev me (next dev / CLI) wahi wrangler proxy jo Payload use karta hai — `src/lib/runtime-env.ts` ke liye */
+export const devCloudflareEnv = cloudflare.env
+
 const cloudflareLogger = {
   level: env.PAYLOAD_LOG_LEVEL || 'info',
   trace: createLog('trace', console.debug),
@@ -71,7 +75,7 @@ const smtpUser = env.SMTP_USER
 const smtpPass = env.SMTP_PASS
 const smtpFromAddress = env.SMTP_FROM_ADDRESS || 'noreply@example.com'
 const smtpFromName = env.SMTP_FROM_NAME || 'Payload CMS'
-const payloadSecret = env.PAYLOAD_SECRET || 'fallback-secret-for-local-dev-only'
+const payloadSecret = env.PAYLOAD_SECRET || DEV_FALLBACK_SECRET
 
 export default buildConfig({
   admin: {

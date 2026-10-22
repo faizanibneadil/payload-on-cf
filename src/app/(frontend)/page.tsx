@@ -1,12 +1,11 @@
 import { LayoutGrid, Share2 } from 'lucide-react'
 import Link from 'next/link'
-import { getPayload } from 'payload'
 import { AuthButton } from '@/components/shell/auth-dialog'
 import { NewBoardButton } from '@/components/shell/new-board-dialog'
 import { SiteHeader } from '@/components/shell/site-header'
 import { Badge } from '@/components/ui/badge'
+import { listOwnBoards } from '@/lib/board-reads'
 import { getCurrentUser } from '@/lib/session'
-import config from '@/payload.config'
 
 export default async function HomePage() {
   const user = await getCurrentUser()
@@ -44,17 +43,8 @@ function Intro() {
 }
 
 async function MyBoards({ userId }: { userId: number }) {
-  const payload = await getPayload({ config })
-  // Sirf apne boards (owner + createdAt index), canvas data list me nahi chahiye
-  const { docs } = await payload.find({
-    collection: 'boards',
-    where: { owner: { equals: userId } },
-    sort: '-updatedAt',
-    limit: 100,
-    depth: 0,
-    select: { title: true, slug: true, isShared: true, updatedAt: true },
-    overrideAccess: true,
-  })
+  // Seedha D1 se (owner index), Payload load kiye baghair
+  const docs = await listOwnBoards(userId)
 
   return (
     <section className="mx-auto w-full max-w-5xl p-4 sm:p-6">
