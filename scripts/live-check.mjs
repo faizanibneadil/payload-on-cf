@@ -37,8 +37,14 @@ page.on('console', (m) => {
   if (m.type() === 'error') record(`  console.error ${page.url()} :: ${m.text().slice(0, 300)}`)
 })
 page.on('pageerror', (e) => record(`  pageerror ${page.url()} :: ${String(e).slice(0, 300)}`))
+page.on('framenavigated', (frame) => {
+  if (frame === page.mainFrame()) record(`  navigated ${frame.url()}`)
+})
 page.on('response', (r) => {
-  if (r.status() >= 400) {
+  // Server actions (POST) ka status hamesha log karo — fail hone par wajah samajhne ke liye
+  if (r.request().method() === 'POST') {
+    record(`  post ${r.status()} ${r.url()} ray=${r.headers()['cf-ray'] ?? '-'}`)
+  } else if (r.status() >= 400) {
     record(
       `  http ${r.status()} ${r.request().method()} ${r.url()} ray=${r.headers()['cf-ray'] ?? '-'}`,
     )
@@ -67,6 +73,17 @@ async function step(name, fn) {
     const ms = Date.now() - start
     results.push({ name, ok: false, ms, error: String(err).split('\n')[0] })
     record(`FAIL ${name} (${ms} ms) ${String(err).split('\n')[0]}`)
+    // Fail hone par page ki haalat log me (artifact ke baghair bhi wajah dikhe)
+    const toasts = await page
+      .locator('[data-sonner-toast]')
+      .allInnerTexts()
+      .catch(() => [])
+    const text = await page
+      .evaluate(() => document.body.innerText.replace(/\s+/g, ' ').slice(0, 400))
+      .catch(() => '')
+    record(`  url: ${page.url()}`)
+    record(`  toasts: ${JSON.stringify(toasts)}`)
+    record(`  page text: ${text}`)
   }
   await shot(name.replace(/[^a-z0-9]+/gi, '-').toLowerCase())
 }
