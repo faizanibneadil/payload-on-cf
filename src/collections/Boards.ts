@@ -2,6 +2,7 @@ import { APIError, type CollectionConfig, type Payload, ValidationError, type Wh
 import { getLimitSettings } from '../globals/Settings'
 import { validateScene } from '../lib/scene'
 import { normalizeTitle, validateTitle } from '../lib/title-slug'
+import { saveBoardEndpoint, shareBoardEndpoint } from './board-endpoints'
 
 const ownerId = (owner: unknown): number | string | undefined =>
   owner && typeof owner === 'object'
@@ -97,6 +98,8 @@ export const Boards: CollectionConfig = {
     useAsTitle: 'title',
     defaultColumns: ['title', 'slug', 'owner', 'isShared', 'updatedAt'],
   },
+  // Save / Share: saade HTTP endpoints (deploy ke dauraan bhi page reload nahi hota)
+  endpoints: [saveBoardEndpoint, shareBoardEndpoint],
   // "har instructor ke 24 ghante me boards" wali count query ke liye
   indexes: [{ fields: ['owner', 'createdAt'] }],
   access: {

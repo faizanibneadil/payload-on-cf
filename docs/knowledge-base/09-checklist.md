@@ -19,6 +19,10 @@
 - [ ] After the push, check that the GitHub Actions run is green, including the `live-check` job (real browser on the dev URL, `scripts/live-check.mjs`); download its artifact for screenshots and the log
 - [ ] Report: what was tested, how, the result of each check (pass/fail), screenshots, and any bug found (fixed, or why not). Nothing untested is reported as done
 
+## Data safety
+- [ ] Anything that saves user work from a long-lived page (the board) uses a plain HTTP endpoint with JSON, never a server action (deploy skew reloads the page). Server actions are fine for short flows (sign in, register, create board)
+- [ ] A failed save (network, limit, validation) keeps the unsaved changes on the page and shows a message
+
 ## Auth and permissions
 - [ ] Username-only login (`allowEmailLogin: false`); username rules enforced on client and server
 - [ ] Sign in / Register modal works; Register always creates an `instructor`; logout works; no `/login` or `/register` pages

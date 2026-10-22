@@ -11,7 +11,6 @@ import {
   useState,
 } from 'react'
 import { toast } from 'sonner'
-import { saveBoardAction, setBoardSharedAction } from '@/app/(frontend)/actions/boards'
 import { setUnsavedChanges } from '@/components/shell/leave-guard'
 import { readScene, SCENE_VERSION, type SceneObject, type Viewport } from '@/lib/scene'
 import { validateTitle } from '@/lib/title-slug'
@@ -39,6 +38,36 @@ interface BoardState {
   setViewportSource: (source: () => Viewport) => void
   save: () => Promise<void>
   setShared: (isShared: boolean) => Promise<void>
+}
+
+/**
+ * Save/Share ke liye saada fetch (server action nahi): deploy ke dauraan bhi page reload nahi hota,
+ * fail ho to sirf message aata hai aur unsaved kaam mehfooz rehta hai.
+ */
+async function postJson<T extends { ok: boolean; error?: string }>(
+  url: string,
+  body: unknown,
+): Promise<T> {
+  try {
+    const res = await fetch(url, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(20_000),
+    })
+    const data = (await res.json().catch((): null => null)) as T | null
+    if (data && typeof data.ok === 'boolean') return data
+    return {
+      ok: false,
+      error: `The server answered with an error (${res.status}). Please try again.`,
+    } as T
+  } catch {
+    return {
+      ok: false,
+      error: 'Could not reach the server. Your changes are still here — please try again.',
+    } as T
+  }
 }
 
 const BoardContext = createContext<BoardState | null>(null)
@@ -122,7 +151,10 @@ export function BoardProvider({
         objects: snapshot.objects,
       },
     }
-    const result = await saveBoardAction({ id, title: snapshot.title, data })
+    const result = await postJson<{ ok: boolean; error?: string; savesLeft?: number | null }>(
+      `/api/boards/${id}/save`,
+      { title: snapshot.title, data },
+    )
     setSaving(false)
     if (!result.ok) {
       toast.error(result.error ?? 'Could not save the board.')
@@ -159,7 +191,10 @@ export function BoardProvider({
       if (!canEdit) return
       setSharing(true)
       setIsShared(next)
-      const result = await setBoardSharedAction({ id, isShared: next })
+      const result = await postJson<{ ok: boolean; error?: string; isShared?: boolean }>(
+        `/api/boards/${id}/share`,
+        { isShared: next },
+      )
       setSharing(false)
       if (!result.ok) {
         setIsShared(!next)

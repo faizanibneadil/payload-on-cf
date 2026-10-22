@@ -195,6 +195,10 @@ jobs:
       - name: Install Chromium
         run: pnpm exec playwright install --with-deps chromium
 
+      # Naya Worker version Cloudflare ki har jagah pahunchne me kuch second leta hai
+      - name: Wait for the new version to reach all edges
+        run: sleep 30
+
       - name: Run live check
         run: node scripts/live-check.mjs "${{ needs.deploy.outputs.url }}"
 

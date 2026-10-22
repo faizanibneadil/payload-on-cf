@@ -91,3 +91,9 @@ Status values: `planned` -> `in progress` -> `ready for review` (branch pushed) 
 - [x] Real rendered heights are tracked (ResizeObserver) for culling and Fit; `validateScene` checks height (1-10,000)
 - Verified on the production Worker build: canvas suite 60/60 (new: 8 handles, corner, bottom, top, left, top-left, clamp at text height, undo, Save + reload, auto-grow), iteration 2 44/44, iteration 1 49/49, live check 17/17, unit tests 15/15
 - Test on the dev deployment: select a block, drag each corner and edge, try to make it shorter than its text (it stops), make it taller (space below), Ctrl+Z, Save and reload
+
+### Fix: saves lost during a deploy (found by live-check)
+- The live-check failed twice right after a deploy: the canvas Save request was aborted and the page reloaded itself, so the new block was lost. Locally (also with 400 ms latency) it never happened. Most likely cause: deploy skew (an old page calling a new Worker version through a server action makes Next reload the page)
+- Fix: Save and Share moved from server actions to Payload endpoints `POST /api/boards/:id/save` and `/share` (same access control and limits through the collection); the page calls them with `fetch`, and any failure only shows a message and keeps the unsaved changes
+- live-check: waits 30 s after deploy before testing, and logs server action status, navigations and the page state on any failed step
+- Verified on the production Worker build: iteration 2 51/51 (new: failed save keeps changes and does not reload, endpoint 401/403), canvas 60/60, iteration 1 49/49, live check 17/17
