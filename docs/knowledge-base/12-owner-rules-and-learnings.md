@@ -27,13 +27,14 @@ Every correction or instruction from the owner is recorded here, with what it me
 | Oct 2026 | Keep the browser test files in the repo if it makes the work easier | Suites live in `tests/browser/`; `pnpm test:browser` runs all of them before every push |
 | Oct 2026 | Update cors/csrf for dev (dev URL) and main (lecture.devslix.com); maybe `*.devslix.com` | Origins per environment in `wrangler.jsonc` `vars` (`SERVER_URL`, `ALLOWED_ORIGINS`); wildcard is an open choice (F) |
 | Oct 2026 | Finish Iteration 3 before moving on | No new iteration until the owner signs off Iteration 3 |
+| Oct 2026 | "Tum ne sahi kia he, ab agy chalte hen" (after the Iteration 3 / origins report) | Iteration 3 is verified; choices A, B, D accepted as built (still changeable on request) |
 
 ## Choices made without the owner (need confirmation)
 These were decided by the agent before rule 1 existed. Each one stays as it is until the owner chooses, and the owner can change any of them.
-- **A. Edge vs corner on resize:** edges change only the box (text keeps its size and wraps again), corners scale block and text. Other options: every drag scales the text; or a separate "text size" control.
-- **B. Text size range:** 0.25x-8x of the normal size (15px).
+- **A. (accepted) Edge vs corner on resize:** edges change only the box (text keeps its size and wraps again), corners scale block and text. Other options: every drag scales the text; or a separate "text size" control.
+- **B. (accepted) Text size range:** 0.25x-8x of the normal size (15px).
 - **C. Live-check trigger:** opt-in with `[live-check]` in a dev commit message, or by hand from the Actions tab (button appears once the file is on `main`). Other options: run it only on `main` pushes, a nightly schedule, or never in CI (local only).
-- **D. Grab area for border resize:** about 8 screen px on edges, 14 px on corners.
+- **D. (accepted) Grab area for border resize:** about 8 screen px on edges, 14 px on corners.
 - **F. `*.devslix.com`:** Payload only matches exact origins (no wildcard). Options: list each domain in `ALLOWED_ORIGINS` (current, simple, safe); a small custom check that accepts any `https://<name>.devslix.com` (touches Payload internals, must be re-checked on Payload upgrades); or one variable per environment that the owner edits in the Cloudflare dashboard. Also open: should the production workers.dev URL be allowed too (today only lecture.devslix.com, same as `main` had)?
 - **E. Boards per day:** default stays 10 (owner once wrote 14 and once "1 board per day"). Editable by the admin in the `settings` Global.
 
