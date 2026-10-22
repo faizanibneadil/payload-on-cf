@@ -15,6 +15,7 @@ Purpose: reference knowledge for AI coding agents and contributors working on th
 9. `09-checklist.md`
 10. `10-layout-and-header.md` (header, theme, board page)
 11. `11-iterations.md` (iteration tracker and working rules; check it first to see what is done)
+12. `13-iteration-4-plan.md` (current iteration shape, draft)
 
 When a file disagrees with `01-architecture-and-decisions.md`, `01` wins.
 

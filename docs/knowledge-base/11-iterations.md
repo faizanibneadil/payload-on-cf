@@ -21,10 +21,14 @@ Status values: `planned` -> `in progress` -> `ready for review` (branch pushed) 
 | 1 | `dev` | shadcn preset `b5rR41Mtnc`, light/dark theme (light default, toggle in the header), users (`admin` / `instructor`, username rules, public Register as instructor), `boards` collection replacing `playgrounds`, `settings` Global, access control, migrations on dev, header, sign-in modal, `/` with My boards | verified in dev |
 | 2 | `dev` | Save (one row write), unsaved indicator + `beforeunload`, rate limits (Global, cached), Share toggle and link, `/b/<slug>` read-only for others | verified in dev |
 | 3 | `dev` | infinite canvas: pan/zoom, culling, text blocks with live markdown (`#`, `-`, `1.`), move/resize/delete, undo/redo | verified in dev |
-| 4 | research with the owner | Lexical or not, Excalidraw / tldraw vs own engine, drawing tools, images, presenting; decides the next iterations | planned |
+| 4 | shape under discussion (`13-iteration-4-plan.md`) | whiteboard tools on our own engine: shapes, images (R2), rich text blocks (Lexical), engine upgrades | planned |
 | 5 | decide with the owner | caching for shared board reads (Next.js vs Cloudflare cache) and its implementation | planned |
 | 6 | decide with the owner | emoji library on the board (options compared together first) | planned |
 | 7 | last, with the owner | typography: font family, font size (shadcn typeset style) for lecture text | planned |
+
+## Backlog (later, decide with the owner first)
+- Presentation mode: first decide how the instructor picks which blocks belong to a slide and how they arrange slides
+- AI lecture design: only after the product is ready and has user feedback
 
 ## Per-iteration log
 (Filled in as work completes: steps done, what to test in the dev preview, issues found.)

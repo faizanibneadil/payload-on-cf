@@ -29,6 +29,13 @@ Every correction or instruction from the owner is recorded here, with what it me
 | Oct 2026 | Finish Iteration 3 before moving on | No new iteration until the owner signs off Iteration 3 |
 | Oct 2026 | "Tum ne sahi kia he, ab agy chalte hen" (after the Iteration 3 / origins report) | Iteration 3 is verified; choices A, B, D accepted as built (still changeable on request) |
 
+| Oct 2026 | Own canvas engine, no Excalidraw/tldraw. Study how they work and build only what we need, growing it with our needs; the canvas must feel smooth | Never add the tldraw or Excalidraw packages. Learn from their public docs/architecture, write our own code (tldraw's license does not allow copying its code) |
+| Oct 2026 | Product goal: instructors design proper, interactive lectures (not a plain whiteboard). Later: AI that helps design lectures, only after the product is ready and has feedback | Do not build AI features now; keep the scene model clean and documented so AI can produce it later |
+| Oct 2026 | Lexical is wanted after all (code blocks, React UI components, inline toolbar, tables, slash menu, to-do lists; same family as Payload) | Earlier "no Lexical" is replaced. Scope and storage decided in `13-iteration-4-plan.md` |
+| Oct 2026 | Images: upload to R2, paste from anywhere, an image removed from a board must be deleted from R2 (free limits) | No orphan files in R2; deletion rules decided in `13-iteration-4-plan.md` |
+| Oct 2026 | Presentation mode later, after deciding how slides pick blocks | Backlog item only (`11-iterations.md`) |
+| Oct 2026 | Flow per iteration: finalise the shape together -> agent plans and splits into small tasks -> implements -> pushes to dev -> owner checks and verifies -> next | Never start implementing an iteration before its shape is final |
+
 ## Choices made without the owner (need confirmation)
 These were decided by the agent before rule 1 existed. Each one stays as it is until the owner chooses, and the owner can change any of them.
 - **A. (accepted) Edge vs corner on resize:** edges change only the box (text keeps its size and wraps again), corners scale block and text. Other options: every drag scales the text; or a separate "text size" control.
