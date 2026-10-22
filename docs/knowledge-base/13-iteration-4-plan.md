@@ -1,55 +1,53 @@
-# 13. Iteration 4 plan (DRAFT, shape under discussion with the owner)
+# 13. Iteration 4 plan (shape being finalised with the owner)
 
-Nothing here is built yet. Items marked **open** wait for the owner's answer. When the shape is final, this file gets the task list.
+Items marked **open** wait for the owner's answer. Nothing is built until the owner says go.
 
-## Owner requirements (October 2026)
-1. Shapes: rectangle, circle, plus whatever else is important (agent proposes).
-2. Images: upload to R2; paste an image copied from anywhere; an image removed from a board is deleted from R2.
-3. Presentation mode: later (backlog), after deciding how slides pick blocks.
-4. Own engine, studied from tldraw/Excalidraw, built only as far as we need, smooth.
-5. Text blocks on Lexical: code block (shadcn's new code block), React UI components inside lectures, inline toolbar on selection (bold, italic, ...), tables, slash menu (headings, lists, to-do list, UI elements).
-6. Proper UI tests with Playwright.
+## Decided by the owner (October 2026)
+- **Tools:** Rectangle, Ellipse, Line, Pen (freehand, smoothing with `perfect-freehand`), Image, Eraser, plus the existing Select, Hand, Text. Arrow tool: proposed earlier, see "Later".
+- **Many at once:** multi-select (selection box, Shift+click), then move, resize and delete together.
+- **Copy/paste** (Ctrl+C / Ctrl+V). No separate Duplicate button.
+- **Style panel:** opens only while a shape or another stylable element is selected (stroke colour, fill, stroke width, opacity).
+- **Alignment guides** while moving and resizing.
+- **Engine:** own engine (no tldraw/Excalidraw packages). Shapes are SVG inside the existing world layer; a shape registry, tool state machine, selection/transform, spatial index, and a scene store outside React.
+- **Images:**
+  - Upload to R2. Paste from the clipboard: image data is uploaded; an image copied from a website (link/HTML only) is downloaded by the server and stored in R2.
+  - Instructor plan: the browser shrinks the image before upload. Paid plan (future, not now): keep the original.
+  - Instructors: max 10 images per board. Admin: no limit.
+  - Served from R2 through this project (no extra domain or service).
+  - An image removed from a board is deleted from R2; images of a deleted board or user are deleted too.
+- **Text blocks rebuilt on Lexical** (replaces the custom editor):
+  - Lexical markdown converters keep the `#`, `-`, `1.` shortcuts.
+  - Code block in the style of shadcn's `code-block` (Base UI version: plain code, line numbers, copy button; highlighting with Shiki's JavaScript engine, loaded per language).
+  - Inline toolbar on text selection (bold, italic, ...).
+  - Tables.
+  - Slash menu (headings, lists, to-do list, UI elements).
+  - React UI components: only the mechanism now; which components come later.
+- **Text block width:** no fixed width. A new block grows with the text and breaks lines only on Enter, like Excalidraw/tldraw.
+- **Lectures are mostly text** (definitions, theory); shapes/drawings are rare. Storage and performance are planned for long text.
+- **Playwright:** move the browser tests to the Playwright Test runner (videos, traces, HTML report) and configure the Playwright MCP server for debugging.
 
-## Agent proposal (to confirm)
+## Later (backlog, do not build now)
+- Arrows that stay attached to shapes (important, later).
+- Frames (counted as a tool; they may become presentation slides).
+- Presentation mode.
+- Paid plan: original images without shrinking.
+- Which React UI components to offer.
+- AI lecture design (after product launch and feedback).
 
-### Tools on the toolbar
-- Already there: Select, Hand, Text.
-- Proposed core: Rectangle, Ellipse, Line, Arrow, Freehand pen, Image, Eraser.
-- **Open:** diamond/triangle, sticky note, frame (a named area; could later become a presentation slide), arrows that stay attached to shapes when they move, laser pointer.
+## Agent proposal for the remaining points (to confirm)
+- **"Type anywhere":** the whole canvas as one Lexical editor is not a fit (Lexical is a top-to-bottom document; free positions, shapes and culling would fight it, and one huge editor gets slow). Proposal: keep blocks but make them invisible to the instructor. Click on empty canvas and start typing creates a block there. One block can hold a whole section (headings, lists, code, tables, components), so few blocks are needed.
+- **Width after a manual resize:** a block grows with the text until the instructor drags its side border; from then on it has that width and wraps (tldraw behaviour).
+- **Image size (instructor):** longest side 1920 px, WebP, quality about 0.82; files over 20 MB before shrinking are refused. Website images: max 10 MB, image types only.
+- **Image serving:** a small Worker route that streams the file from R2 without loading Payload (cheap on the free plan), with long browser caching. The public `r2.dev` URL is rate-limited and not meant for production, so it is not used.
+- **Storage format:** markdown through Lexical's converters, plus small custom converters for tables, code, to-do lists and UI components. Markdown is compact (about 1.8 MB is several hundred pages of text), so text-heavy lectures fit in the row; images live in R2, not in the row.
+- **UI component mechanism:** a Lexical decorator node plus a slash-menu entry. One demo component (for example a Callout) to prove it works (**open**: yes/no).
 
-### Editing features the engine needs for these tools
-- Multi-select (drag a box, Shift+click), move/resize/delete many at once, duplicate (Ctrl+D), copy/paste inside and between boards.
-- Style panel: stroke colour, fill colour, stroke width, opacity (fixed palette that works in light and dark).
-- Snapping/alignment guides while moving.
-- **Open:** rotation; grouping; locking a block.
-
-### Engine approach
-- Keep the current design (one transformed world layer, culling, history) and add shapes as SVG inside the same layer (the tldraw approach, which fits rich text and React components living in the DOM). Excalidraw draws on a 2D canvas instead, which is faster for thousands of strokes but cannot host rich text or React components.
-- Engine parts to build: shape registry (each type: geometry, hit test, render, handles), tool state machine, selection and transform, a spatial index for hit testing, a scene store outside React so panning never re-renders the whole board.
-- **Open:** freehand smoothing with the small MIT library `perfect-freehand` (used by both tldraw and Excalidraw) or our own smoothing.
-
-### Images
-- Paste: clipboard image data is uploaded straight away. If only a link or HTML `<img>` is pasted, either the server fetches and stores the image, or only the link is kept (**open**).
-- Before upload the browser shrinks the image (max side and WebP), to save R2 space and CPU (the Worker never resizes images: no sharp on Workers).
-- Delete rule (**open**): delete from R2 on Save when the image is no longer in the board (Undo before Save still works); delete all images when a board or user is deleted; a cleanup removes uploads that were never saved within 24 h.
-- Serving (**open**): through the Worker (counts against requests/CPU) or a public R2 custom domain such as `media.devslix.com` (free egress, no Worker CPU).
-- Limits (**open**): max image size, max images per board, storage per instructor.
-
-### Text blocks on Lexical
-- Only the block being edited mounts a Lexical editor; all other blocks render read-only from saved data without Lexical, so 300 blocks stay smooth (same idea as today).
-- Lexical packages: code (with syntax highlighting), table, list (incl. to-do), markdown shortcuts (keeps today's `#`, `-`, `1.`), plus our own floating toolbar and slash menu built on Lexical's typeahead plugin.
-- **Open:** storage format. Lexical JSON keeps everything (tables, components) but is 5-10x larger than markdown, closer to the D1 row limit (2 MB). Options: Lexical JSON per block; or markdown plus JSON only for blocks that need it.
-- **Open:** which React UI components first (callout, tabs, accordion, quiz, ...).
-- **Open:** existing boards are markdown; they get converted automatically when first opened.
-
-### Playwright
-- Today: three suites written as plain Node scripts on the Playwright library, plus the live-check.
-- Proposal: move to the Playwright Test runner (`@playwright/test`, already installed): clear pass/fail per test, automatic waiting, a trace and video of every failure, HTML report, screenshot comparison for the canvas. Run locally and before every merge to `main`, not on every push (rule 5).
-
-### Suggested order (each step: build, test, push to dev, owner verifies)
-1. Playwright Test runner + current suites moved over.
-2. Engine upgrade: scene store, multi-select, selection box, style panel basics.
-3. Shapes.
-4. Images (R2).
-5. Lexical text blocks (toolbar, slash menu, tables, code, to-do).
-6. React UI components in lectures.
+## Proposed order (each step: build, all tests, push to dev, owner verifies)
+1. Playwright Test runner (move the suites, videos/traces/report) + Playwright MCP config.
+2. Text blocks on Lexical: same features as today first (live markdown, dynamic width, type anywhere), then inline toolbar, slash menu, to-do list.
+3. Code block (shadcn style) and tables in text blocks.
+4. Engine upgrade: scene store, multi-select, selection box, copy/paste, alignment guides.
+5. Shapes (rectangle, ellipse, line) + style panel.
+6. Pen + eraser.
+7. Images (upload, paste, website images, limits, R2 delete).
+8. UI component mechanism (+ demo component if wanted).
