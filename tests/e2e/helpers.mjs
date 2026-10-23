@@ -68,7 +68,7 @@ export function suite(browser, testInfo) {
     await dlg.getByLabel('Title').fill(title)
     await dlg.getByRole('button', { name: 'Create board' }).click()
     await page.waitForURL(/\/b\//)
-    await page.getByTestId('canvas-surface').waitFor()
+    await page.getByTestId('board-editor').waitFor()
     return new URL(page.url()).pathname.split('/').pop()
   }
 
@@ -91,18 +91,3 @@ export function suite(browser, testInfo) {
 
   return { check, newPage, shot, register, createBoard, share, save, consoleErrors }
 }
-
-// Block ke andar har line ka type: p, h1-h3, ul/ol (har item), todo (to-do item)
-export const lineTypes = (loc) =>
-  loc.evaluate((el) => {
-    const root = el.matches('.md-lines') ? el : (el.querySelector('.md-lines') ?? el)
-    const out = []
-    for (const c of root.children) {
-      const tag = c.tagName.toLowerCase()
-      if (tag === 'ul' || tag === 'ol') {
-        const type = c.classList.contains('md-checklist') ? 'todo' : tag
-        for (const _li of c.children) out.push(type)
-      } else out.push(tag)
-    }
-    return out
-  })

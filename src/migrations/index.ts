@@ -7,6 +7,7 @@ import * as migration_20261014_055711_nested_files_and_access from './20261014_0
 import * as migration_20261015_060000_promote_first_user_to_admin from './20261015_060000_promote_first_user_to_admin'
 import * as migration_20261021_193036_drop_playground_files from './20261021_193036_drop_playground_files'
 import * as migration_20261021_201333_boards_and_instructor_role from './20261021_201333_boards_and_instructor_role'
+import * as migration_20261023_220000_delete_canvas_boards from './20261023_220000_delete_canvas_boards'
 
 export const migrations = [
   {
@@ -53,5 +54,10 @@ export const migrations = [
     up: migration_20261021_201333_boards_and_instructor_role.up,
     down: migration_20261021_201333_boards_and_instructor_role.down,
     name: '20261021_201333_boards_and_instructor_role',
+  },
+  {
+    up: migration_20261023_220000_delete_canvas_boards.up,
+    down: migration_20261023_220000_delete_canvas_boards.down,
+    name: '20261023_220000_delete_canvas_boards',
   },
 ]

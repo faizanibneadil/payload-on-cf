@@ -1,6 +1,6 @@
 # 05. Board editor (one Lexical document per board)
 
-> Status: **target design** (owner decision, October 2026). Built step by step through the tasks in `13-task-tracker.md`; each section says which task builds it. Until task A3 is merged the code on `dev` still has the old infinite canvas.
+> Status: **target design** (owner decision, October 2026), built step by step through the tasks in `13-task-tracker.md`; each section says which task builds it. Built so far: storage, validation, editor with paragraphs, read view (task A3).
 
 ## Goal
 "A lecture can contain drawings, but a drawing is not a lecture." An instructor writes a lecture as one rich document: text, headings, lists, tables, links, code, and later drawings (a canvas) as blocks inside the text. It must be quick to write and pleasant to read.
@@ -21,6 +21,15 @@
 - Owner: the Lexical editor (client, lazy-loaded chunk).
 - Visitors: a read view rendered on the server from the JSON (JSON -> React, no Lexical JavaScript in the browser). Its CPU time on long documents is measured (free plan, 10 ms).
 - One set of theme classes is shared by the editor and the read view, so both look the same.
+
+## As built (task A3)
+- Page: the document sits in a centred column (max width 3xl, padding 16-32 px) under the header and scrolls with the page.
+- Owner: the server read view shows first, then the editor chunk replaces it (same classes, nothing moves). Placeholder "Start writing your lecture..." on an empty board; the editor is at least half a screen tall, so a click below the text puts the cursor in it.
+- Only paragraphs for now: Enter = new paragraph, Shift+Enter = line break. Formatting, alignment and indent commands are blocked and pasted rich text arrives as plain paragraphs, until their own tasks enable them.
+- Typed text reaches the board 300 ms after typing stops, so "Unsaved changes" shows while still typing; Save and Ctrl/Cmd+S (also inside the editor) include the newest text. Opening a board is never an unsaved change (the editor's normalized document becomes the saved baseline).
+- Undo/redo: Lexical history (Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z).
+- Visitor of a shared board with no text sees "This board is empty."
+- Migration `20261023_220000_delete_canvas_boards` deletes every board whose data is not a document (old canvas, empty or broken).
 
 ## Text features (iteration B, each one task with its markdown shortcut and tests)
 | Feature | Markdown shortcut (like Payload) |

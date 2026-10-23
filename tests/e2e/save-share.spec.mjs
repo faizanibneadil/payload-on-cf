@@ -436,21 +436,18 @@ test('Iteration 2: Save, unsaved changes, Share, limits, size limit, CSRF', asyn
   // Size limit
   st = await setSettings({ maxContentBytes: 10000 })
   const big = {
-    canvas: {
-      version: 1,
-      viewport: { x: 0, y: 0, zoom: 1 },
-      objects: [
-        {
-          id: 'x',
-          type: 'text',
-          x: 0,
-          y: 0,
-          width: 320,
-          height: 40,
-          zIndex: 1,
-          markdown: 'a'.repeat(15000),
-        },
-      ],
+    doc: {
+      root: {
+        type: 'root',
+        version: 1,
+        children: [
+          {
+            type: 'paragraph',
+            version: 1,
+            children: [{ type: 'text', version: 1, text: 'a'.repeat(15000), format: 0 }],
+          },
+        ],
+      },
     },
   }
   await setSettings({ maxSavesPerBoardPerWindow: 10 })

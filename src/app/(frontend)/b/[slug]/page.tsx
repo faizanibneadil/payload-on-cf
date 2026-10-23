@@ -2,9 +2,11 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { BoardActions, BoardTitle } from '@/components/board/board-header'
 import { BoardProvider } from '@/components/board/board-store'
-import { CanvasLoader } from '@/components/canvas/canvas-loader'
+import { EditorLoader } from '@/components/editor/editor-loader'
+import { DocumentView } from '@/components/read-view/document-view'
 import { SiteHeader } from '@/components/shell/site-header'
 import { getBoardBySlug } from '@/lib/board-reads'
+import { hasContent, readDocument } from '@/lib/document'
 import { getCurrentUser } from '@/lib/session'
 
 type Props = { params: Promise<{ slug: string }> }
@@ -23,6 +25,7 @@ export default async function BoardPage({ params }: Props) {
   if (!board) notFound()
 
   const canEdit = Boolean(user && (user.role === 'admin' || board.owner === user.id))
+  const doc = readDocument(board.data)
 
   return (
     <BoardProvider
@@ -34,11 +37,21 @@ export default async function BoardPage({ params }: Props) {
       initialShared={board.isShared}
     >
       <SiteHeader title={<BoardTitle />} actions={<BoardActions />} />
-      <main
-        className="relative min-h-0 flex-1 overflow-hidden bg-muted/30"
-        data-testid="board-canvas"
-      >
-        <CanvasLoader />
+      <main className="min-h-0 flex-1 overflow-y-auto" data-testid="board-page">
+        <div className="mx-auto w-full max-w-3xl px-4 py-8 sm:px-8 sm:py-12">
+          {canEdit ? (
+            // Owner: pehle server ka read view, editor ka chunk aate hi editor
+            <EditorLoader>
+              <DocumentView doc={doc} />
+            </EditorLoader>
+          ) : hasContent(doc) ? (
+            <DocumentView doc={doc} />
+          ) : (
+            <p className="text-muted-foreground" data-testid="empty-board">
+              This board is empty.
+            </p>
+          )}
+        </div>
       </main>
     </BoardProvider>
   )

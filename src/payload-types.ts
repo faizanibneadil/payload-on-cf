@@ -385,7 +385,7 @@ export interface Setting {
    */
   maxSavesPerBoardPerWindow: number;
   /**
-   * Maximum size of one board (canvas JSON) in bytes.
+   * Maximum size of one board (document JSON) in bytes.
    */
   maxContentBytes: number;
   updatedAt?: string | null;

@@ -1,6 +1,7 @@
 'use server'
 
 import { getPayload } from 'payload'
+import { emptyDocument } from '@/lib/document'
 import { toUserMessage } from '@/lib/payload-errors'
 import { getCurrentUser } from '@/lib/session'
 import { validateTitle } from '@/lib/title-slug'
@@ -25,7 +26,7 @@ export async function createBoardAction(input: { title: string }): Promise<Creat
         slug: '',
         owner: user.id,
         isShared: false,
-        data: { canvas: { version: 1, viewport: { x: 0, y: 0, zoom: 1 }, objects: [] } },
+        data: { doc: emptyDocument() },
       },
       depth: 0,
       user,

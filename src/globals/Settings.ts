@@ -87,7 +87,7 @@ export const Settings: GlobalConfig = {
       min: 10_000,
       max: MAX_CONTENT_BYTES_CEILING,
       defaultValue: DEFAULT_SETTINGS.maxContentBytes,
-      admin: { description: 'Maximum size of one board (canvas JSON) in bytes.' },
+      admin: { description: 'Maximum size of one board (document JSON) in bytes.' },
     },
   ],
 }

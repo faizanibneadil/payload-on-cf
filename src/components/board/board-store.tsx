@@ -12,12 +12,12 @@ import {
 } from 'react'
 import { toast } from 'sonner'
 import { setUnsavedChanges } from '@/components/shell/leave-guard'
-import { readScene, SCENE_VERSION, type SceneObject, type Viewport } from '@/lib/scene'
+import { type BoardDocument, readDocument } from '@/lib/document'
 import { validateTitle } from '@/lib/title-slug'
 
 interface Snapshot {
   title: string
-  objects: SceneObject[]
+  doc: BoardDocument
 }
 
 interface BoardState {
@@ -25,19 +25,23 @@ interface BoardState {
   slug: string
   canEdit: boolean
   title: string
-  objects: SceneObject[]
-  initialViewport: Viewport
+  /** Server se aaya document (editor isi se shuru hota hai) */
+  initialDoc: BoardDocument
   isShared: boolean
   dirty: boolean
   saving: boolean
   sharing: boolean
   titleError: string | null
   setTitle: (title: string) => void
-  setObjects: (objects: SceneObject[]) => void
-  /** Canvas apna live viewport dene ka tareeqa register karta hai (Save ke waqt liya jata hai) */
-  setViewportSource: (source: () => Viewport) => void
-  /** Save se pehle canvas ka taaza scene (jaise edit ho raha text) — warna `objects` */
-  setFlushSource: (source: () => SceneObject[]) => void
+  /** Editor ka taaza document (typing rukne ke thori der baad) — "unsaved" isi se banta hai */
+  setDoc: (doc: BoardDocument) => void
+  /**
+   * Editor khulte hi apna normalized document deta hai (Lexical khali root me paragraph jodta hai
+   * waghera) — usay hi "saved" maan lo, warna board khulte hi "Unsaved changes" dikhe
+   */
+  setBaseline: (doc: BoardDocument) => void
+  /** Save se pehle editor ka bilkul taaza document (abhi type hua text bhi) — warna `doc` */
+  setFlushSource: (source: () => BoardDocument) => void
   save: () => Promise<void>
   setShared: (isShared: boolean) => Promise<void>
 }
@@ -80,11 +84,11 @@ export function useBoard() {
   return value
 }
 
-// JSON compare — canvas ka data plain JSON hai
+// JSON compare — document plain JSON hai
 const sameJson = (a: unknown, b: unknown) => JSON.stringify(a) === JSON.stringify(b)
 
 /**
- * Ek board ka editor state: title + canvas, aur jo server par saved hai uska snapshot.
+ * Ek board ka editor state: title + document, aur jo server par saved hai uska snapshot.
  * Koi autosave nahi — sirf "Save" (ya Ctrl/Cmd+S) par ek row write.
  */
 export function BoardProvider({
@@ -104,24 +108,23 @@ export function BoardProvider({
   initialShared: boolean
   children: ReactNode
 }) {
-  const [scene] = useState(() => readScene(initialData))
+  const [initialDoc] = useState(() => readDocument(initialData))
   const [title, setTitleState] = useState(initialTitle)
-  const [objects, setObjects] = useState<SceneObject[]>(scene.objects)
-  const [saved, setSaved] = useState<Snapshot>({ title: initialTitle, objects: scene.objects })
-  // Pan/zoom board ko "unsaved" nahi banata — viewport sirf Save ke waqt saath chala jata hai
-  const viewportSource = useRef<() => Viewport>(() => scene.viewport)
-  const setViewportSource = useCallback((source: () => Viewport) => {
-    viewportSource.current = source
-  }, [])
-  const flushSource = useRef<(() => SceneObject[]) | null>(null)
-  const setFlushSource = useCallback((source: () => SceneObject[]) => {
+  const [doc, setDoc] = useState<BoardDocument>(initialDoc)
+  const [saved, setSaved] = useState<Snapshot>({ title: initialTitle, doc: initialDoc })
+  const flushSource = useRef<(() => BoardDocument) | null>(null)
+  const setFlushSource = useCallback((source: () => BoardDocument) => {
     flushSource.current = source
+  }, [])
+  const setBaseline = useCallback((base: BoardDocument) => {
+    setDoc(base)
+    setSaved((prev) => ({ ...prev, doc: base }))
   }, [])
   const [isShared, setIsShared] = useState(initialShared)
   const [saving, setSaving] = useState(false)
   const [sharing, setSharing] = useState(false)
 
-  const dirty = canEdit && (title !== saved.title || !sameJson(objects, saved.objects))
+  const dirty = canEdit && (title !== saved.title || !sameJson(doc, saved.doc))
   const titleCheck = validateTitle(title)
   const titleError = titleCheck === true ? null : titleCheck
 
@@ -140,32 +143,26 @@ export function BoardProvider({
 
   const savedRef = useRef(saved)
   savedRef.current = saved
-  const latest = useRef({ title, objects, dirty, saving, titleError })
-  latest.current = { title, objects, dirty, saving, titleError }
+  const latest = useRef({ title, doc, dirty, saving, titleError })
+  latest.current = { title, doc, dirty, saving, titleError }
 
   const save = useCallback(async () => {
     const current = latest.current
     if (!canEdit || current.saving) return
-    // Edit ho raha text bhi saath (wo abhi `objects` me na pahuncha ho)
-    const objectsNow = flushSource.current?.() ?? current.objects
+    // Abhi type hua text bhi saath (wo abhi `doc` me na pahuncha ho)
+    const docNow = flushSource.current?.() ?? current.doc
     const isDirty =
       current.dirty ||
       current.title !== savedRef.current.title ||
-      !sameJson(objectsNow, savedRef.current.objects)
+      !sameJson(docNow, savedRef.current.doc)
     if (!isDirty) return
     if (current.titleError) {
       toast.error(current.titleError)
       return
     }
     setSaving(true)
-    const snapshot = { title: current.title.trim(), objects: objectsNow }
-    const data = {
-      canvas: {
-        version: SCENE_VERSION,
-        viewport: viewportSource.current(),
-        objects: snapshot.objects,
-      },
-    }
+    const snapshot = { title: current.title.trim(), doc: docNow }
+    const data = { doc: snapshot.doc }
     const result = await postJson<{ ok: boolean; error?: string; savesLeft?: number | null }>(
       `/api/boards/${id}/save`,
       { title: snapshot.title, data },
@@ -176,6 +173,7 @@ export function BoardProvider({
       return
     }
     setTitleState(snapshot.title)
+    setDoc(snapshot.doc)
     setSaved(snapshot)
     document.title = `${snapshot.title} · Boards`
     toast.success(
@@ -227,16 +225,15 @@ export function BoardProvider({
       slug,
       canEdit,
       title,
-      objects,
-      initialViewport: scene.viewport,
+      initialDoc,
       isShared,
       dirty,
       saving,
       sharing,
       titleError,
       setTitle: setTitleState,
-      setObjects,
-      setViewportSource,
+      setDoc,
+      setBaseline,
       setFlushSource,
       save,
       setShared,
@@ -246,14 +243,13 @@ export function BoardProvider({
       slug,
       canEdit,
       title,
-      objects,
-      scene.viewport,
+      initialDoc,
       isShared,
       dirty,
       saving,
       sharing,
       titleError,
-      setViewportSource,
+      setBaseline,
       setFlushSource,
       save,
       setShared,

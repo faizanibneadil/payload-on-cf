@@ -9,8 +9,8 @@ When a task changes status, update its row in the same branch/PR.
 | Id | Task | Tests | Status | PR / notes |
 |---|---|---|---|---|
 | A1 | Knowledge base: new direction, learnings, remove canvas/presentation/layout docs, this tracker | docs only | done | PR #22 |
-| A2 | Remove the live-check (script, workflow, spec, `[live-check]` hook in `deploy.yml`) | full suite | in review | branch `task/a2-remove-live-check` |
-| A3 | Remove the infinite canvas (code, files, tests); migration deletes old canvas boards; `data.doc` + `validateDocument`; empty Lexical editor (paragraphs) for the owner; server read view for visitors; Save/Share keep working | unit: validation; e2e: editor basics, save-share | todo | |
+| A2 | Remove the live-check (script, workflow, spec, `[live-check]` hook in `deploy.yml`) | full suite | done | PR #23 |
+| A3 | Remove the infinite canvas (code, files, tests); migration deletes old canvas boards; `data.doc` + `validateDocument`; empty Lexical editor (paragraphs) for the owner; server read view for visitors; Save/Share keep working | unit: `tests/int/document.int.spec.ts`; e2e: `tests/e2e/editor/basics.spec.mjs`, save-share | in review | branch `task/a3-board-document` |
 
 ## Iteration B: text types (each with its markdown shortcut)
 | Id | Task | Status |
