@@ -19,6 +19,7 @@ import {
 import { useEffect } from 'react'
 import { useBoard } from '@/components/board/board-store'
 import type { BoardDocument } from '@/lib/document'
+import { SlashMenuPlugin } from './slash-menu/slash-menu-plugin'
 import { documentClass, editorTheme } from './theme'
 
 // Typing rukne ke itni der baad document board tak pahunchta hai ("Unsaved changes" ke liye)
@@ -63,6 +64,7 @@ export function BoardEditor() {
         />
       </div>
       <HistoryPlugin />
+      <SlashMenuPlugin />
       <ParagraphsOnlyPlugin />
       <BoardSyncPlugin />
     </LexicalComposer>
