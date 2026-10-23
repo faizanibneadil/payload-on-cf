@@ -1,37 +1,37 @@
 # 11. Iteration tracker
 
-Status values: `planned` -> `in progress` -> `ready for review` (branch pushed) -> `merged to dev` -> `verified in dev` (owner checked the dev preview).
+Iterations are small; every feature inside one is its own task. Tasks and their status live in `13-task-tracker.md`.
 
-## Working rules
-- Work starts from the latest `dev`. Either one branch per iteration (`feat/iteration-<n>-<name>`) or directly on `dev`, as the owner says for that iteration.
-- Commit after every completed step. The agent never merges.
-- After the merge the owner previews the dev deployment and reports issues. Fixes go to a new branch from `dev`: `fix/iteration-<n>-issues`.
-- The next iteration starts only after the previous one is reviewed.
-- `main` and the production D1/R2 are never touched. Only the `dev` environment (its own D1 and R2) is used. The owner merges `dev` into `main` at the end.
+## Working rules (owner, October 2026)
+- One feature = one task. Per task: branch `task/<id>-<name>` from the latest `dev`, build + tests, push the branch, open a PR into `dev`. The **owner merges** (the agent never merges and never pushes to `dev` directly). The merge deploys dev; the owner checks it there; then the task is marked `done` in `13`.
+- The next iteration starts only after the owner verified the previous one.
+- `main` and the production D1/R2 are never touched. The owner merges `dev` into `main` at the end.
 - Schema changes use new forward migrations only; never edit an applied migration.
-- Every task ends with browser testing and screenshots (see `09-checklist.md`, section "Testing and reporting"). No feature or bug may reach production untested.
+- Every task has its own tests and ends with browser testing and screenshots (`09-checklist.md`). While working, run only the task's tests; the full suite runs once before the push.
 - Before the final merge to `main`: decide caching for board reads with the owner (open decision in `01`).
 
 ## Iterations
-
-| # | Branch | Scope | Status |
-|---|---|---|---|
-| 0 | `feat/iteration-0-setup-cleanup` | `dev` branch, CI/CD check, remove old frontend, fork code, unused files; placeholder `/` | merged to dev |
-| 0b | `dev` | Boards pivot: remove the code editor and everything around it (playground-files, nested-docs, legacy import, Monaco, resizable, cmdk), comment out the startup email, rewrite the knowledge base | verified in dev |
-| 1 | `dev` | shadcn preset `b5rR41Mtnc`, light/dark theme (light default, toggle in the header), users (`admin` / `instructor`, username rules, public Register as instructor), `boards` collection replacing `playgrounds`, `settings` Global, access control, migrations on dev, header, sign-in modal, `/` with My boards | verified in dev |
-| 2 | `dev` | Save (one row write), unsaved indicator + `beforeunload`, rate limits (Global, cached), Share toggle and link, `/b/<slug>` read-only for others | verified in dev |
-| 3 | `dev` | infinite canvas: pan/zoom, culling, text blocks with live markdown (`#`, `-`, `1.`), move/resize/delete, undo/redo | verified in dev |
-| 4 | shape under discussion (`13-iteration-4-plan.md`) | whiteboard tools on our own engine: shapes, images (R2), rich text blocks (Lexical), engine upgrades | planned |
-| 5 | decide with the owner | caching for shared board reads (Next.js vs Cloudflare cache) and its implementation | planned |
-| 6 | decide with the owner | emoji library on the board (options compared together first) | planned |
-| 7 | last, with the owner | typography: font family, font size (shadcn typeset style) for lecture text | planned |
+| # | Scope | Status |
+|---|---|---|
+| 0 | `dev` branch, CI/CD check, remove old frontend | done |
+| 0b | Boards pivot: remove the code editor and everything around it | done |
+| 1 | shadcn theme, light/dark, users and roles, `boards` collection, `settings` Global, access control, header, sign-in modal, My boards | done |
+| 2 | Save, unsaved indicator, rate limits, Share, read-only view | done |
+| 3, 4 | Infinite canvas with text blocks (Lexical in step 4.2) | **replaced** by the board editor (owner, October 2026); code removed in task A3, kept in git history |
+| A | Clean-up and foundation: knowledge base, remove live-check, remove canvas, Lexical document | in progress (`13`) |
+| B | Text types: slash menu, headings, quote, lists, check list, horizontal rule, indent, alignment | planned |
+| C | Inline toolbar: formats, text type dropdown, alignment/indent, colours | planned |
+| D | Links | planned |
+| E | Tables | planned |
+| F | Blocks and inline blocks, Code block | planned |
+| G | Canvas block and inline block (from scratch) | planned |
+| later | Caching for shared board reads; emoji library; typography | decide with the owner |
 
 ## Backlog (later, decide with the owner first)
-- Presentation mode: first decide how the instructor picks which blocks belong to a slide and how they arrange slides
 - AI lecture design: only after the product is ready and has user feedback
 
 ## Per-iteration log
-(Filled in as work completes: steps done, what to test in the dev preview, issues found.)
+(Filled in as work completes: steps done, what to test on dev, issues found.)
 
 ### Iteration 0
 - [x] `dev` created from `main` and pushed
@@ -81,21 +81,6 @@ Status values: `planned` -> `in progress` -> `ready for review` (branch pushed) 
 - Verified: tsc, Biome, `pnpm test:int`; browser suites on `next dev` and on the production Worker build (local workerd): iteration 2 44/44, iteration 1 49/49, live check 16/16
 - Test on the dev deployment: rename a board (unsaved dot appears), reload (browser warns), Save (toast with saves left), reload (title kept, same link), Share on + Copy link, open the link in a private window (view only), Share off (404), in `/admin` > Settings lower "saves per board" to test the limit message, then set it back
 
-### Iteration 3 (Canvas core)
-- [x] Scene model, server validation and markdown parse/serialize in `src/lib/scene.ts` (unit tests in `tests/int/scene.int.spec.ts`)
-- [x] Infinite canvas (`board-canvas.tsx`, lazy-loaded): pan, zoom at cursor / pinch, Fit, 100 %, adaptive dot grid, culling, tools Select / Hand / Text, undo/redo, keyboard shortcuts (V, H, T, Space, Enter, Delete, Esc, Ctrl/Cmd+Z/Y)
-- [x] Text blocks (`text-block.tsx`, `text-editor.tsx`): live markdown (`#`, `##`, `###`, `-`, `1.`), move, width resize, z-order, delete, empty block removed on exit
-- [x] Board store now holds scene objects; viewport saved with each Save but not counted as a change; visitors open fitted to the content
-- Bugs found by the tests and fixed before push: Text tool block lost focus (browser mousedown), list line could not become a heading, pasted first line lost its heading, one Ctrl+wheel notch zoomed to 400 %, dense grid at 10 %, mobile visitor saw the board off screen
-- Verified on the production Worker build (local workerd): canvas suite 50/50, iteration 2 44/44, iteration 1 49/49, live check 17/17 (now also adds a markdown block, saves and reloads); `next dev` canvas suite too
-- Test on the dev deployment: double-click the canvas, type `# Title`, Enter, text, `- item`, Enter, Enter, `1. step`; Esc; drag the block; resize with the right handle; Ctrl+Z / Ctrl+Shift+Z; Ctrl + wheel zoom; Fit; Save and reload; share and open the link on a phone (whole board visible, pinch zoom, one-finger pan)
-
-### Fix: resize in both directions (owner request after Iteration 3)
-- [x] 8 resize handles (corners + edges) instead of the right-edge width handle; top/left handles move x/y; height is a minimum height that can never go below the text; the block still grows while typing
-- [x] Real rendered heights are tracked (ResizeObserver) for culling and Fit; `validateScene` checks height (1-10,000)
-- Verified on the production Worker build: canvas suite 60/60 (new: 8 handles, corner, bottom, top, left, top-left, clamp at text height, undo, Save + reload, auto-grow), iteration 2 44/44, iteration 1 49/49, live check 17/17, unit tests 15/15
-- Test on the dev deployment: select a block, drag each corner and edge, try to make it shorter than its text (it stops), make it taller (space below), Ctrl+Z, Save and reload
-
 ### Fix: saves lost during a deploy (found by live-check)
 - The live-check failed twice right after a deploy: the canvas Save request was aborted and the page reloaded itself, so the new block was lost. Locally (also with 400 ms latency) it never happened. Most likely cause: deploy skew (an old page calling a new Worker version through a server action makes Next reload the page)
 - Fix: Save and Share moved from server actions to Payload endpoints `POST /api/boards/:id/save` and `/share` (same access control and limits through the collection); the page calls them with `fetch`, and any failure only shows a message and keeps the unsaved changes
@@ -109,33 +94,5 @@ Status values: `planned` -> `in progress` -> `ready for review` (branch pushed) 
 - Verified: old token after sign out is rejected, tampered token rejected; production build suites: iteration 1 49/49, iteration 2 51/51 (size limit now checked through the save endpoint the UI uses), canvas 60/60, live check 17/17
 - Still heavy on the free plan: register (~400 ms CPU for password hashing) and sign in (~100 ms); these are rare, but can occasionally return 1102
 
-### Fix: resize by the border lines (owner request)
-- [x] The 8 visible handle squares are gone. Resizing works by dragging the block's border lines (top, bottom, left, right) and corners: invisible grab areas centred on the border (8 screen px on edges, 14 px on corners, same size at any zoom) with `ns`/`ew`/`nwse`/`nesw` resize cursors. They are active on every editable block (no need to select first), never while editing and never for visitors
-- [x] Selected and editing blocks use the same thin border as hover (`ring-1 ring-primary/30`) instead of the thick ring
-- Verified on the production Worker build: canvas suite 64/64 (new: selected border equals hover border, no visible handles, cursors on every edge/corner and move cursor inside, unselected block resizes straight from its right border, visitor has no grab areas; all resize checks now drag the real border lines), iteration 2 51/51, iteration 1 49/49
-- live-check on the dev deployment: first run 11/17 (Error 1102 on every request on one connection for about 60 s, right after sign out; ray IDs e.g. `a4e825c5fce4942c`, `a4e82683bbaa942c`, 22 Oct 2026 11:26-11:27 UTC). The change was client-only and the next runs had no 1102, so this is the known free-plan risk, not this change; still open (needs Workers Logs to find which request goes over). Second run found a race in the live-check itself (canvas step waited for the previous step's "Saved" toast and reloaded during the save); fixed by waiting for the unsaved indicator to go away. Third run 17/17
-
-### Text scales on corner resize + faster CI (owner request)
-- [x] Corner drag scales the whole block in proportion, text included (new optional `scale` on text objects, 0.25-8, validated on the server; old boards without it stay at 1). Edge drag still changes only width/height and the text wraps again (same split as tldraw)
-- [x] CI: the browser live-check is no longer a job in `deploy.yml`. It is its own reusable workflow (`live-check.yml`), run by hand (button available once the file is on `main`) or called from `deploy.yml` when a dev commit message contains `[live-check]`, using the runner's preinstalled Google Chrome. A normal push now runs only the deploy (about 4 min) and the deploy queue never waits for the live-check. `.next/cache` is cached between builds
-- Verified on the production Worker build: canvas suite 67/67 (new: corner scales block and text in proportion, edge keeps text size, top-left corner keeps the bottom-right fixed, text size survives Save + reload), iteration 2 51/51, live check 17/17 (local), validation of `scale` (0.1, 9, "2", NaN rejected)
-
-### Browser suites in the repo + origins per environment (owner request)
-- [x] `tests/browser/` holds the three suites; `pnpm test:browser [--build]` runs them and the live-check on the production Worker build, each on a fresh local database
-- [x] `serverURL`, `cors`, `csrf` from `wrangler.jsonc` `vars`: production `https://lecture.devslix.com` (same as `main` had), dev `https://payload-on-cf-dev.faizanibneadil1.workers.dev`. Off in `next dev`. Test API calls now send `Origin` like a browser does
-- Verified locally with csrf on (`.dev.vars` origins = local URL): auth-boards 49/49, save-share 52/52 (new: save from another site refused even with the owner cookie), canvas 67/67, live check 17/17
-- Open: `*.devslix.com` wildcard (choice F in `12-owner-rules-and-learnings.md`)
-
-### Iteration 4, step 1: Playwright Test + Playwright MCP
-- [x] Browser suites moved from plain Node scripts to the Playwright Test runner (`tests/e2e/*.spec.mjs`, `pnpm test:e2e`, HTML report with every check, screenshots, failure video and trace). Old template e2e test (email login, removed feature) and its helpers deleted; `tests/browser/` replaced
-- [x] `.mcp.json` with the Playwright MCP server
-- Verified: see the step report in the conversation (all four specs green)
-
-### Iteration 4, step 2: text blocks on Lexical
-- [x] Lexical 0.52.0 editor for the block being edited; read view for all other blocks from the same markdown (no editor mounted)
-- [x] Same features as before (live `#`/`-`/`1.` shortcuts also inside lists, Enter/Backspace rules, markdown paste, Escape), plus inline toolbar (bold, italic, strikethrough, code), slash menu (text, headings, lists, to-do), to-do lists
-- [x] Auto width (grows with the text, new line only on Enter; side drag fixes the width), click on empty canvas and type
-- [x] Typed text counts as unsaved while still editing; Save and Ctrl+S include it (before, text was only committed when leaving the block)
-- [x] Storage unchanged (markdown), old boards load the same (unit tests); server accepts the new `autoWidth` flag
-- Verified on the production Worker build: all five Playwright specs green, 222 checks (new `text-blocks.spec.mjs`: 37), unit tests 15/15
-
+### Iterations 3 and 4 (infinite canvas) — replaced
+The infinite canvas (pan/zoom, culling, text blocks, border resize, Lexical text blocks) was built and verified, then replaced by the board editor (owner, October 2026). Its details are in git history (`docs/knowledge-base/05-board-canvas.md` before task A1). Iteration 4 step 1 stays: browser tests run on the Playwright Test runner with an HTML report, and `.mcp.json` configures Playwright MCP.

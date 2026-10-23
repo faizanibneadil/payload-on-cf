@@ -45,7 +45,7 @@ access: {
 - `isShared` can only be changed by the owner or admin (it is part of the owner-only `update`).
 - Counters (`saveCount`, `saveWindowStartedAt`) and `slug` are written only by hooks; field-level `update` access is admin only.
 - Limits (boards per window, saves per board per window, max content size) come from the `settings` Global. `admin` bypasses them and its counters are not touched.
-- Non-owners never save: there is no write path for them. A shared board is read-only for them (pan and zoom only).
+- Non-owners never save: there is no write path for them. A shared board is read-only for them (they can only read it and click links).
 - Never trust UI checks. Every permission above is enforced in Payload.
 
 ## `settings` Global

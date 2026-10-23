@@ -1,13 +1,13 @@
 # 09. Agent checklist (verify before finishing an iteration)
 
 ## Always
-- [ ] Work only on the agreed branch (from `dev`); never touch `main` or the production D1/R2; never merge
+- [ ] Work on the task branch `task/<id>-<name>` from the latest `dev`; push it and open a PR into `dev`; never push to `dev` or `main` directly, never merge (the owner merges); never touch the production D1/R2
 - [ ] Read `AGENTS.md`, `01-architecture-and-decisions.md` and the skills in `.agents/`
 - [ ] `pnpm exec tsc --noEmit`, `pnpm lint` (all Biome errors fixed), `pnpm test:int` pass
 - [ ] No Radix imports anywhere (`grep -R "radix" src package.json`)
 - [ ] No code-editor leftovers come back (`grep -rniE "monaco|vivari|sandpack|nested-docs|cmdk" src package.json` is empty)
 - [ ] Code comments in Roman Urdu; commits and PR text in English
-- [ ] No new tests unless the owner asks; remove only tests of deleted behaviour
+- [ ] Every new tool or component has its own tests (owner rule); remove only tests of deleted behaviour
 - [ ] Migrations are new forward migrations, committed, and never edit an applied migration
 - [ ] PR description (or summary) contains "what to test on the dev deployment"
 
@@ -16,8 +16,8 @@
 - [ ] Take screenshots of each tested screen and state and send them to the owner with the final report
 - [ ] Check the browser console and server log for errors during the test
 - [ ] Before pushing a change that touches server code, also test the production Worker build locally: `opennextjs-cloudflare build`, then `wrangler dev` with a copy of `wrangler.jsonc` whose D1 binding has `"remote": false` (`wrangler.preview.jsonc`, gitignored) and `.dev.vars` with `PAYLOAD_SECRET`. `next dev` hides production-only bugs (minified class names, server action timing)
-- [ ] Run `pnpm test:e2e` (Playwright Test: all browser suites + live-check on the production Worker build, a fresh local database per spec file; `BUILD=1` forces a new build; set `CHROMIUM_PATH` if Playwright's own browser is not installed). Every suite must pass, not only the one for the new feature. On a failure open `pnpm test:e2e:report`: each check, screenshots, video and trace
-- [ ] After the push, check that the deploy run is green. For changes to server code, auth or the deploy, put `[live-check]` in the commit message (or run the "Live check (browser)" workflow by hand) and check that it is green too
+- [ ] While working run only the task's tests. Once before the push run `CHROMIUM_PATH=/opt/pw-browsers/chromium BUILD=1 pnpm test:e2e` (Playwright Test: all browser suites on the production Worker build, a fresh local database per spec file; `BUILD=1` forces a new build; set `CHROMIUM_PATH` if Playwright's own browser is not installed). Every suite must pass, not only the one for the new feature. On a failure open `pnpm test:e2e:report`: each check, screenshots, video and trace
+- [ ] Update the task row in `13-task-tracker.md` (status, PR) in the same PR. After the owner merges, check that the dev deploy run is green
 - [ ] Report: what was tested, how, the result of each check (pass/fail), screenshots, and any bug found (fixed, or why not). Nothing untested is reported as done
 
 ## Data safety
@@ -43,8 +43,8 @@
 - [ ] Limits: 10 new boards and 10 saves per board per 24 h for instructors (defaults)
 - [ ] Content size limit enforced with a clear UI error
 - [ ] Theme: light default, toggle in the header, no flash on load; admin panel unchanged
-- [ ] Canvas: smooth pan/zoom with many blocks, only visible blocks mounted, one block in edit mode
-- [ ] Live markdown: `# `, `- `, `1. ` convert while typing; read-only viewers can only pan and zoom
+- [ ] Editor: markdown shortcuts convert while typing; inline toolbar only on a selection (no fixed toolbar); long documents stay smooth
+- [ ] Read-only viewers cannot change anything; they can click links; the read view needs no Lexical JavaScript
 
 ## Deployment
 - [ ] Migrations applied to the remote dev D1 by the workflow; secrets pushed to Cloudflare, not only GitHub

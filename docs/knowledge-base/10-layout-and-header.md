@@ -1,6 +1,6 @@
 # 10. Layout, header and board page
 
-> Status: target design. Built in Iteration 1 (shell) and Iteration 3 (canvas). The Theory / Editor / Both tabs, the primary bar and the editor tab are removed.
+> Status: header and pages built in Iterations 1-2. The board page body changes from the canvas to the editor in task A3.
 
 ## Header
 - Left: product name + the board title (an input for the owner: free text, max 50 characters, must contain at least one letter or digit; plain text for everyone else).
@@ -12,10 +12,10 @@
 
 ## Pages
 - `/`: signed out = short intro + Sign in / Register; signed in = "My boards" list + New board.
-- `/b/<slug>`: the board. Header on top, the canvas fills the rest of the screen. Zoom controls (zoom out, percentage, zoom in, fit, reset) in a small floating bar at the bottom.
+- `/b/<slug>`: the board. Header on top, the document (editor for the owner, read view for others) below it, scrolling normally.
 
 ## Theme
-Light is the default; the toggle switches light/dark, is stored in the browser and applied before first paint. The canvas background, grid and text follow the theme. The Payload admin panel is not affected.
+Light is the default; the toggle switches light/dark, is stored in the browser and applied before first paint. The editor and read view follow the theme. The Payload admin panel is not affected.
 
 ## Visitors
-Visitors (signed out or not the owner) see a shared board read-only: pan and zoom only. Private boards return 404 for them.
+Visitors (signed out or not the owner) see a shared board read-only (links can be clicked). Private boards return 404 for them.
