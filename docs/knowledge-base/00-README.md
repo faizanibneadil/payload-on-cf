@@ -4,6 +4,7 @@ Purpose: reference knowledge for AI coding agents and contributors working on th
 
 ## Reading order
 0. `12-owner-rules-and-learnings.md` (owner rules and every past correction; read first, update after every owner request)
+0. `14-session-handoff.md` (current state, how to run things, environment pitfalls)
 1. `01-architecture-and-decisions.md` (what we are building, fixed decisions)
 2. `02-payload-auth-username.md`
 3. `03-payload-access-control.md`
