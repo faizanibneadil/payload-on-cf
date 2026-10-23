@@ -189,10 +189,9 @@ await step('canvas: add markdown block, save, reload', async () => {
   await page.reload({ waitUntil: 'load' })
   const block = page.getByTestId('text-block').first()
   await block.waitFor()
+  // Block ke andar har element ka tag (h1, ul, ...)
   const types = await block.evaluate((el) =>
-    Array.from(el.querySelector('.md-lines')?.children ?? []).map((c) =>
-      c.getAttribute('data-type'),
-    ),
+    Array.from(el.querySelector('.md-lines')?.children ?? []).map((c) => c.tagName.toLowerCase()),
   )
   if (types.join(',') !== 'h1,ul')
     throw new Error(`unexpected lines after reload: ${types.join(',')}`)

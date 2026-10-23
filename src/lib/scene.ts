@@ -30,6 +30,8 @@ export interface TextObject {
   markdown: string
   /** Text ka size; na ho to 1 (purane boards) */
   scale?: number
+  /** true: width text ke saath barhti hai (nayi line sirf Enter par). Side border kheenchne par false */
+  autoWidth?: boolean
 }
 
 export type SceneObject = TextObject
@@ -105,64 +107,13 @@ export function validateScene(data: unknown): true | string {
     ) {
       return 'Invalid text size'
     }
+    if (obj.autoWidth !== undefined && typeof obj.autoWidth !== 'boolean') {
+      return 'Invalid block width mode'
+    }
     if (typeof obj.markdown !== 'string') return 'Invalid block text'
     if (obj.markdown.length > MAX_MARKDOWN_CHARS) {
       return `A text block can have at most ${MAX_MARKDOWN_CHARS} characters`
     }
   }
   return true
-}
-
-// ---------- Markdown (sirf blocks: heading 1-3, bullet, numbered, paragraph) ----------
-
-export type LineType = 'p' | 'h1' | 'h2' | 'h3' | 'ul' | 'ol'
-
-export interface Line {
-  type: LineType
-  text: string
-}
-
-const LINE_PATTERN = /^(#{1,3}) (.*)$|^[-*] (.*)$|^\d{1,9}\. (.*)$/
-
-export function parseMarkdown(markdown: string): Line[] {
-  return markdown.split('\n').map((raw) => {
-    const m = LINE_PATTERN.exec(raw)
-    if (!m) return { type: 'p', text: raw }
-    if (m[1]) return { type: `h${m[1].length}` as LineType, text: m[2] }
-    if (m[3] !== undefined) return { type: 'ul', text: m[3] }
-    return { type: 'ol', text: m[4] }
-  })
-}
-
-export function serializeMarkdown(lines: Line[]): string {
-  let n = 0
-  return lines
-    .map((line) => {
-      n = line.type === 'ol' ? n + 1 : 0
-      switch (line.type) {
-        case 'h1':
-          return `# ${line.text}`
-        case 'h2':
-          return `## ${line.text}`
-        case 'h3':
-          return `### ${line.text}`
-        case 'ul':
-          return `- ${line.text}`
-        case 'ol':
-          return `${n}. ${line.text}`
-        default:
-          return line.text
-      }
-    })
-    .join('\n')
-}
-
-/** Line ke shuru me type karne par jo shortcut block badalte hain (aage space aate hi) */
-export function shortcutFor(prefix: string): LineType | null {
-  if (prefix === '#') return 'h1'
-  if (prefix === '##') return 'h2'
-  if (prefix === '###') return 'h3'
-  if (prefix === '-' || prefix === '*') return 'ul'
-  if (/^\d{1,9}\.$/.test(prefix)) return 'ol'
-  return null
 }

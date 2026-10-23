@@ -36,6 +36,8 @@ interface BoardState {
   setObjects: (objects: SceneObject[]) => void
   /** Canvas apna live viewport dene ka tareeqa register karta hai (Save ke waqt liya jata hai) */
   setViewportSource: (source: () => Viewport) => void
+  /** Save se pehle canvas ka taaza scene (jaise edit ho raha text) — warna `objects` */
+  setFlushSource: (source: () => SceneObject[]) => void
   save: () => Promise<void>
   setShared: (isShared: boolean) => Promise<void>
 }
@@ -111,6 +113,10 @@ export function BoardProvider({
   const setViewportSource = useCallback((source: () => Viewport) => {
     viewportSource.current = source
   }, [])
+  const flushSource = useRef<(() => SceneObject[]) | null>(null)
+  const setFlushSource = useCallback((source: () => SceneObject[]) => {
+    flushSource.current = source
+  }, [])
   const [isShared, setIsShared] = useState(initialShared)
   const [saving, setSaving] = useState(false)
   const [sharing, setSharing] = useState(false)
@@ -132,18 +138,27 @@ export function BoardProvider({
   }, [dirty])
   useEffect(() => () => setUnsavedChanges(false), [])
 
+  const savedRef = useRef(saved)
+  savedRef.current = saved
   const latest = useRef({ title, objects, dirty, saving, titleError })
   latest.current = { title, objects, dirty, saving, titleError }
 
   const save = useCallback(async () => {
     const current = latest.current
-    if (!canEdit || current.saving || !current.dirty) return
+    if (!canEdit || current.saving) return
+    // Edit ho raha text bhi saath (wo abhi `objects` me na pahuncha ho)
+    const objectsNow = flushSource.current?.() ?? current.objects
+    const isDirty =
+      current.dirty ||
+      current.title !== savedRef.current.title ||
+      !sameJson(objectsNow, savedRef.current.objects)
+    if (!isDirty) return
     if (current.titleError) {
       toast.error(current.titleError)
       return
     }
     setSaving(true)
-    const snapshot = { title: current.title.trim(), objects: current.objects }
+    const snapshot = { title: current.title.trim(), objects: objectsNow }
     const data = {
       canvas: {
         version: SCENE_VERSION,
@@ -222,6 +237,7 @@ export function BoardProvider({
       setTitle: setTitleState,
       setObjects,
       setViewportSource,
+      setFlushSource,
       save,
       setShared,
     }),
@@ -238,6 +254,7 @@ export function BoardProvider({
       sharing,
       titleError,
       setViewportSource,
+      setFlushSource,
       save,
       setShared,
     ],

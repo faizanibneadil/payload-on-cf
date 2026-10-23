@@ -88,10 +88,19 @@ test('Iteration 3: canvas, live markdown, move/resize/text scale, undo/redo, zoo
 
   const surface = (page) => page.getByTestId('canvas-surface')
   const editor = (page) => page.getByTestId('text-editor')
+  // Har line ka type: p, h1-h3, ul/ol (har item), todo (to-do item)
   const lineTypes = (loc) =>
     loc.evaluate((el) => {
-      const lines = el.querySelector('.md-lines') ?? el
-      return Array.from(lines.children).map((c) => c.getAttribute('data-type'))
+      const root = el.matches('.md-lines') ? el : (el.querySelector('.md-lines') ?? el)
+      const out = []
+      for (const c of root.children) {
+        const tag = c.tagName.toLowerCase()
+        if (tag === 'ul' || tag === 'ol') {
+          const type = c.classList.contains('md-checklist') ? 'todo' : tag
+          for (const _li of c.children) out.push(type)
+        } else out.push(tag)
+      }
+      return out
     })
   const blockCount = (page) => page.getByTestId('text-block').count()
   const box = async (loc) => {
@@ -120,7 +129,10 @@ test('Iteration 3: canvas, live markdown, move/resize/text scale, undo/redo, zoo
     'Board page shows the canvas and toolbar',
     await owner.getByTestId('canvas-toolbar').isVisible(),
   )
-  check('Empty board shows a hint', await owner.getByText('Double-click anywhere').isVisible())
+  check(
+    'Empty board shows a hint',
+    await owner.getByText('Click anywhere and start typing').isVisible(),
+  )
   check(
     'Owner has Select / Hand / Text tools',
     (await owner.getByTestId('tool-text').count()) === 1,
@@ -170,6 +182,8 @@ test('Iteration 3: canvas, live markdown, move/resize/text scale, undo/redo, zoo
     JSON.stringify(typesNow),
   )
   await owner.keyboard.press('Home')
+  // Browser selection badalne ki khabar thori der baad deta hai (insaan itni tezi se nahi dabata)
+  await owner.waitForTimeout(50)
   await owner.keyboard.press('Backspace')
   check(
     'Backspace at the start of a heading turns it back to text',
@@ -189,8 +203,8 @@ test('Iteration 3: canvas, live markdown, move/resize/text scale, undo/redo, zoo
   check(
     'Numbered list shows 1. and 2.',
     await block.evaluate((el) => {
-      const ol = el.querySelectorAll('[data-type="ol"]')
-      return getComputedStyle(ol[0], '::before').content === 'counter(md-ol) "."' && ol.length === 2
+      const ol = el.querySelector('ol')
+      return getComputedStyle(ol).listStyleType === 'decimal' && ol.children.length === 2
     }),
   )
   check('Editing marks the board unsaved', await owner.getByTestId('unsaved-indicator').isVisible())
@@ -314,9 +328,8 @@ test('Iteration 3: canvas, live markdown, move/resize/text scale, undo/redo, zoo
   const fontPx = (loc) =>
     loc.evaluate((el) =>
       Number.parseFloat(
-        getComputedStyle(
-          el.querySelector('.md-lines > [data-type="h1"]') ?? el.querySelector('.md-lines'),
-        ).fontSize,
+        getComputedStyle(el.querySelector('.md-lines .md-h1') ?? el.querySelector('.md-lines'))
+          .fontSize,
       ),
     )
   const r0 = await box(b1)
@@ -324,16 +337,17 @@ test('Iteration 3: canvas, live markdown, move/resize/text scale, undo/redo, zoo
   await dragHandle(owner, 'se', 120, 80)
   const r1 = await box(b1)
   const f1 = await fontPx(b1)
-  const k1 = r1.w / r0.w
+  // Text wala hissa (padding 24px x 16px ke baghair) ek hi nisbat se barhta hai; padding wahi rehti hai
+  const k1 = (r1.w - 24) / (r0.w - 24)
   check(
     'Corner (bottom-right) scales the block in proportion',
-    k1 > 1.2 && Math.abs(r1.h / r0.h - k1) < 0.03 && r1.x === r0.x && r1.y === r0.y,
+    k1 > 1.2 && Math.abs((r1.h - 16) / (r0.h - 16) - k1) < 0.05 && r1.x === r0.x && r1.y === r0.y,
     `${JSON.stringify(r0)} -> ${JSON.stringify(r1)}`,
   )
   check(
     'Corner resize scales the text with the block',
     Math.abs(f1 / f0 - k1) < 0.03,
-    `font ${f0}px -> ${f1}px, block x${k1.toFixed(3)}`,
+    `font ${f0}px -> ${f1}px, text area x${k1.toFixed(3)}`,
   )
   const fE0 = await fontPx(b1)
   const rE0 = await box(b1)

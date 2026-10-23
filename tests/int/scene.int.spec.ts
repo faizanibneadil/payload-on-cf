@@ -1,11 +1,12 @@
+import { createHeadlessEditor } from '@lexical/headless'
 import { describe, expect, it } from 'vitest'
 import {
-  parseMarkdown,
-  readScene,
-  serializeMarkdown,
-  shortcutFor,
-  validateScene,
-} from '@/lib/scene'
+  $exportMarkdown,
+  $importMarkdown,
+  markdownToState,
+  NODES,
+} from '@/components/canvas/lexical/config'
+import { readScene, validateScene } from '@/lib/scene'
 
 const block = (over: Record<string, unknown> = {}) => ({
   id: 'a',
@@ -19,26 +20,35 @@ const block = (over: Record<string, unknown> = {}) => ({
   ...over,
 })
 
-describe('scene markdown', () => {
-  it('parses and serializes block markdown both ways', () => {
-    const md = '# Title\n## Sub\n### Small\nPlain text\n- one\n- two\n1. first\n2. second'
-    const lines = parseMarkdown(md)
-    expect(lines.map((l) => l.type)).toEqual(['h1', 'h2', 'h3', 'p', 'ul', 'ul', 'ol', 'ol'])
-    expect(serializeMarkdown(lines)).toBe(md)
+// Text blocks Lexical par: saved markdown (purane boards ka bhi) bina badle wapas aana chahiye
+const roundTrip = (md: string) => {
+  const editor = createHeadlessEditor({
+    nodes: NODES,
+    onError: (e) => {
+      throw e
+    },
+  })
+  editor.update(() => $importMarkdown(md), { discrete: true })
+  return editor.getEditorState().read(() => $exportMarkdown())
+}
+
+describe('text block markdown (Lexical)', () => {
+  it('keeps old boards unchanged: headings, lists, paragraphs, blank lines', () => {
+    const md = '# Title\n## Sub\n### Small\nPlain text\n\n- one\n- two\n1. first\n2. second'
+    expect(roundTrip(md)).toBe(md)
   })
 
-  it('renumbers ordered lists and restarts after other lines', () => {
-    const lines = parseMarkdown('5. a\n9. b\ntext\n3. c')
-    expect(serializeMarkdown(lines)).toBe('1. a\n2. b\ntext\n1. c')
+  it('keeps inline formatting and to-do lists', () => {
+    const md = '- [ ] todo\n- [x] done\nThis is **bold**, *italic*, ~~gone~~ and `code`'
+    expect(roundTrip(md)).toBe(md)
   })
 
-  it('maps line-start shortcuts', () => {
-    expect(shortcutFor('#')).toBe('h1')
-    expect(shortcutFor('###')).toBe('h3')
-    expect(shortcutFor('-')).toBe('ul')
-    expect(shortcutFor('12.')).toBe('ol')
-    expect(shortcutFor('####')).toBeNull()
-    expect(shortcutFor('a')).toBeNull()
+  it('builds read-view nodes for each block type', () => {
+    const types = markdownToState('# T\ntext\n- a\n1. b\n- [ ] c').root.children.map((n) => {
+      const node = n as { type: string; tag?: string; listType?: string }
+      return node.listType ?? node.tag ?? node.type
+    })
+    expect(types).toEqual(['h1', 'paragraph', 'bullet', 'number', 'check'])
   })
 })
 

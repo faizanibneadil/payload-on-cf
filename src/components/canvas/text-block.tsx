@@ -1,34 +1,24 @@
 'use client'
 
 import { ArrowDownToLine, ArrowUpToLine, Trash2 } from 'lucide-react'
-import { memo, useEffect, useMemo, useRef } from 'react'
+import { lazy, memo, Suspense, useEffect, useRef } from 'react'
 import {
   MAX_BLOCK_HEIGHT,
   MAX_BLOCK_WIDTH,
   MAX_TEXT_SCALE,
   MIN_BLOCK_WIDTH,
   MIN_TEXT_SCALE,
-  parseMarkdown,
   type TextObject,
 } from '@/lib/scene'
 import { cn } from '@/lib/utils'
-import { TextEditor } from './text-editor'
+import { ReadView } from './lexical/read-view'
 
-/** Saved markdown ka read view — React text nodes, koi raw HTML nahi */
-export const MarkdownView = memo(function MarkdownView({ markdown }: { markdown: string }) {
-  const lines = useMemo(() => parseMarkdown(markdown), [markdown])
-  return (
-    <div className="md-lines">
-      {lines.map((line, i) => (
-        // Lines ki apni id nahi; index yahan theek hai (poora block ek saath render hota hai)
-        // biome-ignore lint/suspicious/noArrayIndexKey: static list
-        <div key={i} data-type={line.type}>
-          {line.text || <br />}
-        </div>
-      ))}
-    </div>
-  )
-})
+// Lexical editor sirf edit karte waqt chahiye: alag chunk, owner ke liye pehle se load (preloadEditor)
+const loadEditor = () => import('./lexical/block-editor')
+const BlockEditor = lazy(() => loadEditor().then((m) => ({ default: m.BlockEditor })))
+export const preloadEditor = (): void => {
+  void loadEditor()
+}
 
 export interface BlockRect {
   x: number
@@ -36,6 +26,7 @@ export interface BlockRect {
   width: number
   height: number
   scale?: number
+  autoWidth?: boolean
 }
 
 export interface BlockHandlers {
@@ -45,8 +36,10 @@ export interface BlockHandlers {
   resize: (id: string, rect: BlockRect) => void
   change: (id: string, markdown: string) => void
   exitEdit: (id: string) => void
-  /** Asal (rendered) oonchai — culling aur Fit ke liye; scene me save nahi hoti */
-  measure: (id: string, height: number) => void
+  /** Editor khulne se pehle type hue harf (click karke likhna shuru kiya ho) */
+  takePendingText: () => string
+  /** Asal (rendered) size — culling aur Fit ke liye (auto width blocks ki width bhi) */
+  measure: (id: string, width: number, height: number) => void
   bringToFront: (id: string) => void
   sendToBack: (id: string) => void
   remove: (id: string) => void
@@ -93,11 +86,13 @@ export const TextBlock = memo(function TextBlock({
   const ref = useRef<HTMLDivElement>(null)
   const contentRef = useRef<HTMLDivElement>(null)
 
-  // Asal oonchai canvas ko batao (content min-height se bara ho sakta hai)
+  // Asal size canvas ko batao (content min-height se bara ho sakta hai, auto width text se badalti hai)
   useEffect(() => {
     const el = ref.current
     if (!el) return
-    const observer = new ResizeObserver(() => handlers.measure(obj.id, el.offsetHeight))
+    const observer = new ResizeObserver(() =>
+      handlers.measure(obj.id, el.offsetWidth, el.offsetHeight),
+    )
     observer.observe(el)
     return () => observer.disconnect()
   }, [handlers, obj.id])
@@ -135,6 +130,7 @@ export const TextBlock = memo(function TextBlock({
   }
 
   // Kinare (border lines): sirf width/height badalti hai, text wahi size rehta hai aur dobara wrap hota hai.
+  // Side border kheenchne se auto width khatam: ab block isi width me wrap karta hai (tldraw jaisa).
   // Kone: poora block text samet ek hi nisbat se chhota/bara hota hai (text ka size bhi).
   // Upar/baayein se kheenchne par x/y bhi badalte hain. Height content se kam nahi hoti (text na kate).
   const onResizeDown = (edge: Edge) => (event: React.PointerEvent) => {
@@ -151,7 +147,7 @@ export const TextBlock = memo(function TextBlock({
     const startRect: BlockRect = {
       x: obj.x,
       y: obj.y,
-      width: obj.width,
+      width: obj.autoWidth ? el.offsetWidth : obj.width,
       height: el.offsetHeight,
       scale: startScale,
     }
@@ -161,6 +157,9 @@ export const TextBlock = memo(function TextBlock({
     const north = edge.startsWith('n')
     const south = edge.startsWith('s')
     const corner = edge.length === 2
+    // Auto width sirf side (baayein/daayein) border kheenchne par khatam hoti hai
+    const autoWidth = obj.autoWidth && (corner || !(east || west)) ? true : undefined
+    let changed = false
     handle.setPointerCapture(event.pointerId)
 
     const onMove = (e: PointerEvent) => {
@@ -193,8 +192,9 @@ export const TextBlock = memo(function TextBlock({
         if (south) height = startRect.height + dy
         if (north) height = startRect.height - dy
       }
-      // Pehle width (aur text size) lagao, phir naye size par content ki oonchai naapo
-      el.style.width = `${width}px`
+      // Pehle width (aur text size) lagao, phir naye size par content ki oonchai naapo.
+      // Auto width block ki width text khud tay karta hai.
+      if (!autoWidth) el.style.width = `${width}px`
       const minHeight = content.offsetHeight + PADDING_Y
       height = Math.min(MAX_BLOCK_HEIGHT, Math.max(minHeight, height))
       if (west) x = startRect.x + startRect.width - width
@@ -209,21 +209,29 @@ export const TextBlock = memo(function TextBlock({
       el.style.left = `${rect.x}px`
       el.style.top = `${rect.y}px`
       el.style.minHeight = `${rect.height}px`
+      changed =
+        rect.x !== obj.x ||
+        rect.y !== obj.y ||
+        rect.width !== startRect.width ||
+        rect.height !== startRect.height ||
+        rect.scale !== startScale
     }
     const onUp = () => {
       handle.removeEventListener('pointermove', onMove)
       handle.removeEventListener('pointerup', onUp)
       handle.removeEventListener('pointercancel', onUp)
-      const changed =
-        rect.x !== obj.x ||
-        rect.y !== obj.y ||
-        rect.width !== obj.width ||
-        rect.height !== startRect.height ||
-        rect.scale !== startScale
-      if (!changed) return
+      if (!changed) {
+        // Kuch nahi badla: DOM wapas React wali values par
+        for (const prop of ['width', 'left', 'top', 'minHeight'] as const) el.style[prop] = ''
+        el.style.removeProperty('--text-scale')
+        return
+      }
       // Text size 1 ho to field save hi na karo (purane boards jaisa)
-      const { scale, ...box } = rect
-      handlers.resize(obj.id, scale === 1 ? { ...box, scale: undefined } : rect)
+      handlers.resize(obj.id, {
+        ...rect,
+        scale: rect.scale === 1 ? undefined : rect.scale,
+        autoWidth,
+      })
     }
     handle.addEventListener('pointermove', onMove)
     handle.addEventListener('pointerup', onUp)
@@ -249,7 +257,10 @@ export const TextBlock = memo(function TextBlock({
         {
           left: obj.x,
           top: obj.y,
-          width: obj.width,
+          // Auto width: block text ke saath barhta hai, nayi line sirf Enter par (had 2000px)
+          width: obj.autoWidth ? 'max-content' : obj.width,
+          maxWidth: obj.autoWidth ? MAX_BLOCK_WIDTH : undefined,
+          minWidth: obj.autoWidth ? 48 : undefined,
           minHeight: obj.height,
           zIndex: obj.zIndex,
           '--text-scale': obj.scale ?? 1,
@@ -265,13 +276,16 @@ export const TextBlock = memo(function TextBlock({
       {/* flow-root: heading ki margin bahar collapse na ho, taake content ki oonchai sahi naape */}
       <div ref={contentRef} className="flow-root">
         {editing ? (
-          <TextEditor
-            initialMarkdown={obj.markdown}
-            onChange={(markdown) => handlers.change(obj.id, markdown)}
-            onExit={() => handlers.exitEdit(obj.id)}
-          />
+          <Suspense fallback={<ReadView markdown={obj.markdown} />}>
+            <BlockEditor
+              initialMarkdown={obj.markdown}
+              onChange={(markdown) => handlers.change(obj.id, markdown)}
+              onExit={() => handlers.exitEdit(obj.id)}
+              takePendingText={handlers.takePendingText}
+            />
+          </Suspense>
         ) : (
-          <MarkdownView markdown={obj.markdown} />
+          <ReadView markdown={obj.markdown} />
         )}
       </div>
 

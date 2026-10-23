@@ -130,3 +130,12 @@ Status values: `planned` -> `in progress` -> `ready for review` (branch pushed) 
 - [x] Browser suites moved from plain Node scripts to the Playwright Test runner (`tests/e2e/*.spec.mjs`, `pnpm test:e2e`, HTML report with every check, screenshots, failure video and trace). Old template e2e test (email login, removed feature) and its helpers deleted; `tests/browser/` replaced
 - [x] `.mcp.json` with the Playwright MCP server
 - Verified: see the step report in the conversation (all four specs green)
+
+### Iteration 4, step 2: text blocks on Lexical
+- [x] Lexical 0.52.0 editor for the block being edited; read view for all other blocks from the same markdown (no editor mounted)
+- [x] Same features as before (live `#`/`-`/`1.` shortcuts also inside lists, Enter/Backspace rules, markdown paste, Escape), plus inline toolbar (bold, italic, strikethrough, code), slash menu (text, headings, lists, to-do), to-do lists
+- [x] Auto width (grows with the text, new line only on Enter; side drag fixes the width), click on empty canvas and type
+- [x] Typed text counts as unsaved while still editing; Save and Ctrl+S include it (before, text was only committed when leaving the block)
+- [x] Storage unchanged (markdown), old boards load the same (unit tests); server accepts the new `autoWidth` flag
+- Verified on the production Worker build: all five Playwright specs green, 222 checks (new `text-blocks.spec.mjs`: 37), unit tests 15/15
+

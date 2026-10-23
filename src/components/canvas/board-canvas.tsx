@@ -6,15 +6,24 @@ import { useBoard } from '@/components/board/board-store'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { clampZoom, MAX_OBJECTS, type TextObject, type Viewport } from '@/lib/scene'
 import { cn } from '@/lib/utils'
-import { type BlockHandlers, TextBlock } from './text-block'
+import { type BlockHandlers, preloadEditor, TextBlock } from './text-block'
 
 type Tool = 'select' | 'hand' | 'text'
 
 const GRID = 24
 const CULL_MARGIN = 400 // screen px — itna bahar tak blocks pehle se mount rehte hain
 const HISTORY_LIMIT = 100
-const NEW_BLOCK_WIDTH = 320
+// Naya block auto width hai: shuru me chhota, text ke saath barhta hai
+const NEW_BLOCK_WIDTH = 48
 const NEW_BLOCK_HEIGHT = 40
+// Block ki padding (px-3 py-2) aur ek line ki oonchai (15px * 1.55): text wahin shuru ho jahan click hua
+const PAD_X = 12
+const PAD_Y = 8
+const LINE_HEIGHT = 23
+// Itna kam hile to click hai, pan nahi
+const CLICK_SLOP = 4
+// Edit ke dauraan likha text itni der baad board me (Save aur "unsaved" ke liye)
+const DRAFT_DELAY = 300
 
 const newId = () =>
   typeof crypto !== 'undefined' && 'randomUUID' in crypto
@@ -27,7 +36,8 @@ const newId = () =>
  * waqt me sirf ek block edit mode me hota hai.
  */
 export function BoardCanvas() {
-  const { canEdit, objects, setObjects, initialViewport, setViewportSource } = useBoard()
+  const { canEdit, objects, setObjects, initialViewport, setViewportSource, setFlushSource } =
+    useBoard()
 
   const containerRef = useRef<HTMLDivElement>(null)
   const worldRef = useRef<HTMLDivElement>(null)
@@ -43,20 +53,41 @@ export function BoardCanvas() {
   const [selectedId, setSelectedId] = useState<string | null>(null)
   const [editingId, setEditingId] = useState<string | null>(null)
   const [panning, setPanning] = useState(false)
+  // Khali jagah click ke baad yahan likhna shuru ho sakta hai (world coords, line ka upar wala sira)
+  const [typeAt, setTypeAt] = useState<{ x: number; y: number } | null>(null)
 
   // Callbacks me hamesha taaza objects (stale closure se bachne ke liye)
   const objectsRef = useRef(objects)
   objectsRef.current = objects
   const history = useRef<{ past: TextObject[][]; future: TextObject[][] }>({ past: [], future: [] })
   const [historySize, setHistorySize] = useState({ past: 0, future: 0 })
-  // Edit ke dauraan markdown sirf ref me — har key par poora scene update nahi
+  // Edit ke dauraan markdown pehle ref me; thori der baad board me (har key par poora scene nahi)
   const draft = useRef<{ id: string; markdown: string } | null>(null)
-  // Blocks ki asal rendered oonchai (content min-height se bari ho sakti hai) — culling aur Fit ke liye
-  const measured = useRef(new Map<string, number>())
+  const draftTimer = useRef(0)
+  // Edit shuru hone se pehle ka board: poora edit undo ka ek qadam
+  const editBase = useRef<TextObject[] | null>(null)
+  // Type karke bana block: editor focus hone tak ke harf yahan jama, phir editor me (koi harf gum na ho)
+  const pendingKeys = useRef<string | null>(null)
+  // Blocks ka asal rendered size (content min-height se bara, auto width text se) — culling aur Fit
+  const measured = useRef(new Map<string, { width: number; height: number }>())
   const heightOf = useCallback(
-    (o: TextObject) => Math.max(o.height, measured.current.get(o.id) ?? 0, 24),
+    (o: TextObject) => Math.max(o.height, measured.current.get(o.id)?.height ?? 0, 24),
     [],
   )
+  const widthOf = useCallback(
+    (o: TextObject) => (o.autoWidth ? (measured.current.get(o.id)?.width ?? o.width) : o.width),
+    [],
+  )
+
+  // Select ke ilawa koi tool ho to "yahan likho" khatam
+  useEffect(() => {
+    if (tool !== 'select') setTypeAt(null)
+  }, [tool])
+
+  // Owner ke liye editor ka code pehle se load (pehla edit foran khule)
+  useEffect(() => {
+    if (canEdit) preloadEditor()
+  }, [canEdit])
 
   useEffect(() => {
     setViewportSource(() => ({ ...viewport.current }))
@@ -72,12 +103,12 @@ export function BoardCanvas() {
     const bottom = (height - y + CULL_MARGIN) / z
     const ids: string[] = []
     for (const o of objectsRef.current) {
-      if (o.x < right && o.x + o.width > left && o.y < bottom && o.y + heightOf(o) > top) {
+      if (o.x < right && o.x + widthOf(o) > left && o.y < bottom && o.y + heightOf(o) > top) {
         ids.push(o.id)
       }
     }
     return ids
-  }, [heightOf])
+  }, [heightOf, widthOf])
 
   const applyViewport = useCallback(() => {
     frame.current = 0
@@ -127,7 +158,7 @@ export function BoardCanvas() {
     } else {
       const minX = Math.min(...list.map((o) => o.x))
       const minY = Math.min(...list.map((o) => o.y))
-      const maxX = Math.max(...list.map((o) => o.x + o.width))
+      const maxX = Math.max(...list.map((o) => o.x + widthOf(o)))
       const maxY = Math.max(...list.map((o) => o.y + heightOf(o)))
       const pad = 80
       const z = clampZoom(
@@ -141,7 +172,7 @@ export function BoardCanvas() {
     }
     setZoom(viewport.current.zoom)
     scheduleViewport()
-  }, [scheduleViewport, heightOf])
+  }, [scheduleViewport, heightOf, widthOf])
 
   // Container ka size + pehla paint (pehla view sirf mount par tay hota hai)
   // biome-ignore lint/correctness/useExhaustiveDependencies: canEdit/fit sirf mount par chahiye
@@ -191,48 +222,123 @@ export function BoardCanvas() {
     [commit],
   )
 
+  // History ke baghair board badlo (edit ke dauraan ka text)
+  const setLive = useCallback(
+    (next: TextObject[]) => {
+      objectsRef.current = next
+      setObjects(next)
+    },
+    [setObjects],
+  )
+
+  // Edit wale block ka taaza text board me daalo (Save aur "unsaved" ke liye); naya board wapas
+  const applyDraft = useCallback(() => {
+    window.clearTimeout(draftTimer.current)
+    const d = draft.current
+    if (!d) return objectsRef.current
+    const current = objectsRef.current.find((o) => o.id === d.id)
+    // Auto width block ki asal width bhi saath (culling aur dusre screens ke liye)
+    const measuredWidth = measured.current.get(d.id)?.width
+    const width = current?.autoWidth && measuredWidth ? Math.round(measuredWidth) : current?.width
+    if (current && (current.markdown !== d.markdown || current.width !== width)) {
+      setLive(
+        objectsRef.current.map((o) =>
+          o.id === d.id ? { ...o, markdown: d.markdown, width: width ?? o.width } : o,
+        ),
+      )
+    }
+    return objectsRef.current
+  }, [setLive])
+
+  useEffect(() => {
+    setFlushSource(applyDraft)
+  }, [setFlushSource, applyDraft])
+
+  const beginEdit = useCallback((id: string, base: TextObject[]) => {
+    editBase.current = base
+    draft.current = null
+    setSelectedId(id)
+    setEditingId(id)
+  }, [])
+
   const finishEditing = useCallback(
     (id: string) => {
-      const current = objectsRef.current.find((o) => o.id === id)
-      const markdown = draft.current?.id === id ? draft.current.markdown : current?.markdown
+      applyDraft()
       draft.current = null
+      pendingKeys.current = null
+      const base = editBase.current ?? objectsRef.current
+      editBase.current = null
       setEditingId(null)
+      const current = objectsRef.current.find((o) => o.id === id)
       if (!current) return
-      if (!markdown?.trim()) {
+      let next: TextObject[]
+      if (!current.markdown.trim()) {
         // Khali block chhoro to hata do
-        commit(objectsRef.current.filter((o) => o.id !== id))
+        next = objectsRef.current.filter((o) => o.id !== id)
         setSelectedId(null)
+      } else {
+        // Auto width block ki asal width bhi save ho (culling aur dusre screens ke liye)
+        const width = measured.current.get(id)?.width
+        next =
+          current.autoWidth && width && Math.round(width) !== current.width
+            ? objectsRef.current.map((o) => (o.id === id ? { ...o, width: Math.round(width) } : o))
+            : objectsRef.current
+      }
+      // Poora edit undo ka ek qadam: pehle wala board history me
+      if (JSON.stringify(next) === JSON.stringify(base)) {
+        setLive(next)
         return
       }
-      if (markdown !== current.markdown) update(id, { markdown })
+      const h = history.current
+      h.past.push(base)
+      if (h.past.length > HISTORY_LIMIT) h.past.shift()
+      h.future = []
+      setHistorySize({ past: h.past.length, future: 0 })
+      setLive(next)
     },
-    [commit, update],
+    [applyDraft, setLive],
   )
 
   const exitAnyEditing = useCallback(() => {
     if (editingId) finishEditing(editingId)
   }, [editingId, finishEditing])
 
-  const createBlockAt = useCallback(
-    (screenX: number, screenY: number) => {
+  /** World point par naya (auto width) block; text wahin shuru jahan (x, y) line ka upar wala sira hai */
+  const createBlockAtWorld = useCallback(
+    (x: number, y: number, markdown = '') => {
       if (objectsRef.current.length >= MAX_OBJECTS) return
-      const vp = viewport.current
+      const base = objectsRef.current
       const block: TextObject = {
         id: newId(),
         type: 'text',
-        x: Math.round((screenX - vp.x) / vp.zoom),
-        y: Math.round((screenY - vp.y) / vp.zoom - NEW_BLOCK_HEIGHT / 2),
+        x: Math.round(x - PAD_X),
+        y: Math.round(y - PAD_Y),
         width: NEW_BLOCK_WIDTH,
         height: NEW_BLOCK_HEIGHT,
-        zIndex: Math.max(0, ...objectsRef.current.map((o) => o.zIndex)) + 1,
-        markdown: '',
+        zIndex: Math.max(0, ...base.map((o) => o.zIndex)) + 1,
+        markdown,
+        autoWidth: true,
       }
-      commit([...objectsRef.current, block])
-      setSelectedId(block.id)
-      setEditingId(block.id)
+      setLive([...base, block])
+      beginEdit(block.id, base)
+      pendingKeys.current = markdown ? '' : null
+      setTypeAt(null)
       setTool('select')
     },
-    [commit],
+    [setLive, beginEdit],
+  )
+
+  const toWorld = useCallback((screenX: number, screenY: number) => {
+    const vp = viewport.current
+    return { x: (screenX - vp.x) / vp.zoom, y: (screenY - vp.y) / vp.zoom - LINE_HEIGHT / 2 }
+  }, [])
+
+  const createBlockAt = useCallback(
+    (screenX: number, screenY: number) => {
+      const p = toWorld(screenX, screenY)
+      createBlockAtWorld(p.x, p.y)
+    },
+    [toWorld, createBlockAtWorld],
   )
 
   const undo = useCallback(() => {
@@ -241,6 +347,9 @@ export function BoardCanvas() {
     if (!prev) return
     h.future.push(objectsRef.current)
     setHistorySize({ past: h.past.length, future: h.future.length })
+    draft.current = null
+    editBase.current = null
+    pendingKeys.current = null
     objectsRef.current = prev
     setObjects(prev)
     setEditingId(null)
@@ -252,6 +361,8 @@ export function BoardCanvas() {
     if (!next) return
     h.past.push(objectsRef.current)
     setHistorySize({ past: h.past.length, future: h.future.length })
+    draft.current = null
+    editBase.current = null
     objectsRef.current = next
     setObjects(next)
     setEditingId(null)
@@ -261,21 +372,30 @@ export function BoardCanvas() {
     () => ({
       select: (id) => {
         if (editingId && editingId !== id) finishEditing(editingId)
+        setTypeAt(null)
         setSelectedId(id)
       },
       startEdit: (id) => {
-        if (editingId && editingId !== id) finishEditing(editingId)
-        setSelectedId(id)
-        setEditingId(id)
+        if (editingId === id) return
+        if (editingId) finishEditing(editingId)
+        setTypeAt(null)
+        beginEdit(id, objectsRef.current)
       },
       move: (id, x, y) => update(id, { x, y }),
       resize: (id, rect) => update(id, rect),
       change: (id, markdown) => {
         draft.current = { id, markdown }
+        window.clearTimeout(draftTimer.current)
+        draftTimer.current = window.setTimeout(applyDraft, DRAFT_DELAY)
       },
       exitEdit: (id) => finishEditing(id),
-      measure: (id, height) => {
-        measured.current.set(id, height)
+      takePendingText: () => {
+        const text = pendingKeys.current ?? ''
+        pendingKeys.current = null
+        return text
+      },
+      measure: (id, width, height) => {
+        measured.current.set(id, { width, height })
       },
       bringToFront: (id) =>
         update(id, { zIndex: Math.max(0, ...objectsRef.current.map((o) => o.zIndex)) + 1 }),
@@ -287,7 +407,7 @@ export function BoardCanvas() {
         setEditingId(null)
       },
     }),
-    [editingId, finishEditing, update, commit],
+    [editingId, finishEditing, beginEdit, applyDraft, update, commit],
   )
 
   const getZoom = useCallback(() => viewport.current.zoom, [])
@@ -295,6 +415,8 @@ export function BoardCanvas() {
   // ---------- Pointer: pan, pinch, naya block ----------
   const pointers = useRef(new Map<number, { x: number; y: number }>())
   const pinch = useRef<{ distance: number; zoom: number } | null>(null)
+  // Khali jagah par pointer kahan dabaya tha (click aur pan me farq ke liye)
+  const pressStart = useRef<{ x: number; y: number } | null>(null)
 
   const localPoint = (event: { clientX: number; clientY: number }) => {
     const rect = containerRef.current?.getBoundingClientRect()
@@ -323,9 +445,14 @@ export function BoardCanvas() {
       pointers.current.delete(event.pointerId)
       return
     }
-    // Khali jagah: selection/edit khatam aur canvas pan
+    // Khali jagah: selection/edit khatam aur canvas pan (hilaye baghair chhoda to "yahan likho")
     exitAnyEditing()
     setSelectedId(null)
+    setTypeAt(null)
+    pressStart.current =
+      canEdit && tool === 'select' && isPrimary && !spaceDown && pointers.current.size === 1
+        ? { x: event.clientX, y: event.clientY }
+        : null
     setPanning(true)
   }
 
@@ -351,6 +478,16 @@ export function BoardCanvas() {
   }
 
   const onPointerUp = (event: React.PointerEvent<HTMLDivElement>) => {
+    const start = pressStart.current
+    pressStart.current = null
+    if (
+      start &&
+      pointers.current.size === 1 &&
+      Math.hypot(event.clientX - start.x, event.clientY - start.y) < CLICK_SLOP
+    ) {
+      const p = localPoint(event)
+      setTypeAt(toWorld(p.x, p.y))
+    }
     pointers.current.delete(event.pointerId)
     if (pointers.current.size < 2) pinch.current = null
     if (pointers.current.size === 0) setPanning(false)
@@ -396,6 +533,18 @@ export function BoardCanvas() {
     }
     const onKeyDown = (event: KeyboardEvent) => {
       if (isTyping()) return
+      // Naya block ban raha hai aur editor abhi focus nahi hua: harf jama karo
+      if (
+        pendingKeys.current !== null &&
+        !event.ctrlKey &&
+        !event.metaKey &&
+        !event.altKey &&
+        event.key.length === 1
+      ) {
+        event.preventDefault()
+        pendingKeys.current += event.key
+        return
+      }
       const mod = event.ctrlKey || event.metaKey
       if (event.code === 'Space') {
         event.preventDefault()
@@ -403,6 +552,12 @@ export function BoardCanvas() {
         return
       }
       if (!canEdit) return
+      // Khali jagah click ke baad koi bhi harf: wahin naya block, likhna shuru
+      if (typeAt && !mod && !event.altKey && event.key.length === 1) {
+        event.preventDefault()
+        createBlockAtWorld(typeAt.x, typeAt.y, event.key)
+        return
+      }
       if (mod && event.key.toLowerCase() === 'z') {
         event.preventDefault()
         if (event.shiftKey) redo()
@@ -423,6 +578,7 @@ export function BoardCanvas() {
         handlers.startEdit(selectedId)
       } else if (event.key === 'Escape') {
         setSelectedId(null)
+        setTypeAt(null)
       } else if (event.key === 'v') setTool('select')
       else if (event.key === 'h') setTool('hand')
       else if (event.key === 't') setTool('text')
@@ -436,7 +592,7 @@ export function BoardCanvas() {
       window.removeEventListener('keydown', onKeyDown)
       window.removeEventListener('keyup', onKeyUp)
     }
-  }, [canEdit, selectedId, handlers, undo, redo])
+  }, [canEdit, selectedId, handlers, undo, redo, typeAt, createBlockAtWorld])
 
   // ---------- Render ----------
   const visible = new Set(visibleIds())
@@ -471,6 +627,15 @@ export function BoardCanvas() {
         onDoubleClick={onDoubleClick}
       >
         <div ref={worldRef} className="absolute top-0 left-0 origin-top-left will-change-transform">
+          {typeAt ? (
+            // Yahan likhna shuru hoga: chamakta caret (text jahan aayega wahin)
+            <span
+              aria-hidden
+              data-testid="type-caret"
+              className="pointer-events-none absolute w-0.5 animate-pulse bg-foreground"
+              style={{ left: typeAt.x, top: typeAt.y, height: LINE_HEIGHT }}
+            />
+          ) : null}
           {rendered.map((obj) => (
             <TextBlock
               key={obj.id}
@@ -489,7 +654,7 @@ export function BoardCanvas() {
       {objects.length === 0 ? (
         <p className="pointer-events-none absolute inset-x-0 top-1/3 text-center text-sm text-muted-foreground">
           {canEdit
-            ? 'Double-click anywhere (or pick the Text tool) to add a text block. Type # for a heading, - for a list.'
+            ? 'Click anywhere and start typing. Type # for a heading, - for a list, / for more.'
             : 'This board is empty.'}
         </p>
       ) : null}

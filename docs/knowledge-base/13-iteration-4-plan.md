@@ -39,11 +39,11 @@ Items marked **open** wait for the owner's answer. Nothing is built until the ow
 - **Storage format:** markdown through Lexical's converters, plus small custom converters for tables, code, to-do lists and UI components. Markdown is compact (about 1.8 MB is several hundred pages of text), so text-heavy lectures fit in the row (accepted: "Lexical ka tareeqa sahi he").
 - **UI component mechanism:** a Lexical decorator node plus a slash-menu entry, with a Callout demo (accepted).
 - **`media` collection (decided):** keep it and the R2 config untouched. (Note given to the owner: the R2 storage plugin is installed but not configured in `payload.config.ts`.)
-- **Links in read-only view (open):** proposal: visitors just click the link (opens with its target); the popover is only for the owner while editing.
+- **Links in read-only view (decided):** visitors can click links (they open with the link's target); only the board creator can change a link (popover while editing).
 
 ## Proposed order (each step: build, all tests, push to dev, owner verifies)
-1. Playwright Test runner (move the suites, videos/traces/report) + Playwright MCP config. **Done (pushed to dev, waiting for owner check).**
-2. Text blocks on Lexical: same features as today first (live markdown, dynamic width, type anywhere), then inline toolbar, slash menu, to-do list.
+1. Playwright Test runner (move the suites, videos/traces/report) + Playwright MCP config. **Done, verified by the owner.**
+2. Text blocks on Lexical: same features as today first (live markdown, dynamic width, type anywhere), then inline toolbar, slash menu, to-do list. **Done (pushed to dev, waiting for owner check).**
 3. Code block (shadcn style) and tables in text blocks.
 4. Engine upgrade: scene store, multi-select, selection box, copy/paste, alignment guides.
 5. Shapes (rectangle, ellipse, line) + style panel.

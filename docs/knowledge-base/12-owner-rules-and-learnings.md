@@ -36,6 +36,7 @@ Every correction or instruction from the owner is recorded here, with what it me
 | Oct 2026 | Presentation mode later, after deciding how slides pick blocks | Backlog item only (`11-iterations.md`) |
 | Oct 2026 | Flow per iteration: finalise the shape together -> agent plans and splits into small tasks -> implements -> pushes to dev -> owner checks and verifies -> next | Never start implementing an iteration before its shape is final |
 | Oct 2026 | Iteration 4 answers: tools OK, no Duplicate button, style panel only for a stylable selection, alignment guides, pen yes, arrows and frames later, images shrunk for instructors (originals on a future paid plan), 10 images per board (admin unlimited), images served by this project only (no extra domain), rebuild text blocks on Lexical with its markdown converters, dynamic block width, shadcn-style code block with line numbers and copy, Playwright Test + Playwright MCP | Details and remaining open points in `13-iteration-4-plan.md` |
+| Oct 2026 | Visitors can click links; only the board creator changes them | Link popover only in the owner's editor |
 | Oct 2026 | Do not bring in outside services or domains the owner does not have | Everything runs inside this project (Worker, D1, R2) |
 | Oct 2026 | Remove images from the canvas plan completely; keep R2 config; images only via the Payload admin. Type-anywhere and Lexical storage accepted. Callout demo yes. Links with label/target/rel and a hover/focus popover (Edit/Remove) | `13-iteration-4-plan.md` |
 | Oct 2026 | Keep Payload's `media` collection and R2 configuration; do not touch them. Only the canvas has no image features | Never change `media` / R2 setup unless asked |
@@ -47,6 +48,11 @@ These were decided by the agent before rule 1 existed. Each one stays as it is u
 - **C. Live-check trigger:** opt-in with `[live-check]` in a dev commit message, or by hand from the Actions tab (button appears once the file is on `main`). Other options: run it only on `main` pushes, a nightly schedule, or never in CI (local only).
 - **D. (accepted) Grab area for border resize:** about 8 screen px on edges, 14 px on corners.
 - **F. `*.devslix.com`:** Payload only matches exact origins (no wildcard). Options: list each domain in `ALLOWED_ORIGINS` (current, simple, safe); a small custom check that accepts any `https://<name>.devslix.com` (touches Payload internals, must be re-checked on Payload upgrades); or one variable per environment that the owner edits in the Cloudflare dashboard. Also open: should the production workers.dev URL be allowed too (today only lecture.devslix.com, same as `main` had)?
+- **G. (Iteration 4 step 2) Inline toolbar items:** bold, italic, strikethrough, inline code only (underline/highlight cannot be stored in markdown, so they are blocked).
+- **H. Slash menu items now:** Text, Heading 1-3, Bulleted list, Numbered list, To-do list.
+- **I. To-do in the read view:** nobody can tick items outside edit mode; the owner ticks them while editing.
+- **J. Click-to-type:** a blinking caret shows where the text will start; while it shows, letters type text and the V/H/T tool shortcuts do not switch tools.
+- **K. Auto width limit:** an auto-width block wraps at 2,000 px.
 - **E. Boards per day:** default stays 10 (owner once wrote 14 and once "1 board per day"). Editable by the admin in the `settings` Global.
 
 ## Regression protection
