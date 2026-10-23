@@ -10,12 +10,12 @@ When a task changes status, update its row in the same branch/PR.
 |---|---|---|---|---|
 | A1 | Knowledge base: new direction, learnings, remove canvas/presentation/layout docs, this tracker | docs only | done | PR #22 |
 | A2 | Remove the live-check (script, workflow, spec, `[live-check]` hook in `deploy.yml`) | full suite | done | PR #23 |
-| A3 | Remove the infinite canvas (code, files, tests); migration deletes old canvas boards; `data.doc` + `validateDocument`; empty Lexical editor (paragraphs) for the owner; server read view for visitors; Save/Share keep working | unit: `tests/int/document.int.spec.ts`; e2e: `tests/e2e/editor/basics.spec.mjs`, save-share | in review | branch `task/a3-board-document` |
+| A3 | Remove the infinite canvas (code, files, tests); migration deletes old canvas boards; `data.doc` + `validateDocument`; empty Lexical editor (paragraphs) for the owner; server read view for visitors; Save/Share keep working | unit: `tests/int/document.int.spec.ts`; e2e: `tests/e2e/editor/basics.spec.mjs`, save-share | done | PR #24 |
 
 ## Iteration B: text types (each with its markdown shortcut)
 | Id | Task | Status |
 |---|---|---|
-| B1 | Slash menu shell (`/`, filter, keyboard, categories) | todo |
+| B1 | Slash menu shell (`/`, filter, keyboard, categories) | in review (branch `task/b1-slash-menu`; tests `tests/int/slash-menu.int.spec.ts`, `tests/e2e/editor/slash-menu.spec.mjs`) |
 | B2 | Headings H1-H6 | todo |
 | B3 | Quote | todo |
 | B4 | Bulleted list | todo |
