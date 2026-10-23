@@ -8,10 +8,10 @@ Official docs: https://payloadcms.com/docs/fields/overview , https://payloadcms.
 - `users`: auth with `loginWithUsername` (`allowEmailLogin: false`), `role` (`admin` | `instructor`, default `instructor`). Username validation in a field `validate` and in the registration server action.
 - `boards`:
   - `title` (max 50, normalized), `slug` (unique, indexed, generated once on create in `beforeValidate`, collision gets a random suffix; never changes afterwards, so a shared link keeps working after a rename; reuse `src/lib/title-slug.ts`), `owner` (relationship, indexed, pinned in `beforeChange`), `isShared` (checkbox, default false).
-  - `data` (json): `{ canvas: <scene> }` (see `05-board-canvas.md`). One row write per Save. Size is checked in `beforeValidate` against the `settings` Global limit (default 1.8 MB; D1 row limit is 2 MB).
+  - `data` (json): `{ doc: <Lexical JSON> }` (see `05-board-editor.md`, from task A3). One row write per Save. Size is checked in `beforeValidate` against the `settings` Global limit (default 1.8 MB; D1 row limit is 2 MB).
   - `saveCount`, `saveWindowStartedAt` (hook-managed rate limit counters).
   - Indexes: `slug`, and `owner` + `createdAt` (for the "10 boards per 24 h" count query).
-- `media`: images for the canvas later (R2), owner only. Not used until the research iteration decides on images.
+- `media`: Payload upload collection on R2. Kept exactly as it is (owner decision); not used by the board editor.
 - Global `settings`: see `03-payload-access-control.md`.
 
 ## Rate limit rules (hooks, server side)
@@ -22,7 +22,7 @@ Official docs: https://payloadcms.com/docs/fields/overview , https://payloadcms.
 - Skip all of this for `admin`.
 
 ## Validation rules
-- Validate the scene shape on the server: known object types only, numeric positions, a cap on object count (about 500) and on markdown length per block.
+- Validate the document on the server (`validateDocument`): known node types only, a depth limit, text limits, block fields checked against each block's settings.
 - Reject `data` larger than the configured max bytes with a clear error message that the UI shows.
 
 ## Cost notes (D1 free plan)

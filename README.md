@@ -1,12 +1,12 @@
 # Boards (Next.js + Payload CMS + Cloudflare D1)
 
-An infinite canvas for instructors to prepare and share interactive lectures. The app is being rebuilt iteration by iteration; see `docs/knowledge-base/11-iterations.md` for the status and `docs/knowledge-base/01-architecture-and-decisions.md` for the target design.
+A lecture editor for instructors: each board is one rich document (Lexical) that the instructor writes and shares. The app is being rebuilt iteration by iteration; see `docs/knowledge-base/11-iterations.md` for the status and `docs/knowledge-base/01-architecture-and-decisions.md` for the target design.
 
 ## Target features
 
-- **Board canvas:** infinite canvas with pan and zoom and text blocks with live markdown (`#` headings, `-` bullets, `1.` numbered lists). Further tools are decided in a research iteration.
+- **Board editor:** one Lexical document per board with markdown shortcuts, an inline toolbar on the selection, tables, links, and blocks (Code block, Canvas) from the `/` menu. See `docs/knowledge-base/05-board-editor.md`.
 - **Accounts:** username and password only, in a sign-in modal. Anyone can register; new accounts are instructors.
-- **Sharing:** a board is private until shared; anyone with the link can view it read-only (pan and zoom), and only the owner can save. There is no forking.
+- **Sharing:** a board is private until shared; anyone with the link can view it read-only, and only the owner can save. There is no forking.
 - **Limits:** per-instructor limits on new boards and saves, configurable by the super admin in a Payload Global.
 - **Stack:** Next.js, Tailwind CSS, shadcn/ui (Base UI), Payload CMS, Cloudflare Worker + D1 + R2, Biome, pnpm.
 

@@ -73,12 +73,7 @@ The agent must list the final, exact set in the README and the final summary. Ne
 - Saving runs: pushes that change only `docs/**` or `*.md` do not trigger a deploy (`paths-ignore`). A running deploy is never cancelled (`cancel-in-progress: false`) so a D1 migration is never cut in half; newer pushes wait and only the latest queued run is kept.
 - A deploy is live only when the run is green. Every iteration is verified on the dev URL after its push.
 
-## Live check (opt-in, separate workflow)
-`.github/workflows/live-check.yml` opens a deployed URL in a real browser and runs `scripts/live-check.mjs` (register a fresh `livecheck_<id>` account, create a board, refresh, sign out, refresh three times, private board 404, cancelled refresh, sign in, delete the test board). Each step must finish within 15 s. Screenshots, `log.txt` and `report.json` are uploaded as the `live-check-<run id>` artifact (kept 14 days). Test accounts stay in the dev database (their boards are deleted).
-
-It does **not** run on every push (owner decision, October 2026: it made every push about 1.5-2 min slower, deploys queued behind it, and a red live-check made a good deploy look broken). It runs:
-- automatically after a successful dev deploy when the pushed commit message contains `[live-check]` (for server, auth or deploy changes): `deploy.yml` then calls `live-check.yml` as a reusable workflow;
-- by hand: Actions tab > "Live check (browser)" > Run workflow (URL input, dev by default), e.g. before merging `dev` into `main`. GitHub shows this button only once the workflow file is on the default branch (`main`), so it is available after the next merge.
-Without `[live-check]` the deploy run ends right after the deploy and the queue never waits for it. It uses the Google Chrome that is already installed on GitHub's Ubuntu runner (no browser download). The main gate before a push stays the agent's local test on the production Worker build (`09-checklist.md`).
+## No tests in CI
+The browser live-check workflow was removed (owner, October 2026, task A2: no benefit, slowed the work). CI only deploys. All tests run locally before a push (`09-checklist.md`).
 
 Deploy speed: `.next/cache` is cached between runs (`actions/cache`), so the Next.js build only recompiles changed files.

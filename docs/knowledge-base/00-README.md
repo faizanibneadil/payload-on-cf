@@ -1,4 +1,4 @@
-# Knowledge Base: Boards (lecture canvas)
+# Knowledge Base: Boards (lecture editor)
 
 Purpose: reference knowledge for AI coding agents and contributors working on this repo. It adds to the task prompt; it does not replace the official docs.
 
@@ -9,14 +9,14 @@ Purpose: reference knowledge for AI coding agents and contributors working on th
 2. `02-payload-auth-username.md`
 3. `03-payload-access-control.md`
 4. `04-payload-collections-validation.md`
-5. `05-board-canvas.md`
+5. `05-board-editor.md` (the board: one Lexical document)
 6. `06-cloudflare-d1-deployment.md`
 7. `07-github-actions-env-secrets.md`
 8. `08-shadcn-base-ui.md`
 9. `09-checklist.md`
-10. `10-layout-and-header.md` (header, theme, board page)
+10. `10-layout-and-header.md` (header, theme, pages)
 11. `11-iterations.md` (iteration tracker and working rules; check it first to see what is done)
-12. `13-iteration-4-plan.md` (current iteration shape, draft)
+12. `13-task-tracker.md` (every task and its status; check it to see what is next)
 
 When a file disagrees with `01-architecture-and-decisions.md`, `01` wins.
 
