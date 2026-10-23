@@ -28,7 +28,7 @@ function Intro() {
       </span>
       <h1 className="text-3xl font-semibold tracking-tight">Lecture boards for instructors</h1>
       <p className="text-muted-foreground">
-        Prepare your lecture on an infinite canvas and share it with your students through a link.
+        Write your lecture in one place and share it with your students through a link.
       </p>
       <div className="flex gap-2">
         <AuthButton tab="register" data-testid="intro-register">

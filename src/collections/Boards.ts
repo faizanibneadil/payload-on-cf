@@ -1,6 +1,6 @@
 import { APIError, type CollectionConfig, type Payload, ValidationError, type Where } from 'payload'
 import { getLimitSettings } from '../globals/Settings'
-import { validateScene } from '../lib/scene'
+import { validateDocument } from '../lib/document'
 import { normalizeTitle, validateTitle } from '../lib/title-slug'
 import { saveBoardEndpoint, shareBoardEndpoint } from './board-endpoints'
 
@@ -120,12 +120,12 @@ export const Boards: CollectionConfig = {
 
         // Board ka size limit (D1 row limit 2 MB) — settings Global se, cache ke saath
         if (data.data !== undefined) {
-          // Canvas ki shape (block types, numbers, limits) — galat data D1 me na jaye
-          const sceneCheck = validateScene(data.data)
-          if (sceneCheck !== true) {
+          // Document ki shape (node types, gehrai, limits) — galat data D1 me na jaye
+          const docCheck = validateDocument(data.data)
+          if (docCheck !== true) {
             throw new ValidationError({
               collection: 'boards',
-              errors: [{ path: 'data', message: sceneCheck }],
+              errors: [{ path: 'data', message: docCheck }],
               req,
             })
           }
@@ -187,7 +187,7 @@ export const Boards: CollectionConfig = {
 
         if (operation === 'update' && !isAdminUser(req.user) && originalDoc) {
           data.owner = ownerId(originalDoc.owner)
-          // Sirf content (title ya canvas) badle to Save count hota hai — Share on/off nahi
+          // Sirf content (title ya document) badle to Save count hota hai — Share on/off nahi
           if (contentChanged(data, originalDoc)) {
             await applySaveLimit(req.payload, data, originalDoc)
           }
@@ -229,7 +229,7 @@ export const Boards: CollectionConfig = {
       admin: { position: 'sidebar' },
     },
     {
-      // Poora canvas (scene JSON) ek hi row me — ek Save = ek row write
+      // Poora document (Lexical JSON) ek hi row me — ek Save = ek row write
       name: 'data',
       type: 'json',
     },

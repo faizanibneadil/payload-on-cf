@@ -5,8 +5,7 @@ Read this together with `12-owner-rules-and-learnings.md` (owner rules, every pa
 ## Where the project stands
 - **Direction changed (owner, October 2026):** the board is no longer an infinite canvas; it is one Lexical document (`05-board-editor.md`). Work is split into small tasks (`13-task-tracker.md`).
 - Done and verified: Iterations 0, 0b, 1, 2 (accounts, boards, Save/Share/limits); the Playwright Test setup.
-- `dev` still runs the old canvas code (commit `ce00bb8`) until task A3 is merged.
-- Current task: see `13-task-tracker.md` (A1 done; A2 remove the live-check in review; next A3 remove the canvas and add the Lexical document).
+- Current task: see `13-task-tracker.md` (A1, A2 done; A3 board document in review; next B1 slash menu).
 - Open owner decisions: E (boards per day, now 10), F (`*.devslix.com` wildcard; prod workers.dev URL allowed or not), Code block settings (before F4).
 
 ## How to work here
@@ -23,10 +22,11 @@ Read this together with `12-owner-rules-and-learnings.md` (owner rules, every pa
 - Playwright's own browser is not installed: always pass `CHROMIUM_PATH=/opt/pw-browsers/chromium`. Playwright MCP needs `PLAYWRIGHT_MCP_SANDBOX=false` and `PLAYWRIGHT_MCP_EXECUTABLE_PATH=/opt/pw-browsers/chromium` in this container.
 - Headless typing is faster than a person: after selection-changing keys and before Enter in a menu, tests wait 50-100 ms.
 - `node_modules` may be missing in a fresh container: run `pnpm install` first.
+- Running `pnpm payload migrate` a second time on the local DB stops at a "data loss" prompt, because `pnpm seed:admin` adds a dev marker row (`payload_migrations`, batch -1). Delete that row first; CI is not affected (production mode).
 - Dev D1 id `d7951b74-a34d-4a5f-a544-ef4f2e9a6004`. Production D1/R2 and `main` are never touched.
 
 ## Key code map
 - Board page: `src/app/(frontend)/b/[slug]/page.tsx`; board state and Save: `src/components/board/board-store.tsx`, `src/collections/board-endpoints.ts`, `src/collections/Boards.ts`.
 - Fast read path (free plan CPU): `src/lib/session.ts`, `src/lib/board-reads.ts`.
 - Origins per environment: `wrangler.jsonc` `vars` + `src/payload.config.ts`.
-- Until A3: canvas in `src/components/canvas/`, scene model `src/lib/scene.ts` (both removed by A3; the editor will live in `src/components/editor/`).
+- Editor: `src/components/editor/` (`board-editor.tsx` Lexical + plugins, `editor-loader.tsx` lazy chunk, `theme.ts` classes shared with the read view). Read view: `src/components/read-view/document-view.tsx` (server). Document model and validation: `src/lib/document.ts` (each new node type adds a rule there and a renderer in the read view).
