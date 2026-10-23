@@ -92,6 +92,20 @@ describe('document validation', () => {
     )
   })
 
+  it('accepts headings h1-h6 and rejects other levels', () => {
+    for (const tag of ['h1', 'h2', 'h3', 'h4', 'h5', 'h6']) {
+      expect(
+        validateDocument(docOf([{ ...paragraph([text('Title')]), type: 'heading', tag }])),
+      ).toBe(true)
+    }
+    expect(
+      validateDocument(docOf([{ ...paragraph([text('x')]), type: 'heading', tag: 'h7' }])),
+    ).toBe('Invalid heading level')
+    expect(validateDocument(docOf([{ ...paragraph(), type: 'heading' }]))).toBe(
+      'Invalid heading level',
+    )
+  })
+
   it('rejects documents nested too deeply', () => {
     let node: unknown = text('deep')
     for (let i = 0; i <= MAX_DEPTH; i++) node = paragraph([node])

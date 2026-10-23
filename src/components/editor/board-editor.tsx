@@ -5,10 +5,13 @@ import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext
 import { ContentEditable } from '@lexical/react/LexicalContentEditable'
 import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary'
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin'
+import { MarkdownShortcutPlugin } from '@lexical/react/LexicalMarkdownShortcutPlugin'
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin'
+import { HeadingNode } from '@lexical/rich-text'
 import { mergeRegister } from '@lexical/utils'
 import {
   COMMAND_PRIORITY_CRITICAL,
+  type ElementNode,
   FORMAT_ELEMENT_COMMAND,
   FORMAT_TEXT_COMMAND,
   INDENT_CONTENT_COMMAND,
@@ -19,6 +22,7 @@ import {
 import { useEffect } from 'react'
 import { useBoard } from '@/components/board/board-store'
 import type { BoardDocument } from '@/lib/document'
+import { editorNodes, markdownTransformers } from './features'
 import { SlashMenuPlugin } from './slash-menu/slash-menu-plugin'
 import { documentClass, editorTheme } from './theme'
 
@@ -26,8 +30,9 @@ import { documentClass, editorTheme } from './theme'
 const SYNC_DELAY_MS = 300
 
 /**
- * Board ka Lexical editor (sirf owner/admin). Is task me sirf paragraphs: formatting, alignment aur
- * indent apne apne task me aayenge, tab tak inhein band rakha he (paste ya shortcut se bhi na aayen).
+ * Board ka Lexical editor (sirf owner/admin). Features (`./features`) apne nodes, markdown shortcuts aur
+ * slash menu items laate hain. Formatting, alignment aur indent apne apne task me aayenge, tab tak band
+ * hain (paste ya shortcut se bhi na aayen).
  */
 export function BoardEditor() {
   const { initialDoc } = useBoard()
@@ -36,7 +41,7 @@ export function BoardEditor() {
       initialConfig={{
         namespace: 'board',
         theme: editorTheme,
-        nodes: [],
+        nodes: editorNodes,
         editorState: JSON.stringify(initialDoc),
         onError: (error) => {
           console.error(error)
@@ -64,15 +69,21 @@ export function BoardEditor() {
         />
       </div>
       <HistoryPlugin />
+      <MarkdownShortcutPlugin transformers={markdownTransformers} />
       <SlashMenuPlugin />
-      <ParagraphsOnlyPlugin />
+      <NotYetPlugin />
       <BoardSyncPlugin />
     </LexicalComposer>
   )
 }
 
-/** Abhi sirf saade paragraphs: bold/italic, alignment, indent waghera ke commands aur paste ka style hatao */
-function ParagraphsOnlyPlugin(): null {
+const resetLine = (node: ElementNode) => {
+  if (node.getFormatType() !== '') node.setFormat('')
+  if (node.getIndent() !== 0) node.setIndent(0)
+}
+
+/** Jo abhi bane nahi: bold/italic, alignment, indent waghera ke commands aur paste ka style/format hatao */
+function NotYetPlugin(): null {
   const [editor] = useLexicalComposerContext()
   useEffect(() => {
     const block = () => true
@@ -85,10 +96,9 @@ function ParagraphsOnlyPlugin(): null {
         if (node.getFormat() !== 0) node.setFormat(0)
         if (node.getStyle() !== '') node.setStyle('')
       }),
-      editor.registerNodeTransform(ParagraphNode, (node) => {
-        if (node.getFormatType() !== '') node.setFormat('')
-        if (node.getIndent() !== 0) node.setIndent(0)
-      }),
+      // Alignment (B9) aur indent (B8) se pehle har line saadi
+      editor.registerNodeTransform(ParagraphNode, resetLine),
+      editor.registerNodeTransform(HeadingNode, resetLine),
     )
   }, [editor])
   return null

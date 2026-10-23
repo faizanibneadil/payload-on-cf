@@ -25,6 +25,10 @@ const NODE_RULES: Record<string, { children: boolean; check?: (node: DocNode) =>
   {
     root: { children: true },
     paragraph: { children: true },
+    heading: {
+      children: true,
+      check: (node) => (HEADING_TAGS.has(node.tag as string) ? null : 'Invalid heading level'),
+    },
     text: {
       children: false,
       check: (node) => {
@@ -40,6 +44,8 @@ const NODE_RULES: Record<string, { children: boolean; check?: (node: DocNode) =>
     linebreak: { children: false },
     tab: { children: false },
   }
+
+const HEADING_TAGS = new Set(['h1', 'h2', 'h3', 'h4', 'h5', 'h6'])
 
 const isSmallInt = (v: unknown) =>
   typeof v === 'number' && Number.isInteger(v) && v >= 0 && v < 2 ** 16

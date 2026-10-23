@@ -5,7 +5,7 @@ Read this together with `12-owner-rules-and-learnings.md` (owner rules, every pa
 ## Where the project stands
 - **Direction changed (owner, October 2026):** the board is no longer an infinite canvas; it is one Lexical document (`05-board-editor.md`). Work is split into small tasks (`13-task-tracker.md`).
 - Done and verified: Iterations 0, 0b, 1, 2 (accounts, boards, Save/Share/limits); the Playwright Test setup.
-- Current task: see `13-task-tracker.md` (Iteration A done; B1 slash menu in review; next B2 headings).
+- Current task: see `13-task-tracker.md` (Iteration A and B1 done; B2 headings in review; next B3 quote).
 - Open owner decisions: E (boards per day, now 10), F (`*.devslix.com` wildcard; prod workers.dev URL allowed or not), Code block settings (before F4).
 
 ## How to work here
@@ -29,4 +29,4 @@ Read this together with `12-owner-rules-and-learnings.md` (owner rules, every pa
 - Board page: `src/app/(frontend)/b/[slug]/page.tsx`; board state and Save: `src/components/board/board-store.tsx`, `src/collections/board-endpoints.ts`, `src/collections/Boards.ts`.
 - Fast read path (free plan CPU): `src/lib/session.ts`, `src/lib/board-reads.ts`.
 - Origins per environment: `wrangler.jsonc` `vars` + `src/payload.config.ts`.
-- Editor: `src/components/editor/` (`board-editor.tsx` Lexical + plugins, `editor-loader.tsx` lazy chunk, `theme.ts` classes shared with the read view). Read view: `src/components/read-view/document-view.tsx` (server). Document model and validation: `src/lib/document.ts` (each new node type adds a rule there and a renderer in the read view).
+- Editor: `src/components/editor/` (`features/` one file per feature: nodes, markdown shortcuts, slash menu items, listed in `features/index.ts`; `board-editor.tsx` Lexical + plugins, `editor-loader.tsx` lazy chunk, `theme.ts` classes shared with the read view). Read view: `src/components/read-view/document-view.tsx` (server). Document model and validation: `src/lib/document.ts` (each new node type adds a rule there and a renderer in the read view).

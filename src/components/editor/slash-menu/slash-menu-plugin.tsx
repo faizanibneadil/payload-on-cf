@@ -7,44 +7,12 @@ import {
   PUNCTUATION,
   type TriggerFn,
 } from '@lexical/react/LexicalTypeaheadMenuPlugin'
-import { $setBlocksType } from '@lexical/selection'
-import {
-  $createParagraphNode,
-  $getSelection,
-  $isRangeSelection,
-  type LexicalEditor,
-  type TextNode,
-} from 'lexical'
-import { Type } from 'lucide-react'
+import type { LexicalEditor, TextNode } from 'lexical'
 import { useCallback, useMemo, useState } from 'react'
 import { createPortal } from 'react-dom'
 import { cn } from '@/lib/utils'
-import { filterSlashGroups, type SlashMenuGroup, type SlashMenuItem } from './slash-menu-items'
-
-/**
- * Menu ke groups. Har text feature (headings, lists, ...) apne task me apna item yahan jodta he;
- * "Blocks" aur "Inline blocks" groups task F2 me aayenge.
- */
-export const slashMenuGroups: SlashMenuGroup<LexicalEditor>[] = [
-  {
-    key: 'basic',
-    label: 'Basic',
-    items: [
-      {
-        key: 'paragraph',
-        label: 'Paragraph',
-        keywords: ['normal', 'paragraph', 'p', 'text'],
-        icon: Type,
-        onSelect: (editor) =>
-          editor.update(() => {
-            const selection = $getSelection()
-            if ($isRangeSelection(selection))
-              $setBlocksType(selection, () => $createParagraphNode())
-          }),
-      },
-    ],
-  },
-]
+import { slashMenuGroups } from '../features'
+import { filterSlashGroups, type SlashMenuItem } from './slash-menu-items'
 
 class SlashOption extends MenuOption {
   item: SlashMenuItem<LexicalEditor>
