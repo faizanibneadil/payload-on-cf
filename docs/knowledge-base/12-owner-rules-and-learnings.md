@@ -7,7 +7,7 @@ Every correction or instruction from the owner is recorded here, with what it me
 2. **Keep learnings.** Each owner request is a learning: write it down here and follow it in all later work.
 3. **Nothing breaks.** Before every push, run all browser suites (not only the one for the new feature) on the production Worker build, plus `pnpm test:int`, `pnpm lint` and `pnpm exec tsc --noEmit`. A change to one feature must keep the earlier owner requests working.
 4. **Test and report.** Every task has its own tests (every tool and every component), and ends with real-browser testing, screenshots and a pass/fail report (`09-checklist.md`). While working, run only the tests of the task; the full suite runs once, before the push.
-5. **Fast development.** Nothing may slow down the push-to-deploy cycle or eat into free limits without the owner's OK. No tests in GitHub Actions (owner, October 2026); testing is local.
+5. **Fast development.** Nothing may slow down the push-to-deploy cycle or eat into free limits without the owner's OK. No browser tests in GitHub Actions (owner, October 2026); they run locally. The deploy job keeps only its fast unit tests and schema drift check.
 6. Stay on the Cloudflare Workers **free plan** (10 ms CPU per request). GitHub Actions only.
 7. Code comments in Roman Urdu; commits and PR text in English. Never touch `main` or production D1/R2.
 8. Reply to the owner in Roman Urdu.

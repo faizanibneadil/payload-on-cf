@@ -22,8 +22,6 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     timeout-minutes: 40
-    outputs:
-      url: ${{ steps.deploy_worker.outputs.url }}
     env:
       CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
       CLOUDFLARE_ACCOUNT_ID: ${{ secrets.CLOUDFLARE_ACCOUNT_ID }}
@@ -158,7 +156,6 @@ jobs:
           # Wrangler deploy ke output se asli workers.dev URL nikalo (account subdomain ke saath)
           url=$(grep -oE 'https://[A-Za-z0-9.-]+\.workers\.dev' /tmp/deploy.log | tail -1 || true)
           echo "DEPLOYED_URL=$url" >> $GITHUB_ENV
-          echo "url=$url" >> $GITHUB_OUTPUT
 
       - name: Smoke test deployed worker endpoints
         run: |
@@ -175,11 +172,3 @@ jobs:
               exit 1
             fi
           done
-
-  # Browser live-check sirf tab jab dev commit message me "[live-check]" ho (har push par nahi)
-  live-check:
-    needs: deploy
-    if: github.ref == 'refs/heads/dev' && needs.deploy.outputs.url != '' && contains(github.event.head_commit.message, '[live-check]')
-    uses: ./.github/workflows/live-check.yml
-    with:
-      url: ${{ needs.deploy.outputs.url }}
