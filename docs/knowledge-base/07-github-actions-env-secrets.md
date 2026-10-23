@@ -73,7 +73,7 @@ The agent must list the final, exact set in the README and the final summary. Ne
 - Saving runs: pushes that change only `docs/**` or `*.md` do not trigger a deploy (`paths-ignore`). A running deploy is never cancelled (`cancel-in-progress: false`) so a D1 migration is never cut in half; newer pushes wait and only the latest queued run is kept.
 - A deploy is live only when the run is green. Every iteration is verified on the dev URL after its push.
 
-## No tests in CI
-The browser live-check workflow was removed (owner, October 2026, task A2: no benefit, slowed the work). CI only deploys. All tests run locally before a push (`09-checklist.md`).
+## No browser tests in CI
+The browser live-check workflow was removed (owner, October 2026, task A2: no benefit, slowed the work). The deploy job still runs the fast unit tests (`pnpm test:int`, a few seconds) and the schema drift check before migrations, so a broken build never reaches D1. Browser tests run locally before a push (`09-checklist.md`).
 
 Deploy speed: `.next/cache` is cached between runs (`actions/cache`), so the Next.js build only recompiles changed files.

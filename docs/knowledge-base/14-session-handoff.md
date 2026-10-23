@@ -6,7 +6,7 @@ Read this together with `12-owner-rules-and-learnings.md` (owner rules, every pa
 - **Direction changed (owner, October 2026):** the board is no longer an infinite canvas; it is one Lexical document (`05-board-editor.md`). Work is split into small tasks (`13-task-tracker.md`).
 - Done and verified: Iterations 0, 0b, 1, 2 (accounts, boards, Save/Share/limits); the Playwright Test setup.
 - `dev` still runs the old canvas code (commit `ce00bb8`) until task A3 is merged.
-- Current task: see `13-task-tracker.md` (A1 knowledge base in review; next A2 remove the live-check, then A3 remove the canvas and add the Lexical document).
+- Current task: see `13-task-tracker.md` (A1 done; A2 remove the live-check in review; next A3 remove the canvas and add the Lexical document).
 - Open owner decisions: E (boards per day, now 10), F (`*.devslix.com` wildcard; prod workers.dev URL allowed or not), Code block settings (before F4).
 
 ## How to work here

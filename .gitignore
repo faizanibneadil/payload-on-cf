@@ -54,7 +54,6 @@ node_modules/
 .open-next
 .wrangler
 
-# Local preview aur live check ki files
+# Local preview ki files
 .dev.vars
 wrangler.preview.jsonc
-live-check-output/
