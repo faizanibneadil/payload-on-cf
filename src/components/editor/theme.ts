@@ -25,6 +25,9 @@ export const editorTheme = {
     listitemUnchecked: 'board-check-unchecked',
     nested: { listitem: 'list-none board-list-wrapper' },
   },
+  // Horizontal rule (owner, B7: Payload jaisi) — line aur select ki ring `globals.css` me
+  hr: 'board-hr',
+  hrSelected: 'board-hr-selected',
   // Owner ka faisla (B3): baen taraf patli line, andar aur italic
   quote: 'my-4 border-l-2 pl-6 italic first:mt-0',
   // shadcn typography jaisa; pehli line par oopar ka margin nahi

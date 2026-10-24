@@ -70,6 +70,7 @@ const NODE_RULES: Record<string, { children: boolean; check?: (node: DocNode) =>
         return null
       },
     },
+    horizontalrule: { children: false },
     linebreak: { children: false },
     tab: { children: false },
   }

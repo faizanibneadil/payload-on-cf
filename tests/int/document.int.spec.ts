@@ -167,6 +167,15 @@ describe('document validation', () => {
     )
   })
 
+  it('accepts horizontal rules without children', () => {
+    const hr = { type: 'horizontalrule', version: 1 }
+    expect(validateDocument(docOf([paragraph([text('Part 1')]), hr, paragraph()]))).toBe(true)
+    expect(validateDocument(docOf([{ ...hr, children: [text('x')] }]))).toBe(
+      'Invalid document part',
+    )
+    expect(hasContent(readDocument(docOf([hr])))).toBe(true)
+  })
+
   it('accepts check lists with ticked and open items, also nested', () => {
     const item = (children: unknown[], checked?: boolean) => ({
       type: 'listitem',
