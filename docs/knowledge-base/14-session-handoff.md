@@ -1,12 +1,21 @@
-# 14. Session handoff (state as of 23 October 2026)
+# 14. Session handoff (state as of 24 October 2026, end of session)
 
 Read this together with `12-owner-rules-and-learnings.md` (owner rules, every past correction) and `13-task-tracker.md` (what is next) before doing anything.
 
 ## Where the project stands
 - **Direction changed (owner, October 2026):** the board is no longer an infinite canvas; it is one Lexical document (`05-board-editor.md`). Work is split into small tasks (`13-task-tracker.md`).
-- Done and verified: Iterations 0, 0b, 1, 2 (accounts, boards, Save/Share/limits); the Playwright Test setup.
-- Current task: see `13-task-tracker.md` (Iteration A, B1-B3 done; B4 unordered list in review; next B5 numbered list).
+- Done and verified: Iterations 0, 0b, 1, 2 (accounts, boards, Save/Share/limits); the Playwright Test setup; Iteration A (A1-A3); B1 slash menu, B2 headings (+ fix: no line under H2), B3 quote, B4 unordered list. All merged into `dev` and deployed (last deploy green, commit `97be861`).
+- **Next task: B5 numbered list** (then B6 check list, B7 horizontal rule, B8 indent, B9 alignment; then iteration C inline toolbar). Nothing is in progress and no PR is open.
 - Open owner decisions: E (boards per day, now 10), F (`*.devslix.com` wildcard; prod workers.dev URL allowed or not), Code block settings (before F4).
+
+## How a task is done (pattern used for B2-B4)
+1. Read Payload's feature source (sparse clone, below) for behaviour, label, slash group, keywords, markdown transformer.
+2. Add `src/components/editor/features/<name>.ts` (nodes, `markdown`, `slashMenu`, `plugins`) and list it in `features/index.ts`.
+3. Add the node rule in `src/lib/document.ts` (`NODE_RULES`), the renderer in `src/components/read-view/document-view.tsx`, the classes in `src/components/editor/theme.ts` (editor and read view share them).
+4. If the feature replaces a temporary guard in `NotYetPlugin` (`board-editor.tsx`; e.g. B5/B6 remove the "every list is bullet" transform, B8 the indent block, B9 the alignment block, iteration C the text format block) remove that guard and update the tests that checked it (`basics.spec`, `unordered-list.spec` paste of `<ol>`).
+5. Tests: unit (`tests/int/editor-features.int.spec.ts`, `tests/int/document.int.spec.ts`) and one e2e spec `tests/e2e/editor/<name>.spec.mjs` (shortcut, Enter/Backspace, slash menu, undo, paste, look, Save + reload, visitor same look/positions, server rejection, dark screenshot).
+6. Anything the owner did not decide (look, label, behaviour that differs from Payload) -> ask first with options (owner rule; e.g. quote look was asked).
+7. Docs in the same branch: tracker row, `05-board-editor.md` "as built" section, learnings in `12` if the owner decided something, this file.
 
 ## How to work here
 - Flow per task (standing rule 9 in `12`): branch `task/<id>-<name>` from the latest `dev`, push it, open a PR into `dev`; the owner merges; the merge deploys dev (about 3-4 min); the owner checks; mark the task `done`.
