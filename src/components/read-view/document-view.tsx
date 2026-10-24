@@ -86,6 +86,7 @@ const renderers: Record<
       </li>
     )
   },
+  horizontalrule: (_node, _children, key) => <hr key={key} className={editorTheme.hr} />,
   text: (node, _children, key) => <span key={key}>{node.text as string}</span>,
   linebreak: (_node, _children, key) => <br key={key} />,
   tab: (_node, _children, key) => <span key={key}>{'\t'}</span>,

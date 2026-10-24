@@ -205,3 +205,28 @@
 .board-check-unchecked:focus::before {
   box-shadow: 0 0 0 2px var(--ring);
 }
+
+/*
+ * Horizontal rule (B7, owner: Payload jaisi) — 2px halki grey line, upar neeche ~12px; editor me click
+ * se select (ring). Line `::after` he taa ke `<hr>` ki apni border/rang har browser me ek jaisi rahe.
+ */
+.board-hr {
+  border: none;
+  padding: 2px 0;
+  margin: 0.75rem 0;
+}
+.board-hr::after {
+  content: "";
+  display: block;
+  height: 2px;
+  background: color-mix(in oklab, var(--foreground) 20%, transparent);
+}
+[contenteditable="true"] .board-hr {
+  cursor: pointer;
+}
+.board-hr.board-hr-selected {
+  border-radius: 2px;
+  box-shadow:
+    0 0 0 1px var(--background),
+    0 0 0 3px var(--ring);
+}

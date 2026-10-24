@@ -4,6 +4,7 @@ import type { ComponentType } from 'react'
 import type { SlashMenuGroup } from '../slash-menu/slash-menu-items'
 import { checkListFeature } from './check-list'
 import { headingFeature } from './heading'
+import { horizontalRuleFeature } from './horizontal-rule'
 import { orderedListFeature } from './ordered-list'
 import { paragraphFeature } from './paragraph'
 import { quoteFeature } from './quote'
@@ -15,6 +16,7 @@ export const editorFeatures: EditorFeature[] = [
   paragraphFeature,
   headingFeature,
   quoteFeature,
+  horizontalRuleFeature,
   unorderedListFeature,
   orderedListFeature,
   checkListFeature,
