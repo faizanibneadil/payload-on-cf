@@ -5,7 +5,7 @@ Read this together with `12-owner-rules-and-learnings.md` (owner rules, every pa
 ## Where the project stands
 - **Direction changed (owner, October 2026):** the board is no longer an infinite canvas; it is one Lexical document (`05-board-editor.md`). Work is split into small tasks (`13-task-tracker.md`).
 - Done and verified: Iterations 0, 0b, 1, 2 (accounts, boards, Save/Share/limits); the Playwright Test setup.
-- Current task: see `13-task-tracker.md` (Iteration A, B1, B2 done; B3 quote in review; next B4 bulleted list).
+- Current task: see `13-task-tracker.md` (Iteration A, B1-B3 done; B4 unordered list in review; next B5 numbered list).
 - Open owner decisions: E (boards per day, now 10), F (`*.devslix.com` wildcard; prod workers.dev URL allowed or not), Code block settings (before F4).
 
 ## How to work here
@@ -23,6 +23,7 @@ Read this together with `12-owner-rules-and-learnings.md` (owner rules, every pa
 - Headless typing is faster than a person: after selection-changing keys and before Enter in a menu, tests wait 50-100 ms.
 - `node_modules` may be missing in a fresh container: run `pnpm install` first.
 - Running `pnpm payload migrate` a second time on the local DB stops at a "data loss" prompt, because `pnpm seed:admin` adds a dev marker row (`payload_migrations`, batch -1). Delete that row first; CI is not affected (production mode).
+- Known flake (24 Oct 2026, task B4): in two of four full runs `auth-boards.spec` (always the first spec) failed once with the local server going away (`ERR_CONNECTION_REFUSED` on `/admin`) and once with the register dialog not opening (page not hydrated within 5 s); alone it passed 3/3 and the next full run passed 7/7. Not related to the editor code (that spec never loads it). Re-run once; if it fails again, investigate the local workerd, not the app.
 - Dev D1 id `d7951b74-a34d-4a5f-a544-ef4f2e9a6004`. Production D1/R2 and `main` are never touched.
 
 ## Key code map

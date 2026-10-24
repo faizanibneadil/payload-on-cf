@@ -25,6 +25,27 @@ const renderers: Record<string, (node: DocNode, children: ReactNode, key: number
       {node.children?.length ? children : <br />}
     </blockquote>
   ),
+  list: (_node, children, key) => (
+    <ul key={key} className={editorTheme.list.ul}>
+      {children}
+    </ul>
+  ),
+  listitem: (node, children, key) => {
+    // Andar wali list rakhne wala item: Lexical jaisa dono classes ("nested" = apna bullet nahi)
+    const nested = node.children?.some((c) => c.type === 'list') ?? false
+    return (
+      <li
+        key={key}
+        className={
+          nested
+            ? `${editorTheme.list.listitem} ${editorTheme.list.nested.listitem}`
+            : editorTheme.list.listitem
+        }
+      >
+        {node.children?.length ? children : <br />}
+      </li>
+    )
+  },
   text: (node, _children, key) => <span key={key}>{node.text as string}</span>,
   linebreak: (_node, _children, key) => <br key={key} />,
   tab: (_node, _children, key) => <span key={key}>{'\t'}</span>,

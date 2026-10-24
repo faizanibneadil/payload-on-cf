@@ -1,5 +1,6 @@
 import type { Transformer } from '@lexical/markdown'
 import type { Klass, LexicalEditor, LexicalNode } from 'lexical'
+import type { ComponentType } from 'react'
 import type { SlashMenuItem } from '../slash-menu/slash-menu-items'
 
 /** Slash menu ke groups (Payload ke keys); menu isi tarteeb me dikhata he */
@@ -22,4 +23,6 @@ export interface EditorFeature {
   /** Typing ke dauraan markdown shortcuts (jaise `# `) */
   markdown?: Transformer[]
   slashMenu?: { group: SlashGroupKey; items: SlashMenuItem<LexicalEditor>[] }
+  /** Lexical plugins jo is feature ko chahiyen (jaise lists ka ListPlugin) */
+  plugins?: ComponentType[]
 }

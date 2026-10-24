@@ -1,7 +1,14 @@
-import { HEADING, QUOTE } from '@lexical/markdown'
+import { ListItemNode, ListNode } from '@lexical/list'
+import { HEADING, QUOTE, UNORDERED_LIST } from '@lexical/markdown'
+import { ListPlugin } from '@lexical/react/LexicalListPlugin'
 import { HeadingNode, QuoteNode } from '@lexical/rich-text'
 import { describe, expect, it } from 'vitest'
-import { editorNodes, markdownTransformers, slashMenuGroups } from '@/components/editor/features'
+import {
+  editorNodes,
+  editorPlugins,
+  markdownTransformers,
+  slashMenuGroups,
+} from '@/components/editor/features'
 import { filterSlashGroups } from '@/components/editor/slash-menu/slash-menu-items'
 
 const keys = () => slashMenuGroups.map((g) => [g.key, g.items.map((i) => i.key)])
@@ -22,6 +29,7 @@ describe('editor features', () => {
           'blockquote',
         ],
       ],
+      ['lists', ['unorderedList']],
     ])
     expect(slashMenuGroups[0].items.map((i) => i.label)).toContain('Heading 3')
   })
@@ -38,6 +46,18 @@ describe('editor features', () => {
       filterSlashGroups(slashMenuGroups, q).flatMap((g) => g.items.map((i) => i.key))
     expect(found('quote')).toEqual(['blockquote'])
     expect(found('blockquote')).toEqual(['blockquote'])
+  })
+
+  it('register list nodes, the "- " shortcut, the list plugin and the Lists group item', () => {
+    expect(editorNodes).toEqual(expect.arrayContaining([ListNode, ListItemNode]))
+    expect(new Set(editorNodes).size).toBe(editorNodes.length)
+    expect(markdownTransformers).toContain(UNORDERED_LIST)
+    expect(editorPlugins).toContain(ListPlugin)
+    const found = (q: string) =>
+      filterSlashGroups(slashMenuGroups, q).flatMap((g) => g.items.map((i) => i.key))
+    expect(found('ul')).toEqual(['unorderedList'])
+    expect(found('bullet')).toEqual(['unorderedList'])
+    expect(slashMenuGroups.find((g) => g.key === 'lists')?.label).toBe('Lists')
   })
 
   it('find headings in the slash menu by level and by word', () => {
