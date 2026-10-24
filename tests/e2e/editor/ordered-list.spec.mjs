@@ -201,6 +201,7 @@ test('Ordered list: shortcut, start number, Enter/Backspace, slash menu, paste, 
   await reset()
   await owner.keyboard.type('Step one /ol')
   await menu.waitFor()
+  await settle()
   await owner.keyboard.press('Enter')
   await settle()
   check(
@@ -215,6 +216,7 @@ test('Ordered list: shortcut, start number, Enter/Backspace, slash menu, paste, 
   await owner.keyboard.press('Enter')
   await owner.keyboard.type('Beta /ol')
   await menu.waitFor()
+  await settle()
   await owner.keyboard.press('Enter')
   await settle()
   check(
@@ -229,6 +231,7 @@ test('Ordered list: shortcut, start number, Enter/Backspace, slash menu, paste, 
   )
   await owner.keyboard.type('/ul')
   await menu.waitFor()
+  await settle()
   await owner.keyboard.press('Enter')
   await settle()
   check(

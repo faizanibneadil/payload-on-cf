@@ -210,6 +210,7 @@ test('Horizontal rule: shortcut, slash menu, select and delete, undo, paste, loo
   await reset()
   await owner.keyboard.type('Intro /hr')
   await menu.waitFor()
+  await settle()
   await owner.keyboard.press('Enter')
   await settle()
   await owner.keyboard.type('After')

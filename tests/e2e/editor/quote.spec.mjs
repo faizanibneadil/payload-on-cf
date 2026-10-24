@@ -127,6 +127,7 @@ test('Quote: "> " shortcut, slash menu, keys, paste, look, save, read view', asy
   await reset()
   await owner.keyboard.type('A wise line /blockquote')
   await menu.waitFor()
+  await settle()
   await owner.keyboard.press('Enter')
   await settle()
   check(
@@ -136,6 +137,7 @@ test('Quote: "> " shortcut, slash menu, keys, paste, look, save, read view', asy
   )
   await owner.keyboard.type(' /para')
   await menu.waitFor()
+  await settle()
   await owner.keyboard.press('Enter')
   await settle()
   check(
