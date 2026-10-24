@@ -12,6 +12,14 @@ const renderers: Record<string, (node: DocNode, children: ReactNode, key: number
       {node.children?.length ? children : <br />}
     </p>
   ),
+  heading: (node, children, key) => {
+    const Tag = node.tag as keyof typeof editorTheme.heading
+    return (
+      <Tag key={key} className={editorTheme.heading[Tag]}>
+        {node.children?.length ? children : <br />}
+      </Tag>
+    )
+  },
   text: (node, _children, key) => <span key={key}>{node.text as string}</span>,
   linebreak: (_node, _children, key) => <br key={key} />,
   tab: (_node, _children, key) => <span key={key}>{'\t'}</span>,

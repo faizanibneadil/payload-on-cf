@@ -88,16 +88,17 @@ test('Board editor basics: write, save, reload, visitor read view, validation', 
   await settle()
   await editor.evaluate((el) => {
     const data = new DataTransfer()
-    data.setData('text/html', '<h1>Pasted <b>bold</b></h1><p style="color:red">red <i>it</i></p>')
+    data.setData('text/html', '<p>Pasted <b>bold</b></p><p style="color:red">red <i>it</i></p>')
     data.setData('text/plain', 'Pasted bold\nred it')
     el.dispatchEvent(new ClipboardEvent('paste', { clipboardData: data, bubbles: true }))
   })
   await settle()
   const pastedHtml = await editor.innerHTML()
   check(
-    'Pasted rich text arrives as plain paragraphs (no headings, bold, italic or colours)',
+    // Headings task B2 se paste me rehti hain (headings.spec); bold/italic/rang abhi nahi
+    'Pasted rich text arrives without bold, italic or colours',
     /Pasted bold/.test(await editor.innerText()) &&
-      !/<(h1|strong|b|em|i)\b/.test(pastedHtml) &&
+      !/<(strong|b|em|i)\b/.test(pastedHtml) &&
       !/color/.test(pastedHtml),
     pastedHtml.slice(0, 300),
   )

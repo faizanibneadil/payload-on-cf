@@ -44,6 +44,12 @@
 | Indent | Tab / Shift+Tab |
 | Alignment | - (left, center, right, justify) |
 
+## Headings (as built, task B2)
+- `features/heading.ts`: Lexical `HeadingNode`, markdown `HEADING` (`# ` to `###### ` at the start of a line), slash items "Heading 1"-"Heading 6" (keywords `heading`, `h1`...), lucide icons.
+- Behaviour is Lexical/Payload's: Enter at the end of a heading starts a paragraph, Enter in the middle splits it into two headings; Backspace at the start of a heading with text keeps it (it does not turn into text, unlike the old canvas), an empty heading on the first line becomes a paragraph, an empty heading under another line is removed. Pasted `<h1>`-`<h6>` stay headings. To turn a heading back into text: slash menu > Paragraph.
+- Look (shadcn typography, changeable when typography is decided): H1 4xl extrabold, H2 3xl semibold with a bottom border, H3 2xl, H4 xl, H5 lg, H6 base, all bold; space above except on the first line.
+- Server: `heading` with `tag` h1-h6 only.
+
 ## Inline toolbar (iteration C)
 - **No fixed toolbar.** A floating toolbar appears only on a text selection, positioned at the selection (portal in `body`).
 - Items: text type dropdown (paragraph, headings, lists, check list, quote), bold, italic, underline, strikethrough, superscript, subscript, inline code, alignment, indent / outdent, text state (colours), link.
@@ -59,7 +65,7 @@
 Payload's table feature as the model: insert a table, add/remove rows and columns, header row/column, cell merge if Payload offers it.
 
 ## Slash menu (iteration B, extended in F)
-As built (task B1): `src/components/editor/slash-menu/`. Opens on `/` at the start of a line, after a space or after `(` (Payload's trigger); the text after `/` (no spaces, max 75 characters) filters items by label and keywords, ignoring case, spaces, `-` and `_`; no match or a space closes it. Arrow keys / hover highlight, Enter / Tab / click pick (the `/query` text is removed, one undo step), Escape closes and keeps the text. Menu sits under the `/`, groups have a small title, items an icon. Each feature adds its item to a group in `slashMenuGroups` (`slash-menu-plugin.tsx`); empty groups are hidden. Group keys like Payload: `basic`, `lists`, `blocks`, `inlineBlocks`. Today: Basic > Paragraph.
+As built (task B1): `src/components/editor/slash-menu/`. Opens on `/` at the start of a line, after a space or after `(` (Payload's trigger); the text after `/` (no spaces, max 75 characters) filters items by label and keywords, ignoring case, spaces, `-` and `_`; no match or a space closes it. Arrow keys / hover highlight, Enter / Tab / click pick (the `/query` text is removed, one undo step), Escape closes and keeps the text. Menu sits under the `/`, groups have a small title, items an icon. Each feature adds its items to a group from its own file in `src/components/editor/features/` (listed in `features/index.ts`); empty groups are hidden. Group keys like Payload: `basic`, `lists`, `blocks`, `inlineBlocks`. Today: Basic > Paragraph, Heading 1-6.
 `/` opens a menu at the cursor, filtered while typing, with Payload's categories: basic items (text types, lists, quote, horizontal rule, table), **Blocks**, **Inline blocks**.
 
 ## Blocks and inline blocks (iteration F, canvas in G)
