@@ -9,6 +9,7 @@ import {
   markdownTransformers,
   slashMenuGroups,
 } from '@/components/editor/features'
+import { ListTabPlugin } from '@/components/editor/features/list-tab'
 import { filterSlashGroups } from '@/components/editor/slash-menu/slash-menu-items'
 
 const keys = () => slashMenuGroups.map((g) => [g.key, g.items.map((i) => i.key)])
@@ -64,6 +65,8 @@ describe('editor features', () => {
     expect(markdownTransformers).toContain(ORDERED_LIST)
     // Dono list features ek hi ListPlugin laate hain, wo ek dafa
     expect(editorPlugins.filter((p) => p === ListPlugin)).toHaveLength(1)
+    // Tab se nesting (B5 fix) — dono list features me, ek dafa
+    expect(editorPlugins.filter((p) => p === ListTabPlugin)).toHaveLength(1)
     const found = (q: string) =>
       filterSlashGroups(slashMenuGroups, q).flatMap((g) => g.items.map((i) => i.key))
     expect(found('ol')).toEqual(['orderedList'])

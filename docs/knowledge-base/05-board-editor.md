@@ -58,7 +58,7 @@
 ## Unordered list (as built, task B4)
 - `features/unordered-list.ts`: Lexical `ListNode` + `ListItemNode`, markdown `UNORDERED_LIST` (`- `, `* `, `+ `), Lexical `ListPlugin` (features can now bring plugins), slash item "Unordered List" in the **Lists** group (Payload's label; keywords `unordered list`, `ul`, `bullet`), lucide `List` icon.
 - Enter = next item, Enter on an empty item = end of the list, Backspace at the start of the first item = back to a paragraph. Pasted `<ul>` stays a list. Until B6 a check list becomes a bullet list (ticks removed); numbered lists exist since B5.
-- Look: standard round bullets (disc), indented; nested lists (from paste; Tab nesting comes with indent, B8) have no bullet on the wrapping item, like Lexical.
+- Look: standard round bullets (disc), indented; nested lists (Tab, or paste) have no bullet on the wrapping item, like Lexical. Every bullet level uses round bullets.
 - Server: `list` (listType `bullet` or `number`; children only `listitem`), `listitem` (`checked` boolean, `value` integer, if present).
 
 ## Ordered list (as built, task B5)
@@ -67,6 +67,11 @@
 - Enter / Backspace / undo like the bullet list. A numbered list right after a bullet list stays its own list. Slash menu > Ordered List inside a bullet list turns the whole list into a numbered list (and Unordered List back), Lexical's behaviour. Pasted `<ol>` stays numbered.
 - Look (owner: like Payload): numbers outside the text, indented like bullets; every nesting level has its own style: `1.` -> `A.` -> `a.` -> `I.` -> `i.`, then `1.` again (theme `list.olDepth`, the level counts all list levels like Lexical). An item that only holds a nested list takes no number (Lexical); the read view gives each `<li>` the same `value` and each `<ol>` the same `start`, so visitors see the same numbers.
 - Server: `list.start` integer 1-9999 if present.
+
+## List nesting with Tab (as built, B5 fix)
+- Owner (B5 check on dev): Tab must make a nested list. `features/list-tab.ts` (`ListTabPlugin`, part of both list features): in a list item Tab = one level in, Shift+Tab = one level out (Lexical's list item indent = nesting, like Payload). Works with several items selected, in numbered and bullet lists; the cursor stays in the editor. Enter on an empty nested item moves it one level out (Lexical).
+- Limit: 15 levels (`MAX_LIST_INDENT` in `src/lib/document.ts`, derived from the server's depth limit `MAX_DEPTH` 32), so a nested list always saves; further Tabs do nothing.
+- Outside lists Tab is unchanged (no indent) until task B8; `NotYetPlugin` still blocks indent there.
 
 ## Inline toolbar (iteration C)
 - **No fixed toolbar.** A floating toolbar appears only on a text selection, positioned at the selection (portal in `body`).

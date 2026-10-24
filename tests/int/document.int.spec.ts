@@ -3,6 +3,7 @@ import {
   emptyDocument,
   hasContent,
   MAX_DEPTH,
+  MAX_LIST_INDENT,
   MAX_TEXT_CHARS,
   readDocument,
   validateDocument,
@@ -163,6 +164,27 @@ describe('document validation', () => {
     }
     expect(validateDocument(docOf([list([{ ...item([text('x')]), value: 'two' }])]))).toBe(
       'Invalid list item',
+    )
+  })
+
+  it('accepts lists nested as deep as Tab allows (MAX_LIST_INDENT), not one level more', () => {
+    const item = (children: unknown[]) => ({ type: 'listitem', version: 1, value: 1, children })
+    const list = (children: unknown[]) => ({
+      type: 'list',
+      version: 1,
+      listType: 'number',
+      children,
+    })
+    // indent n = n wrapper items ke andar wali list
+    const nestedTo = (indent: number) => {
+      let node = list([item([text('deep')])])
+      for (let i = 0; i < indent; i++) node = list([item([node])])
+      return node
+    }
+    expect(MAX_LIST_INDENT).toBeGreaterThanOrEqual(10)
+    expect(validateDocument(docOf([nestedTo(MAX_LIST_INDENT)]))).toBe(true)
+    expect(validateDocument(docOf([nestedTo(MAX_LIST_INDENT + 1)]))).toBe(
+      'The document is nested too deeply',
     )
   })
 

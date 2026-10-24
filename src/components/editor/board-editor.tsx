@@ -24,6 +24,7 @@ import { useEffect } from 'react'
 import { useBoard } from '@/components/board/board-store'
 import type { BoardDocument } from '@/lib/document'
 import { editorNodes, editorPlugins, markdownTransformers } from './features'
+import { $selectedListItems } from './features/list-tab'
 import { SlashMenuPlugin } from './slash-menu/slash-menu-plugin'
 import { documentClass, editorTheme } from './theme'
 
@@ -92,11 +93,13 @@ function NotYetPlugin(): null {
   const [editor] = useLexicalComposerContext()
   useEffect(() => {
     const block = () => true
+    const blockOutsideLists = () => !$selectedListItems()
     return mergeRegister(
       editor.registerCommand(FORMAT_TEXT_COMMAND, block, COMMAND_PRIORITY_CRITICAL),
       editor.registerCommand(FORMAT_ELEMENT_COMMAND, block, COMMAND_PRIORITY_CRITICAL),
-      editor.registerCommand(INDENT_CONTENT_COMMAND, block, COMMAND_PRIORITY_CRITICAL),
-      editor.registerCommand(OUTDENT_CONTENT_COMMAND, block, COMMAND_PRIORITY_CRITICAL),
+      // Indent (B8) se pehle sirf list items andar/bahar ho sakte hain (nesting, owner)
+      editor.registerCommand(INDENT_CONTENT_COMMAND, blockOutsideLists, COMMAND_PRIORITY_CRITICAL),
+      editor.registerCommand(OUTDENT_CONTENT_COMMAND, blockOutsideLists, COMMAND_PRIORITY_CRITICAL),
       editor.registerNodeTransform(TextNode, (node) => {
         if (node.getFormat() !== 0) node.setFormat(0)
         if (node.getStyle() !== '') node.setStyle('')

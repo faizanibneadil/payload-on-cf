@@ -14,6 +14,8 @@ export interface BoardDocument {
 
 // Hadd: bahut gehra ya bahut bara JSON server ka CPU (free plan, 10 ms) na khaye
 export const MAX_DEPTH = 32
+// List ki nesting (Tab) ki hadd: root > list > listitem > text, har andar wali level +2 (list, listitem)
+export const MAX_LIST_INDENT = Math.floor((MAX_DEPTH - 3) / 2)
 export const MAX_NODES = 100_000
 export const MAX_TEXT_CHARS = 100_000
 
