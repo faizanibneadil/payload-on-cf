@@ -1,5 +1,6 @@
 'use client'
 
+import { ListItemNode, ListNode } from '@lexical/list'
 import { LexicalComposer } from '@lexical/react/LexicalComposer'
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
 import { ContentEditable } from '@lexical/react/LexicalContentEditable'
@@ -22,7 +23,7 @@ import {
 import { useEffect } from 'react'
 import { useBoard } from '@/components/board/board-store'
 import type { BoardDocument } from '@/lib/document'
-import { editorNodes, markdownTransformers } from './features'
+import { editorNodes, editorPlugins, markdownTransformers } from './features'
 import { SlashMenuPlugin } from './slash-menu/slash-menu-plugin'
 import { documentClass, editorTheme } from './theme'
 
@@ -70,6 +71,10 @@ export function BoardEditor() {
       </div>
       <HistoryPlugin />
       <MarkdownShortcutPlugin transformers={markdownTransformers} />
+      {editorPlugins.map((Plugin, i) => (
+        // biome-ignore lint/suspicious/noArrayIndexKey: list kabhi nahi badalti
+        <Plugin key={i} />
+      ))}
       <SlashMenuPlugin />
       <NotYetPlugin />
       <BoardSyncPlugin />
@@ -100,6 +105,15 @@ function NotYetPlugin(): null {
       editor.registerNodeTransform(ParagraphNode, resetLine),
       editor.registerNodeTransform(HeadingNode, resetLine),
       editor.registerNodeTransform(QuoteNode, resetLine),
+      // Numbered (B5) aur check list (B6) se pehle har list bullet list (paste se bhi)
+      editor.registerNodeTransform(ListNode, (node) => {
+        if (node.getListType() !== 'bullet') node.setListType('bullet')
+      }),
+      // List item ka indent = nesting (rehne do); sirf alignment aur tick hatao
+      editor.registerNodeTransform(ListItemNode, (node) => {
+        if (node.getFormatType() !== '') node.setFormat('')
+        if (node.getChecked() !== undefined) node.setChecked(undefined)
+      }),
     )
   }, [editor])
   return null

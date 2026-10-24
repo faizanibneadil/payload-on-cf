@@ -52,7 +52,7 @@ Canvas-specific learnings (resize, borders, text scale, click-to-type, auto widt
 
 ## Regression protection
 Browser tests run on the Playwright Test runner (`playwright.config.ts`, specs in `tests/e2e/`):
-- `auth-boards.spec.mjs` (accounts, boards list), `save-share.spec.mjs` (Save, Share, limits); editor features get one spec per feature under `tests/e2e/editor/` (`basics.spec.mjs` A3, `slash-menu.spec.mjs` B1, `headings.spec.mjs` B2, `quote.spec.mjs` B3). Unit tests (document validation, converters) in `tests/int/` (`document.int.spec.ts`, `slash-menu.int.spec.ts`, `editor-features.int.spec.ts`).
+- `auth-boards.spec.mjs` (accounts, boards list), `save-share.spec.mjs` (Save, Share, limits); editor features get one spec per feature under `tests/e2e/editor/` (`basics.spec.mjs` A3, `slash-menu.spec.mjs` B1, `headings.spec.mjs` B2, `quote.spec.mjs` B3, `unordered-list.spec.mjs` B4). Unit tests (document validation, converters) in `tests/int/` (`document.int.spec.ts`, `slash-menu.int.spec.ts`, `editor-features.int.spec.ts`).
 - `pnpm test:e2e` builds the production Worker if needed (`BUILD=1` forces it), gives each spec file a fresh local database (`tests/e2e/server.sh`, only `.wrangler/state`, never dev or production) and runs everything with one worker.
 - Every check is listed in the HTML report (`pnpm test:e2e:report`, annotations pass/FAIL). On a failure the report has the screenshot, a video of every browser window (`tests/e2e/contexts.mjs`) and a trace (each step, network, console). Passing tests keep no videos.
 - When an owner request changes behaviour, update the matching checks in the same commit.

@@ -6,6 +6,12 @@ export const documentClass =
 
 export const editorTheme = {
   paragraph: 'mb-3 last:mb-0',
+  // Lexical list theme keys; nested = sirf andar wali list rakhne wala item (apna marker nahi)
+  list: {
+    ul: 'my-3 ml-6 list-disc first:mt-0',
+    listitem: 'my-1',
+    nested: { listitem: 'list-none' },
+  },
   // Owner ka faisla (B3): baen taraf patli line, andar aur italic
   quote: 'my-4 border-l-2 pl-6 italic first:mt-0',
   // shadcn typography jaisa; pehli line par oopar ka margin nahi

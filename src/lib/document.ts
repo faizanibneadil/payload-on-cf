@@ -26,6 +26,21 @@ const NODE_RULES: Record<string, { children: boolean; check?: (node: DocNode) =>
     root: { children: true },
     paragraph: { children: true },
     quote: { children: true },
+    list: {
+      children: true,
+      check: (node) => {
+        if (!LIST_TYPES.has(node.listType as string)) return 'Invalid list type'
+        if (!node.children?.every((c) => c?.type === 'listitem')) return 'Invalid list'
+        return null
+      },
+    },
+    listitem: {
+      children: true,
+      check: (node) =>
+        node.checked !== undefined && typeof node.checked !== 'boolean'
+          ? 'Invalid list item'
+          : null,
+    },
     heading: {
       children: true,
       check: (node) => (HEADING_TAGS.has(node.tag as string) ? null : 'Invalid heading level'),
@@ -46,6 +61,8 @@ const NODE_RULES: Record<string, { children: boolean; check?: (node: DocNode) =>
     tab: { children: false },
   }
 
+// Har list type apne task me judta he (numbered B5, check B6)
+const LIST_TYPES = new Set(['bullet'])
 const HEADING_TAGS = new Set(['h1', 'h2', 'h3', 'h4', 'h5', 'h6'])
 
 const isSmallInt = (v: unknown) =>

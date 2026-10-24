@@ -114,6 +114,26 @@ describe('document validation', () => {
     ).toBe(true)
   })
 
+  it('accepts bullet lists of list items, also nested', () => {
+    const item = (children: unknown[]) => ({ type: 'listitem', version: 1, value: 1, children })
+    const list = (children: unknown[], listType = 'bullet') => ({
+      type: 'list',
+      version: 1,
+      listType,
+      tag: 'ul',
+      start: 1,
+      children,
+    })
+    expect(
+      validateDocument(docOf([list([item([text('One')]), item([list([item([text('Two')])])])])])),
+    ).toBe(true)
+    expect(validateDocument(docOf([list([item([text('x')])], 'cards')]))).toBe('Invalid list type')
+    expect(validateDocument(docOf([list([paragraph([text('x')])])]))).toBe('Invalid list')
+    expect(validateDocument(docOf([list([{ ...item([text('x')]), checked: 'yes' }])]))).toBe(
+      'Invalid list item',
+    )
+  })
+
   it('rejects documents nested too deeply', () => {
     let node: unknown = text('deep')
     for (let i = 0; i <= MAX_DEPTH; i++) node = paragraph([node])
