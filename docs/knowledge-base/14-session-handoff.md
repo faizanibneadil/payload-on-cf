@@ -7,7 +7,8 @@ Read this together with `12-owner-rules-and-learnings.md` (owner rules, every pa
 - Done and verified: Iterations 0, 0b, 1, 2 (accounts, boards, Save/Share/limits); the Playwright Test setup; Iteration A (A1-A3); B1 slash menu, B2 headings (+ fix: no line under H2), B3 quote, B4 unordered list. All merged into `dev` and deployed (last deploy green, commit `97be861`).
 - **B5 numbered list** done (PR #31 + Tab nesting fix PR #32, deployed `bd48e5a`, owner verified).
 - **B6 check list** done (PR #33, deployed `6bc331f`, owner verified).
-- **B7 horizontal rule**: merged (PR #34). Owner's check: `/ul` also found Horizontal Rule; fix (slash search matches from the start of words) on branch `task/b7-fix-slash-search`, PR into `dev`, waiting for merge and check. Owner decisions for B7 are in `12` (label/group, look, word-start search).
+- **B7 horizontal rule**: merged (PR #34) + slash search fix merged (PR #35, word-start search); waiting for the owner's check on dev. Owner decisions for B7 are in `12` (label/group, look, word-start search).
+- **CI1** (owner, before B8): whole suite in GitHub Actions before every deploy; locally only the tests of changed modules. Branch `task/ci1-e2e-in-actions`, PR into `dev`.
 - **Next task after B7 is verified: B8 indent** (then B9 alignment; then iteration C inline toolbar). All list guards in `NotYetPlugin` are gone; it still blocks text formats, alignment and indent outside lists.
 - Open owner decisions: E (boards per day, now 10), F (`*.devslix.com` wildcard; prod workers.dev URL allowed or not), Code block settings (before F4).
 
@@ -16,13 +17,13 @@ Read this together with `12-owner-rules-and-learnings.md` (owner rules, every pa
 2. Add `src/components/editor/features/<name>.ts` (nodes, `markdown`, `slashMenu`, `plugins`) and list it in `features/index.ts`.
 3. Add the node rule in `src/lib/document.ts` (`NODE_RULES`), the renderer in `src/components/read-view/document-view.tsx`, the classes in `src/components/editor/theme.ts` (editor and read view share them).
 4. If the feature replaces a temporary guard in `NotYetPlugin` (`board-editor.tsx`; e.g. B8 removes the indent block (today it lets only list items through, for Tab nesting), B9 the alignment block, iteration C the text format block) remove that guard and update the tests that checked it (e.g. `basics.spec`).
-5. Tests: unit (`tests/int/editor-features.int.spec.ts`, `tests/int/document.int.spec.ts`) and one e2e spec `tests/e2e/editor/<name>.spec.mjs` (shortcut, Enter/Backspace, slash menu, undo, paste, look, Save + reload, visitor same look/positions, server rejection, dark screenshot).
+5. Tests (run locally only these and the specs of touched modules; the whole suite runs in Actions): unit (`tests/int/editor-features.int.spec.ts`, `tests/int/document.int.spec.ts`) and one e2e spec `tests/e2e/editor/<name>.spec.mjs` (shortcut, Enter/Backspace, slash menu, undo, paste, look, Save + reload, visitor same look/positions, server rejection, dark screenshot).
 6. Anything the owner did not decide (look, label, behaviour that differs from Payload) -> ask first with options (owner rule; e.g. quote look was asked).
 7. Docs in the same branch: tracker row, `05-board-editor.md` "as built" section, learnings in `12` if the owner decided something, this file.
 
 ## How to work here
-- Flow per task (standing rule 9 in `12`): branch `task/<id>-<name>` from the latest `dev`, push it, open a PR into `dev`; the owner merges; the merge deploys dev (about 3-4 min); the owner checks; mark the task `done`.
-- Tests: while working, only the task's spec (`CHROMIUM_PATH=/opt/pw-browsers/chromium pnpm exec playwright test tests/e2e/<spec>`). Before the push, once: `CHROMIUM_PATH=/opt/pw-browsers/chromium BUILD=1 pnpm test:e2e` (builds the production Worker, fresh local DB per spec), `pnpm test:int`, `pnpm lint`, `pnpm exec tsc --noEmit`. Report: `pnpm test:e2e:report`.
+- Flow per task (standing rule 9 in `12`): branch `task/<id>-<name>` from the latest `dev`, push it, open a PR into `dev`; the owner merges; GitHub Actions runs the whole suite and then deploys dev (about 10-12 min); watch that run (rule 10: a red run is reported after the current work and fixed only with the owner's OK); the owner checks; mark the task `done`.
+- Tests (owner, task CI1): locally only the task's spec(s) and the specs of the modules the change touches (`CHROMIUM_PATH=/opt/pw-browsers/chromium BUILD=1 pnpm exec playwright test tests/e2e/<spec> ...`), plus `pnpm test:int`, `pnpm lint`, `pnpm exec tsc --noEmit`. **Never the whole browser suite locally**; it runs in GitHub Actions after the merge, before the deploy (`07`). A single CI shard can be reproduced with `pnpm exec playwright test --shard=N/4`. Report: `pnpm test:e2e:report`.
 - Local server alone: `bash tests/e2e/server.sh start-fresh` (http://127.0.0.1:8787, admin/admin), `bash tests/e2e/server.sh stop`.
 - Deploy runs: `curl https://api.github.com/repos/faizanibneadil/payload-on-cf/actions/runs?branch=dev` and the GitHub MCP `get_job_logs`.
 - Docs-only commits (`docs/**`, `*.md`) do not deploy.

@@ -19,7 +19,105 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  # ---------- Tests (owner, Oct 2026): poora suite yahan chalta he; sab pass hon tabhi deploy ----------
+  # In jobs ko koi Cloudflare secret nahi milta: tests sirf runner ke local D1 par chalte hain,
+  # dev/production database kabhi nahi chhoote.
+
+  # Unit tests, lint, typecheck
+  checks:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.29.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.19.0
+          cache: pnpm
+      - run: pnpm install --no-frozen-lockfile
+      - name: Unit tests
+        env:
+          NODE_ENV: test
+        run: pnpm test:int
+      - name: Lint
+        run: pnpm lint
+      - name: Typecheck
+        run: pnpm exec tsc --noEmit
+
+  # Browser tests ke liye production Worker build (ek dafa), phir 4 shards isi build ko use karte hain
+  e2e-build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.29.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.19.0
+          cache: pnpm
+      - run: pnpm install --no-frozen-lockfile
+      - name: Cache Next.js build
+        uses: actions/cache@v4
+        with:
+          path: .next/cache
+          key: nextjs-e2e-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-${{ hashFiles('src/**') }}
+          restore-keys: |
+            nextjs-e2e-${{ runner.os }}-${{ hashFiles('pnpm-lock.yaml') }}-
+      - name: Build the Worker for browser tests
+        env:
+          BUILD: '1'
+        run: bash tests/e2e/server.sh build
+      - uses: actions/upload-artifact@v4
+        with:
+          name: e2e-worker-build
+          path: .open-next
+          include-hidden-files: true
+          retention-days: 1
+
+  # Browser suite 4 hisson me ek saath (Playwright shards; har spec file apna saaf local DB leti he)
+  e2e:
+    needs: e2e-build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        shard: [1, 2, 3, 4]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.29.1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22.19.0
+          cache: pnpm
+      - run: pnpm install --no-frozen-lockfile
+      - uses: actions/download-artifact@v4
+        with:
+          name: e2e-worker-build
+          path: .open-next
+      - name: Install Chromium for Playwright
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Browser tests (shard ${{ matrix.shard }}/4)
+        run: pnpm exec playwright test --shard=${{ matrix.shard }}/4
+      # Fail hone par report (har check, screenshot, video, trace) aur server ke logs
+      - name: Upload test report
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-report-shard-${{ matrix.shard }}
+          path: |
+            playwright-report
+            test-results
+          retention-days: 7
+
   deploy:
+    needs: [checks, e2e]
     runs-on: ubuntu-latest
     timeout-minutes: 40
     env:
@@ -79,14 +177,6 @@ jobs:
         run: |
           pnpm generate:importmap
           pnpm generate:types
-
-      # Deploy se pehle tests: fail hone par migrations/deploy chalte hi nahi.
-      # NODE_ENV=test aur khali token — tests kabhi remote (production) D1 se connect nahi hote.
-      - name: Run tests
-        env:
-          NODE_ENV: test
-          CLOUDFLARE_API_TOKEN: ''
-        run: pnpm test:int
 
       # Allowed as check-only: verify that schema matches committed migrations without auto-generating/committing
       - name: Check for uncommitted schema migrations (schema drift guard)

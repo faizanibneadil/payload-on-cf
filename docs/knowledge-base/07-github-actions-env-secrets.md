@@ -68,12 +68,19 @@ There is no separate `env.manifest`. The list in `scripts/check-env.mjs`, `.env.
 The agent must list the final, exact set in the README and the final summary. Never print secrets in logs.
 
 ## Why GitHub Actions and not Cloudflare Workers Builds (decided October 2026)
-- The repo is **public**. GitHub-hosted standard runners are free and have no minute limit for public repositories (free plan: up to 20 concurrent jobs). One deploy run takes about 4 minutes.
+- The repo is **public**. GitHub-hosted standard runners are free and have no minute limit for public repositories (free plan: up to 20 concurrent jobs). One run takes about 10-12 minutes with the tests (estimate, see below); the 4 test shards run in parallel, which the free plan allows (up to 20 concurrent jobs).
 - If the repo ever becomes private, the free plan gives 2,000 minutes per month (about 500 runs of 4 minutes). Check the usage under GitHub Settings > Billing then, and only then consider Cloudflare Workers Builds (connects the repo in the Cloudflare dashboard, builds on push per branch, has its own monthly build-minute quota).
 - Saving runs: pushes that change only `docs/**` or `*.md` do not trigger a deploy (`paths-ignore`). A running deploy is never cancelled (`cancel-in-progress: false`) so a D1 migration is never cut in half; newer pushes wait and only the latest queued run is kept.
 - A deploy is live only when the run is green. Every iteration is verified on the dev URL after its push.
 
-## No browser tests in CI
-The browser live-check workflow was removed (owner, October 2026, task A2: no benefit, slowed the work). The deploy job still runs the fast unit tests (`pnpm test:int`, a few seconds) and the schema drift check before migrations, so a broken build never reaches D1. Browser tests run locally before a push (`09-checklist.md`).
+## Tests before every deploy (owner, October 2026, task CI1)
+The whole suite runs in GitHub Actions on every push to `dev` (the owner merging a PR) and `main`, before the deploy. Locally only the tests of the changed modules run (`12`, rule 3).
+- `checks`: `pnpm test:int`, `pnpm lint`, `pnpm exec tsc --noEmit`.
+- `e2e-build`: the production Worker build for the browser tests (`tests/e2e/server.sh build`), uploaded as the artifact `e2e-worker-build` (1 day).
+- `e2e` (needs `e2e-build`): the browser suite in 4 parallel shards (`playwright test --shard=N/4`, each spec file gets a fresh local D1 on the runner, Playwright's own Chromium installed with `playwright install --with-deps chromium`). `fail-fast: false`, so every shard reports. On a failure the shard uploads `e2e-report-shard-N` (HTML report, screenshots, videos, traces, server logs; 7 days).
+- `deploy` (needs `checks` and `e2e`): unchanged otherwise (env check, schema drift check, migrations, seed, secrets, build + deploy, smoke test).
+- The test jobs get **no Cloudflare secrets**: the test server can only use the runner's local D1, never the dev or production database.
+- Time: merge to deploy was about 4 minutes; with the tests about 10-12 minutes (estimate before the first run; the measured time is noted here after it).
+- The live-check workflow removed in task A2 stays removed.
 
 Deploy speed: `.next/cache` is cached between runs (`actions/cache`), so the Next.js build only recompiles changed files.
