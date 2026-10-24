@@ -7,7 +7,7 @@ Iterations are small; every feature inside one is its own task. Tasks and their 
 - The next iteration starts only after the owner verified the previous one.
 - `main` and the production D1/R2 are never touched. The owner merges `dev` into `main` at the end.
 - Schema changes use new forward migrations only; never edit an applied migration.
-- Every task has its own tests and ends with browser testing and screenshots (`09-checklist.md`). While working, run only the task's tests; the full suite runs once before the push.
+- Every task has its own tests and ends with browser testing and screenshots (`09-checklist.md`). Locally only the tests of the changed modules run; the whole suite runs in GitHub Actions before every deploy (task CI1).
 - Before the final merge to `main`: decide caching for board reads with the owner (open decision in `01`).
 
 ## Iterations
