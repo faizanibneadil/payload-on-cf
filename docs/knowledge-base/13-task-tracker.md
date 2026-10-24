@@ -16,8 +16,8 @@ When a task changes status, update its row in the same branch/PR.
 | Id | Task | Status |
 |---|---|---|
 | B1 | Slash menu shell (`/`, filter, keyboard, categories) | done (PR #25; tests `tests/int/slash-menu.int.spec.ts`, `tests/e2e/editor/slash-menu.spec.mjs`) |
-| B2 | Headings H1-H6 | merged (PR #26); fix in review: no line under H2 (branch `task/b2-fix-h2-line`; tests `tests/int/editor-features.int.spec.ts`, `tests/e2e/editor/headings.spec.mjs`) |
-| B3 | Quote | todo |
+| B2 | Headings H1-H6 | done (PR #26, fix PR #27: no line under H2; tests `tests/int/editor-features.int.spec.ts`, `tests/e2e/editor/headings.spec.mjs`) |
+| B3 | Quote | in review (branch `task/b3-quote`; tests `tests/int/editor-features.int.spec.ts`, `tests/e2e/editor/quote.spec.mjs`) |
 | B4 | Bulleted list | todo |
 | B5 | Numbered list | todo |
 | B6 | Check list | todo |

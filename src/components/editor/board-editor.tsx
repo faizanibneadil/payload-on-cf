@@ -7,7 +7,7 @@ import { LexicalErrorBoundary } from '@lexical/react/LexicalErrorBoundary'
 import { HistoryPlugin } from '@lexical/react/LexicalHistoryPlugin'
 import { MarkdownShortcutPlugin } from '@lexical/react/LexicalMarkdownShortcutPlugin'
 import { RichTextPlugin } from '@lexical/react/LexicalRichTextPlugin'
-import { HeadingNode } from '@lexical/rich-text'
+import { HeadingNode, QuoteNode } from '@lexical/rich-text'
 import { mergeRegister } from '@lexical/utils'
 import {
   COMMAND_PRIORITY_CRITICAL,
@@ -99,6 +99,7 @@ function NotYetPlugin(): null {
       // Alignment (B9) aur indent (B8) se pehle har line saadi
       editor.registerNodeTransform(ParagraphNode, resetLine),
       editor.registerNodeTransform(HeadingNode, resetLine),
+      editor.registerNodeTransform(QuoteNode, resetLine),
     )
   }, [editor])
   return null

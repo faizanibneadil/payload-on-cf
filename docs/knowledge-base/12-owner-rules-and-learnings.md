@@ -43,6 +43,7 @@ Canvas-specific learnings (resize, borders, text scale, click-to-type, auto widt
 | Oct 2026 | Tests matter: a test for every tool and component, kept in good order; but do not re-run every suite at every small step | Standing rule 4 |
 | Oct 2026 | Small iterations, one feature per task, branch + PR, owner merges, task tracker | Standing rule 9, `13-task-tracker.md` |
 | Oct 2026 | (B2 check) A line appeared under H2 headings; remove it, no OK until fixed | No decorative lines/borders under headings or text that the owner did not ask for; a look copied from a style kit (shadcn typography) is still a decision to show the owner first |
+| Oct 2026 | Quote look: a thin line on the left, indented, italic; slash menu label "Blockquote" (Payload's) | `05-board-editor.md` (Quote) |
 
 ## Open choices (need the owner's answer)
 - **E. Boards per day:** default stays 10 (owner once wrote 14 and once "1 board per day"). Editable by the admin in the `settings` Global.
@@ -51,7 +52,7 @@ Canvas-specific learnings (resize, borders, text scale, click-to-type, auto widt
 
 ## Regression protection
 Browser tests run on the Playwright Test runner (`playwright.config.ts`, specs in `tests/e2e/`):
-- `auth-boards.spec.mjs` (accounts, boards list), `save-share.spec.mjs` (Save, Share, limits); editor features get one spec per feature under `tests/e2e/editor/` (`basics.spec.mjs` A3, `slash-menu.spec.mjs` B1, `headings.spec.mjs` B2). Unit tests (document validation, converters) in `tests/int/` (`document.int.spec.ts`, `slash-menu.int.spec.ts`, `editor-features.int.spec.ts`).
+- `auth-boards.spec.mjs` (accounts, boards list), `save-share.spec.mjs` (Save, Share, limits); editor features get one spec per feature under `tests/e2e/editor/` (`basics.spec.mjs` A3, `slash-menu.spec.mjs` B1, `headings.spec.mjs` B2, `quote.spec.mjs` B3). Unit tests (document validation, converters) in `tests/int/` (`document.int.spec.ts`, `slash-menu.int.spec.ts`, `editor-features.int.spec.ts`).
 - `pnpm test:e2e` builds the production Worker if needed (`BUILD=1` forces it), gives each spec file a fresh local database (`tests/e2e/server.sh`, only `.wrangler/state`, never dev or production) and runs everything with one worker.
 - Every check is listed in the HTML report (`pnpm test:e2e:report`, annotations pass/FAIL). On a failure the report has the screenshot, a video of every browser window (`tests/e2e/contexts.mjs`) and a trace (each step, network, console). Passing tests keep no videos.
 - When an owner request changes behaviour, update the matching checks in the same commit.
