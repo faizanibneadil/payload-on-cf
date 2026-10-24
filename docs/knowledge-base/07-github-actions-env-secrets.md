@@ -68,7 +68,7 @@ There is no separate `env.manifest`. The list in `scripts/check-env.mjs`, `.env.
 The agent must list the final, exact set in the README and the final summary. Never print secrets in logs.
 
 ## Why GitHub Actions and not Cloudflare Workers Builds (decided October 2026)
-- The repo is **public**. GitHub-hosted standard runners are free and have no minute limit for public repositories (free plan: up to 20 concurrent jobs). One run takes about 10-12 minutes with the tests (estimate, see below); the 4 test shards run in parallel, which the free plan allows (up to 20 concurrent jobs).
+- The repo is **public**. GitHub-hosted standard runners are free and have no minute limit for public repositories (free plan: up to 20 concurrent jobs). One run takes about 8 minutes with the tests (measured, see below); the 4 test shards run in parallel, which the free plan allows (up to 20 concurrent jobs).
 - If the repo ever becomes private, the free plan gives 2,000 minutes per month (about 500 runs of 4 minutes). Check the usage under GitHub Settings > Billing then, and only then consider Cloudflare Workers Builds (connects the repo in the Cloudflare dashboard, builds on push per branch, has its own monthly build-minute quota).
 - Saving runs: pushes that change only `docs/**` or `*.md` do not trigger a deploy (`paths-ignore`). A running deploy is never cancelled (`cancel-in-progress: false`) so a D1 migration is never cut in half; newer pushes wait and only the latest queued run is kept.
 - A deploy is live only when the run is green. Every iteration is verified on the dev URL after its push.
@@ -80,7 +80,7 @@ The whole suite runs in GitHub Actions on every push to `dev` (the owner merging
 - `e2e` (needs `e2e-build`): the browser suite in 4 parallel shards (`playwright test --shard=N/4`, each spec file gets a fresh local D1 on the runner, the runner's preinstalled Google Chrome via `CHROMIUM_PATH`, nothing is downloaded (owner: installing a browser on every run is slow; `ubuntu-latest` = Ubuntu 24.04 ships Google Chrome and Chromium, see the runner-images list); the step stops the job if no Chrome/Chromium is found). Only Playwright's small `ffmpeg` is installed (`playwright install ffmpeg`, no browser): the tests record a video of every browser window for failure reports, and Chrome does not ship it (the first CI run failed on this, `Executable doesn't exist at ~/.cache/ms-playwright/ffmpeg-1011`). `fail-fast: false`, so every shard reports. On a failure the shard uploads `e2e-report-shard-N` (HTML report, screenshots, videos, traces, server logs; 7 days).
 - `deploy` (needs `checks` and `e2e`): unchanged otherwise (env check, schema drift check, migrations, seed, secrets, build + deploy, smoke test).
 - The test jobs get **no Cloudflare secrets**: the test server can only use the runner's local D1, never the dev or production database.
-- Time: merge to deploy was about 4 minutes; with the tests about 10-12 minutes (estimate before the first run; the measured time is noted here after it).
+- Time (measured, first green run 40121379991, 24 Oct 2026): merge to deploy about 8 minutes (was about 4 without tests). `checks` 0:37, `e2e-build` 1:37, the 4 shards 2:20-3:24 in parallel, `deploy` 2:58.
 - The live-check workflow removed in task A2 stays removed.
 
 Deploy speed: `.next/cache` is cached between runs (`actions/cache`), so the Next.js build only recompiles changed files.
