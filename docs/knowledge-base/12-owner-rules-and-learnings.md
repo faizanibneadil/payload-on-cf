@@ -42,6 +42,7 @@ Canvas-specific learnings (resize, borders, text scale, click-to-type, auto widt
 | Oct 2026 | Remove the live-check (no benefit) | Task A2 removes the script, the workflow, the spec and the `[live-check]` hook |
 | Oct 2026 | Tests matter: a test for every tool and component, kept in good order; but do not re-run every suite at every small step | Standing rule 4 |
 | Oct 2026 | Small iterations, one feature per task, branch + PR, owner merges, task tracker | Standing rule 9, `13-task-tracker.md` |
+| Oct 2026 | (B2 check) A line appeared under H2 headings; remove it, no OK until fixed | No decorative lines/borders under headings or text that the owner did not ask for; a look copied from a style kit (shadcn typography) is still a decision to show the owner first |
 
 ## Open choices (need the owner's answer)
 - **E. Boards per day:** default stays 10 (owner once wrote 14 and once "1 board per day"). Editable by the admin in the `settings` Global.

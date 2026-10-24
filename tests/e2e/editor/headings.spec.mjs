@@ -67,6 +67,19 @@ test('Headings H1-H6: shortcuts, slash menu, Enter/Backspace, paste, save, read 
     sizes.join(' / '),
   )
 
+  // Owner: headings ke neeche koi line nahi (pehle H2 par thi)
+  const borders = (root) =>
+    root.evaluate((el) =>
+      [...el.querySelectorAll('h1, h2, h3, h4, h5, h6')].map(
+        (h) => getComputedStyle(h).borderBottomWidth,
+      ),
+    )
+  check(
+    'No line under any heading (H1-H6) in the editor',
+    (await borders(editor)).every((w) => w === '0px'),
+    (await borders(editor)).join(' / '),
+  )
+
   await owner.keyboard.press('Enter')
   await owner.keyboard.type('#No space stays text')
   await settle()
@@ -231,6 +244,11 @@ test('Headings H1-H6: shortcuts, slash menu, Enter/Backspace, paste, save, read 
   check(
     'Visitor headings look the same as the owner sees them (size and position)',
     JSON.stringify(await sizeOf(visitor, view)) === JSON.stringify(await sizeOf(owner, editor)),
+  )
+  check(
+    'No line under any heading for the visitor either',
+    (await borders(view)).length === 6 && (await borders(view)).every((w) => w === '0px'),
+    (await borders(view)).join(' / '),
   )
   await shot(visitor, 'visitor-headings')
   await owner.getByTestId('theme-toggle').click()

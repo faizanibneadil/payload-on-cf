@@ -47,7 +47,7 @@
 ## Headings (as built, task B2)
 - `features/heading.ts`: Lexical `HeadingNode`, markdown `HEADING` (`# ` to `###### ` at the start of a line), slash items "Heading 1"-"Heading 6" (keywords `heading`, `h1`...), lucide icons.
 - Behaviour is Lexical/Payload's: Enter at the end of a heading starts a paragraph, Enter in the middle splits it into two headings; Backspace at the start of a heading with text keeps it (it does not turn into text, unlike the old canvas), an empty heading on the first line becomes a paragraph, an empty heading under another line is removed. Pasted `<h1>`-`<h6>` stay headings. To turn a heading back into text: slash menu > Paragraph.
-- Look (shadcn typography, changeable when typography is decided): H1 4xl extrabold, H2 3xl semibold with a bottom border, H3 2xl, H4 xl, H5 lg, H6 base, all bold; space above except on the first line.
+- Look (shadcn typography, changeable when typography is decided): H1 4xl extrabold, H2 3xl semibold (no line under it, owner), H3 2xl, H4 xl, H5 lg, H6 base, all bold; space above except on the first line.
 - Server: `heading` with `tag` h1-h6 only.
 
 ## Inline toolbar (iteration C)
