@@ -5,6 +5,7 @@ import { ListPlugin } from '@lexical/react/LexicalListPlugin'
 import { ListOrdered } from 'lucide-react'
 import { useEffect } from 'react'
 import { LIST_START_MAX, LIST_START_MIN } from '@/lib/document'
+import { ListTabPlugin } from './list-tab'
 import type { EditorFeature } from './types'
 
 /** List ka shuru number server ki hadd (1-9999) me — `0. ` ya paste ka `start="0"` bhi save ho sake */
@@ -33,7 +34,7 @@ export const orderedListFeature: EditorFeature = {
   key: 'orderedList',
   nodes: [ListNode, ListItemNode],
   markdown: [ORDERED_LIST],
-  plugins: [ListPlugin, ListStartPlugin],
+  plugins: [ListPlugin, ListTabPlugin, ListStartPlugin],
   slashMenu: {
     group: 'lists',
     items: [
