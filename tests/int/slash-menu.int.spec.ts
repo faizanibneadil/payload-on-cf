@@ -44,6 +44,15 @@ describe('slash menu filter', () => {
     expect(keys(filterSlashGroups(groups, 'unord'))).toEqual([['lists', ['ul']]])
   })
 
+  it('matches only from the start of the label, a keyword or one of their words (owner, B7 fix)', () => {
+    expect(keys(filterSlashGroups(groups, 'list'))).toEqual([['lists', ['ul']]])
+    expect(keys(filterSlashGroups(groups, 'bulleted'))).toEqual([['lists', ['ul']]])
+    // Lafz ke beech se nahi
+    expect(filterSlashGroups(groups, 'eted')).toEqual([])
+    expect(filterSlashGroups(groups, 'ading')).toEqual([])
+    expect(filterSlashGroups(groups, 'agraph')).toEqual([])
+  })
+
   it('drops groups with no match, and returns nothing when nothing matches', () => {
     expect(keys(filterSlashGroups(groups, 'title'))).toEqual([['basic', ['h1']]])
     expect(filterSlashGroups(groups, 'zzz')).toEqual([])

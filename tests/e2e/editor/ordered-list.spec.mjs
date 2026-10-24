@@ -227,8 +227,7 @@ test('Ordered list: shortcut, start number, Enter/Backspace, slash menu, paste, 
         ]),
     JSON.stringify(await outline()),
   )
-  // ("/ul" Horizontal Rule bhi dhoondta he — "rule" me "ul"; isliye "/bullet")
-  await owner.keyboard.type('/bullet')
+  await owner.keyboard.type('/ul')
   await menu.waitFor()
   await owner.keyboard.press('Enter')
   await settle()
