@@ -3,6 +3,7 @@ import {
   emptyDocument,
   hasContent,
   MAX_DEPTH,
+  MAX_INDENT,
   MAX_LIST_INDENT,
   MAX_TEXT_CHARS,
   readDocument,
@@ -113,6 +114,27 @@ describe('document validation', () => {
         docOf([{ ...paragraph([text('Said'), { type: 'linebreak', version: 1 }]), type: 'quote' }]),
       ),
     ).toBe(true)
+  })
+
+  it('accepts paragraph, heading and quote indents from 0 to MAX_INDENT, rejects the rest (B8)', () => {
+    // Owner (B8): hadd list ki nesting jitni — 15 level (0 se 14)
+    expect(MAX_INDENT).toBe(MAX_LIST_INDENT)
+    expect(MAX_INDENT).toBe(14)
+    const lines = (indent: unknown) => [
+      { ...paragraph([text('p')]), indent },
+      { ...paragraph([text('h')]), type: 'heading', tag: 'h2', indent },
+      { ...paragraph([text('q')]), type: 'quote', indent },
+    ]
+    for (const indent of [0, 1, 7, MAX_INDENT]) {
+      expect(validateDocument(docOf(lines(indent)))).toBe(true)
+    }
+    const noIndent = lines(0).map(({ indent: _i, ...rest }) => rest)
+    expect(validateDocument(docOf(noIndent))).toBe(true)
+    for (const indent of [MAX_INDENT + 1, -1, 1.5, '2', null]) {
+      for (const line of lines(indent)) {
+        expect(validateDocument(docOf([line]))).toBe('Invalid indent')
+      }
+    }
   })
 
   it('accepts bullet lists of list items, also nested', () => {

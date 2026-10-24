@@ -16,8 +16,19 @@ export interface BoardDocument {
 export const MAX_DEPTH = 32
 // List ki nesting (Tab) ki hadd: root > list > listitem > text, har andar wali level +2 (list, listitem)
 export const MAX_LIST_INDENT = Math.floor((MAX_DEPTH - 3) / 2)
+// Paragraph/heading/quote ke indent ki hadd (owner, B8: list jitni — 15 level, yani 0 se 14)
+export const MAX_INDENT = MAX_LIST_INDENT
 export const MAX_NODES = 100_000
 export const MAX_TEXT_CHARS = 100_000
+
+/** Indent (B8): na ho, ya 0 se `MAX_INDENT` tak poora number */
+const checkIndent = (node: DocNode) =>
+  node.indent === undefined ||
+  (Number.isInteger(node.indent) &&
+    (node.indent as number) >= 0 &&
+    (node.indent as number) <= MAX_INDENT)
+    ? null
+    : 'Invalid indent'
 
 /**
  * Kaun se node types document me aa sakte hain. Har naya feature (headings, lists, ...) apna type
@@ -26,8 +37,8 @@ export const MAX_TEXT_CHARS = 100_000
 const NODE_RULES: Record<string, { children: boolean; check?: (node: DocNode) => string | null }> =
   {
     root: { children: true },
-    paragraph: { children: true },
-    quote: { children: true },
+    paragraph: { children: true, check: checkIndent },
+    quote: { children: true, check: checkIndent },
     list: {
       children: true,
       check: (node) => {
@@ -56,7 +67,8 @@ const NODE_RULES: Record<string, { children: boolean; check?: (node: DocNode) =>
     },
     heading: {
       children: true,
-      check: (node) => (HEADING_TAGS.has(node.tag as string) ? null : 'Invalid heading level'),
+      check: (node) =>
+        HEADING_TAGS.has(node.tag as string) ? checkIndent(node) : 'Invalid heading level',
     },
     text: {
       children: false,

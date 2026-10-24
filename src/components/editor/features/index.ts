@@ -5,6 +5,7 @@ import type { SlashMenuGroup } from '../slash-menu/slash-menu-items'
 import { checkListFeature } from './check-list'
 import { headingFeature } from './heading'
 import { horizontalRuleFeature } from './horizontal-rule'
+import { indentFeature } from './indent'
 import { orderedListFeature } from './ordered-list'
 import { paragraphFeature } from './paragraph'
 import { quoteFeature } from './quote'
@@ -20,6 +21,7 @@ export const editorFeatures: EditorFeature[] = [
   unorderedListFeature,
   orderedListFeature,
   checkListFeature,
+  indentFeature,
 ]
 
 // Ek node kai features me ho sakta he (lists) — ek hi dafa register

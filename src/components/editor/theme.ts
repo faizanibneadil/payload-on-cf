@@ -1,11 +1,18 @@
 // Editor aur read view dono yahi classes use karte hain — edit mode me jane par kuch hilta nahi.
 // Plain object (koi Lexical import nahi), taa ke server ka read view bhi isay le sake.
 
+// Tab ka faasla 4 harf (owner, B8); indent ka ek level `globals.css` me (`--lexical-indent-base-value`)
 export const documentClass =
-  'board-document whitespace-pre-wrap break-words text-base leading-7 outline-none'
+  'board-document whitespace-pre-wrap break-words text-base leading-7 outline-none [tab-size:4]'
+
+/** Ek indent level = `--lexical-indent-base-value` (24px, owner B8: list ki nesting jitna); Lexical bhi yahi */
+export const indentSize = (indent: number) =>
+  `calc(${indent} * var(--lexical-indent-base-value, 24px))`
 
 export const editorTheme = {
   paragraph: 'mb-3 last:mb-0',
+  // Indent wali line (B8) — faasla Lexical inline style se lagata he (read view bhi wahi)
+  indent: 'board-indent',
   // Lexical list theme keys; nested = sirf andar wali list rakhne wala item (apna marker nahi)
   list: {
     ul: 'my-3 ml-6 list-disc first:mt-0',

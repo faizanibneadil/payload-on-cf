@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react'
-import { documentClass, editorTheme } from '@/components/editor/theme'
+import type { CSSProperties, ReactNode } from 'react'
+import { documentClass, editorTheme, indentSize } from '@/components/editor/theme'
 import type { BoardDocument, DocNode } from '@/lib/document'
 
 /**
@@ -13,25 +13,36 @@ interface ListContext {
   check?: boolean
 }
 
+/** Indent (B8) editor jaisa: line ki andar ki padding; quote poora block (baen line samet) andar */
+function indentProps(node: DocNode, base: string, as: 'padding' | 'margin' = 'padding') {
+  const indent = typeof node.indent === 'number' ? node.indent : 0
+  if (indent <= 0) return { className: base }
+  const style: CSSProperties =
+    as === 'margin'
+      ? { marginInlineStart: indentSize(indent) }
+      : { paddingInlineStart: indentSize(indent) }
+  return { className: `${base} ${editorTheme.indent}`, style }
+}
+
 const renderers: Record<
   string,
   (node: DocNode, children: ReactNode, key: number, ctx: ListContext) => ReactNode
 > = {
   paragraph: (node, children, key) => (
-    <p key={key} className={editorTheme.paragraph}>
+    <p key={key} {...indentProps(node, editorTheme.paragraph)}>
       {node.children?.length ? children : <br />}
     </p>
   ),
   heading: (node, children, key) => {
     const Tag = node.tag as keyof typeof editorTheme.heading
     return (
-      <Tag key={key} className={editorTheme.heading[Tag]}>
+      <Tag key={key} {...indentProps(node, editorTheme.heading[Tag])}>
         {node.children?.length ? children : <br />}
       </Tag>
     )
   },
   quote: (node, children, key) => (
-    <blockquote key={key} className={editorTheme.quote}>
+    <blockquote key={key} {...indentProps(node, editorTheme.quote, 'margin')}>
       {node.children?.length ? children : <br />}
     </blockquote>
   ),

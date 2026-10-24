@@ -145,6 +145,11 @@
   }
 }
 
+/* Indent ka ek level (B8, owner: 24px, list ki nesting jitna) — Lexical aur read view dono isi se */
+.board-document {
+  --lexical-indent-base-value: 24px;
+}
+
 /*
  * Check list (B6, owner: Payload jaisa) — editor aur read view dono. Lexical dabbe par click ko item ke
  * baen kinare se `::before` ki chaudai tak ginta he, is liye dabba wahin `::before` he; tick `::after`.

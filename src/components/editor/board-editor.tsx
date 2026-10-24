@@ -15,8 +15,6 @@ import {
   type ElementNode,
   FORMAT_ELEMENT_COMMAND,
   FORMAT_TEXT_COMMAND,
-  INDENT_CONTENT_COMMAND,
-  OUTDENT_CONTENT_COMMAND,
   ParagraphNode,
   TextNode,
 } from 'lexical'
@@ -24,7 +22,6 @@ import { useEffect } from 'react'
 import { useBoard } from '@/components/board/board-store'
 import type { BoardDocument } from '@/lib/document'
 import { editorNodes, editorPlugins, markdownTransformers } from './features'
-import { $selectedListItems } from './features/list-tab'
 import { SlashMenuPlugin } from './slash-menu/slash-menu-plugin'
 import { documentClass, editorTheme } from './theme'
 
@@ -33,8 +30,8 @@ const SYNC_DELAY_MS = 300
 
 /**
  * Board ka Lexical editor (sirf owner/admin). Features (`./features`) apne nodes, markdown shortcuts aur
- * slash menu items laate hain. Formatting, alignment aur indent apne apne task me aayenge, tab tak band
- * hain (paste ya shortcut se bhi na aayen).
+ * slash menu items laate hain. Formatting aur alignment apne apne task me aayenge, tab tak band hain
+ * (paste ya shortcut se bhi na aayen).
  */
 export function BoardEditor() {
   const { initialDoc } = useBoard()
@@ -83,35 +80,27 @@ export function BoardEditor() {
   )
 }
 
-const resetLine = (node: ElementNode) => {
+const resetAlignment = (node: ElementNode) => {
   if (node.getFormatType() !== '') node.setFormat('')
-  if (node.getIndent() !== 0) node.setIndent(0)
 }
 
-/** Jo abhi bane nahi: bold/italic, alignment, indent waghera ke commands aur paste ka style/format hatao */
+/** Jo abhi bane nahi: bold/italic, alignment waghera ke commands aur paste ka style/format hatao */
 function NotYetPlugin(): null {
   const [editor] = useLexicalComposerContext()
   useEffect(() => {
     const block = () => true
-    const blockOutsideLists = () => !$selectedListItems()
     return mergeRegister(
       editor.registerCommand(FORMAT_TEXT_COMMAND, block, COMMAND_PRIORITY_CRITICAL),
       editor.registerCommand(FORMAT_ELEMENT_COMMAND, block, COMMAND_PRIORITY_CRITICAL),
-      // Indent (B8) se pehle sirf list items andar/bahar ho sakte hain (nesting, owner)
-      editor.registerCommand(INDENT_CONTENT_COMMAND, blockOutsideLists, COMMAND_PRIORITY_CRITICAL),
-      editor.registerCommand(OUTDENT_CONTENT_COMMAND, blockOutsideLists, COMMAND_PRIORITY_CRITICAL),
       editor.registerNodeTransform(TextNode, (node) => {
         if (node.getFormat() !== 0) node.setFormat(0)
         if (node.getStyle() !== '') node.setStyle('')
       }),
-      // Alignment (B9) aur indent (B8) se pehle har line saadi
-      editor.registerNodeTransform(ParagraphNode, resetLine),
-      editor.registerNodeTransform(HeadingNode, resetLine),
-      editor.registerNodeTransform(QuoteNode, resetLine),
-      // List item ka indent = nesting (rehne do); sirf alignment hatao
-      editor.registerNodeTransform(ListItemNode, (node) => {
-        if (node.getFormatType() !== '') node.setFormat('')
-      }),
+      // Alignment (B9) se pehle har line baen taraf (indent B8 se asal feature he)
+      editor.registerNodeTransform(ParagraphNode, resetAlignment),
+      editor.registerNodeTransform(HeadingNode, resetAlignment),
+      editor.registerNodeTransform(QuoteNode, resetAlignment),
+      editor.registerNodeTransform(ListItemNode, resetAlignment),
     )
   }, [editor])
   return null
