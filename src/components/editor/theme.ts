@@ -19,7 +19,11 @@ export const editorTheme = {
       'list-[lower-roman]',
     ],
     listitem: 'my-1',
-    nested: { listitem: 'list-none' },
+    // Check list (owner, B6: Payload jaisa) — dabba aur tick `globals.css` me (`board-check*`)
+    checklist: 'board-checklist',
+    listitemChecked: 'board-check-checked',
+    listitemUnchecked: 'board-check-unchecked',
+    nested: { listitem: 'list-none board-list-wrapper' },
   },
   // Owner ka faisla (B3): baen taraf patli line, andar aur italic
   quote: 'my-4 border-l-2 pl-6 italic first:mt-0',

@@ -144,3 +144,64 @@
     cursor: pointer;
   }
 }
+
+/*
+ * Check list (B6, owner: Payload jaisa) — editor aur read view dono. Lexical dabbe par click ko item ke
+ * baen kinare se `::before` ki chaudai tak ginta he, is liye dabba wahin `::before` he; tick `::after`.
+ * Text bullet/number list ke text ki seedh me (1.5rem).
+ */
+.board-document ul.board-checklist {
+  margin-inline-start: 0;
+}
+.board-check-checked,
+.board-check-unchecked {
+  position: relative;
+  list-style: none;
+  padding-inline-start: 1.5rem;
+  outline: none;
+}
+.board-check-checked::before,
+.board-check-unchecked::before {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0;
+  top: 0.375rem;
+  width: 1rem;
+  height: 1rem;
+  box-sizing: border-box;
+  border-radius: 4px;
+  border: 1px solid var(--foreground);
+  background-color: var(--background);
+}
+.board-check-checked::before {
+  border-color: var(--primary);
+  background-color: var(--primary);
+}
+.board-check-checked::after {
+  content: "";
+  position: absolute;
+  inset-inline-start: 0.375rem;
+  top: 0.5rem;
+  width: 0.3125rem;
+  height: 0.5625rem;
+  border: solid var(--primary-foreground);
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+}
+.board-check-checked:not(.board-list-wrapper) {
+  text-decoration: line-through;
+}
+/* Andar wali list rakhne wala item: apna dabba nahi (Lexical bhi us par click nahi leta) */
+.board-list-wrapper::before,
+.board-list-wrapper::after {
+  display: none;
+}
+/* Sirf editor me dabba clickable dikhe; keyboard (← phir Space) se focus par ring */
+[contenteditable="true"] .board-check-checked::before,
+[contenteditable="true"] .board-check-unchecked::before {
+  cursor: pointer;
+}
+.board-check-checked:focus::before,
+.board-check-unchecked:focus::before {
+  box-shadow: 0 0 0 2px var(--ring);
+}

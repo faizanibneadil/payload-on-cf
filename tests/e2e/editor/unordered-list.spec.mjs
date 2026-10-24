@@ -188,20 +188,6 @@ test('Unordered list: shortcuts, Enter/Backspace, slash menu, paste, look, save,
     ),
     JSON.stringify(await outline()),
   )
-  await reset()
-  await paste(
-    '<ul __lexicallisttype="check"><li aria-checked="true">Done</li><li aria-checked="false">Open</li></ul>',
-    'Done\nOpen',
-  )
-  await settle()
-  check(
-    'Pasted check list becomes a bullet list without ticks for now (check lists come in B6)',
-    (await editor.locator('[aria-checked]').count()) === 0 &&
-      (await outline()).some(
-        ([t, i]) => t === 'ul' && JSON.stringify(i) === JSON.stringify(['Done', 'Open']),
-      ),
-    JSON.stringify(await outline()),
-  )
 
   // ---------- Save, reload, visitor ----------
   await reset()

@@ -1,5 +1,6 @@
 import { ListItemNode, ListNode } from '@lexical/list'
-import { HEADING, ORDERED_LIST, QUOTE, UNORDERED_LIST } from '@lexical/markdown'
+import { CHECK_LIST, HEADING, ORDERED_LIST, QUOTE, UNORDERED_LIST } from '@lexical/markdown'
+import { CheckListPlugin } from '@lexical/react/LexicalCheckListPlugin'
 import { ListPlugin } from '@lexical/react/LexicalListPlugin'
 import { HeadingNode, QuoteNode } from '@lexical/rich-text'
 import { describe, expect, it } from 'vitest'
@@ -30,7 +31,7 @@ describe('editor features', () => {
           'blockquote',
         ],
       ],
-      ['lists', ['unorderedList', 'orderedList']],
+      ['lists', ['unorderedList', 'orderedList', 'checkList']],
     ])
     expect(slashMenuGroups[0].items.map((i) => i.label)).toContain('Heading 3')
   })
@@ -73,9 +74,23 @@ describe('editor features', () => {
     // "ordered" lafz "unordered" me bhi he
     expect(found('ordered')).toEqual(['unorderedList', 'orderedList'])
     expect(found('numbered')).toEqual(['orderedList'])
-    expect(found('list')).toEqual(['unorderedList', 'orderedList'])
+    expect(found('list')).toEqual(['unorderedList', 'orderedList', 'checkList'])
     const item = slashMenuGroups.find((g) => g.key === 'lists')?.items[1]
     expect(item?.label).toBe('Ordered List')
+  })
+
+  it('register the "[ ] " shortcut, the check list plugin and find Check List like Payload', () => {
+    expect(markdownTransformers).toContain(CHECK_LIST)
+    expect(editorPlugins).toContain(CheckListPlugin)
+    // Teeno list features ListPlugin aur Tab nesting laate hain — phir bhi ek dafa
+    expect(editorPlugins.filter((p) => p === ListPlugin)).toHaveLength(1)
+    const found = (q: string) =>
+      filterSlashGroups(slashMenuGroups, q).flatMap((g) => g.items.map((i) => i.key))
+    for (const q of ['check', 'checklist', 'check list', 'cl']) {
+      expect(found(q)).toEqual(['checkList'])
+    }
+    const item = slashMenuGroups.find((g) => g.key === 'lists')?.items[2]
+    expect(item?.label).toBe('Check List')
   })
 
   it('find headings in the slash menu by level and by word', () => {

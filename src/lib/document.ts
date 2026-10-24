@@ -74,8 +74,7 @@ const NODE_RULES: Record<string, { children: boolean; check?: (node: DocNode) =>
     tab: { children: false },
   }
 
-// Har list type apne task me judta he (check list B6)
-const LIST_TYPES = new Set(['bullet', 'number'])
+const LIST_TYPES = new Set(['bullet', 'number', 'check'])
 // Numbered list ka shuru number (owner, B5: likha hua number; hadd 1-9999)
 export const LIST_START_MIN = 1
 export const LIST_START_MAX = 9999

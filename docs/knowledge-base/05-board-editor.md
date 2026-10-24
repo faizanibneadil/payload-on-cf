@@ -39,7 +39,7 @@
 | Quote | `> ` |
 | Bulleted list | `- `, `* `, `+ ` |
 | Numbered list | `1. ` |
-| Check list | `- [ ] `, `- [x] ` |
+| Check list | `[ ] `, `[x] ` (Payload's; `- [ ] ` while typing becomes a bullet at `- ` first, in Payload too) |
 | Horizontal rule | `---` |
 | Indent | Tab / Shift+Tab |
 | Alignment | - (left, center, right, justify) |
@@ -57,7 +57,7 @@
 
 ## Unordered list (as built, task B4)
 - `features/unordered-list.ts`: Lexical `ListNode` + `ListItemNode`, markdown `UNORDERED_LIST` (`- `, `* `, `+ `), Lexical `ListPlugin` (features can now bring plugins), slash item "Unordered List" in the **Lists** group (Payload's label; keywords `unordered list`, `ul`, `bullet`), lucide `List` icon.
-- Enter = next item, Enter on an empty item = end of the list, Backspace at the start of the first item = back to a paragraph. Pasted `<ul>` stays a list. Until B6 a check list becomes a bullet list (ticks removed); numbered lists exist since B5.
+- Enter = next item, Enter on an empty item = end of the list, Backspace at the start of the first item = back to a paragraph. Pasted `<ul>` stays a list. Numbered lists exist since B5, check lists since B6.
 - Look: standard round bullets (disc), indented; nested lists (Tab, or paste) have no bullet on the wrapping item, like Lexical. Every bullet level uses round bullets.
 - Server: `list` (listType `bullet` or `number`; children only `listitem`), `listitem` (`checked` boolean, `value` integer, if present).
 
@@ -72,6 +72,13 @@
 - Owner (B5 check on dev): Tab must make a nested list. `features/list-tab.ts` (`ListTabPlugin`, part of both list features): in a list item Tab = one level in, Shift+Tab = one level out (Lexical's list item indent = nesting, like Payload). Works with several items selected, in numbered and bullet lists; the cursor stays in the editor. Enter on an empty nested item moves it one level out (Lexical).
 - Limit: 15 levels (`MAX_LIST_INDENT` in `src/lib/document.ts`, derived from the server's depth limit `MAX_DEPTH` 32), so a nested list always saves; further Tabs do nothing.
 - Outside lists Tab is unchanged (no indent) until task B8; `NotYetPlugin` still blocks indent there.
+
+## Check list (as built, task B6)
+- `features/check-list.ts`: same list nodes, `ListPlugin` and Tab nesting, plus Lexical's `CheckListPlugin`; markdown `CHECK_LIST` (`[ ] ` open, `[x] ` / `[X] ` ticked, at the start of a line), slash item "Check List" in the **Lists** group after "Ordered List" (Payload's label, owner; keywords `check list`, `check`, `checklist`, `cl`), lucide `ListChecks` icon.
+- Owner ticks an item by clicking its box (a click on the text does not tick) or from the keyboard: at the start of an item Left focuses the box, Space ticks, Escape goes back to the text. A tick is an ordinary unsaved change; Save keeps it. Enter makes a new open item, Backspace at the start of the first item turns it back into a paragraph, Tab nests (the wrapping item has no box). Slash menu > Check List inside another list turns the whole list into a check list (Lexical). Pasted check lists (Lexical's `__lexicallisttype="check"`) keep their ticks.
+- Look (owner: like Payload): a 16 px box with rounded corners at the left of the item; open = thin border in the text colour; ticked = box filled with the primary colour and a tick mark in the primary foreground colour, text struck through. No bullet; the text lines up with bullet and numbered list text. Theme classes `board-checklist`, `board-check-checked`, `board-check-unchecked`, `board-list-wrapper`; the box (`::before`) and tick (`::after`) are in `src/app/globals.css`, because Lexical counts a click as a tick only between the item's left edge and the width of its `::before`.
+- Visitors (owner): look only. The read view renders the same classes with `role="checkbox"`, `aria-checked` and `aria-readonly`; there is no JavaScript, so a click changes nothing.
+- Server: listType `check`; `checked` must be true/false if present.
 
 ## Inline toolbar (iteration C)
 - **No fixed toolbar.** A floating toolbar appears only on a text selection, positioned at the selection (portal in `body`).
@@ -88,7 +95,7 @@
 Payload's table feature as the model: insert a table, add/remove rows and columns, header row/column, cell merge if Payload offers it.
 
 ## Slash menu (iteration B, extended in F)
-As built (task B1): `src/components/editor/slash-menu/`. Opens on `/` at the start of a line, after a space or after `(` (Payload's trigger); the text after `/` (no spaces, max 75 characters) filters items by label and keywords, ignoring case, spaces, `-` and `_`; no match or a space closes it. Arrow keys / hover highlight, Enter / Tab / click pick (the `/query` text is removed, one undo step), Escape closes and keeps the text. Menu sits under the `/`, groups have a small title, items an icon. Each feature adds its items to a group from its own file in `src/components/editor/features/` (listed in `features/index.ts`); empty groups are hidden. Group keys like Payload: `basic`, `lists`, `blocks`, `inlineBlocks`. Today: Basic > Paragraph, Heading 1-6, Blockquote; Lists > Unordered List, Ordered List. The menu is at most 320 px tall and scrolls (the highlighted item scrolls into view).
+As built (task B1): `src/components/editor/slash-menu/`. Opens on `/` at the start of a line, after a space or after `(` (Payload's trigger); the text after `/` (no spaces, max 75 characters) filters items by label and keywords, ignoring case, spaces, `-` and `_`; no match or a space closes it. Arrow keys / hover highlight, Enter / Tab / click pick (the `/query` text is removed, one undo step), Escape closes and keeps the text. Menu sits under the `/`, groups have a small title, items an icon. Each feature adds its items to a group from its own file in `src/components/editor/features/` (listed in `features/index.ts`); empty groups are hidden. Group keys like Payload: `basic`, `lists`, `blocks`, `inlineBlocks`. Today: Basic > Paragraph, Heading 1-6, Blockquote; Lists > Unordered List, Ordered List, Check List. The menu is at most 320 px tall and scrolls (the highlighted item scrolls into view).
 `/` opens a menu at the cursor, filtered while typing, with Payload's categories: basic items (text types, lists, quote, horizontal rule, table), **Blocks**, **Inline blocks**.
 
 ## Blocks and inline blocks (iteration F, canvas in G)
