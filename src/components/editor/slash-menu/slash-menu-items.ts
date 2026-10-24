@@ -20,8 +20,17 @@ export interface SlashMenuGroup<TEditor = unknown> {
   items: SlashMenuItem<TEditor>[]
 }
 
-// Space, `-` aur `_` hata kar milao ("headingone" bhi "Heading 1" se mil jaye) — Payload jaisa
+// Space, `-` aur `_` hata kar milao ("heading1" bhi "Heading 1" se mil jaye) — Payload jaisa
 const normalize = (value: string) => value.toLowerCase().replace(/[\s\-_]/g, '')
+
+/**
+ * Likha lafz label/keyword ke shuru se ya us ke kisi lafz ke shuru se mile, beech se nahi (owner, B7 fix):
+ * "Horizontal Rule" `/hr`, `/horizontal`, `/rule` se milta he, `/ul` se nahi.
+ */
+const startsAnyWord = (text: string, q: string) => {
+  const words = text.split(/[\s\-_]+/)
+  return words.some((_, i) => normalize(words.slice(i).join('')).startsWith(q))
+}
 
 /** `/` ke baad likhe lafz se items filter; khali group hat jata he, tarteeb wahi rehti he */
 export function filterSlashGroups<T>(groups: SlashMenuGroup<T>[], query: string | null) {
@@ -32,7 +41,7 @@ export function filterSlashGroups<T>(groups: SlashMenuGroup<T>[], query: string 
     .map((group) => ({
       ...group,
       items: group.items.filter((item) =>
-        [item.label, ...(item.keywords ?? [])].some((word) => normalize(word).includes(q)),
+        [item.label, ...(item.keywords ?? [])].some((word) => startsAnyWord(word, q)),
       ),
     }))
     .filter((group) => group.items.length > 0)

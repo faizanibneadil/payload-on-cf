@@ -253,6 +253,7 @@ test('Check list: shortcuts, ticking by click and keyboard, slash menu, nesting,
   await reset()
   await owner.keyboard.type('Grade homework /cl')
   await menu.waitFor()
+  await settle()
   await owner.keyboard.press('Enter')
   await settle()
   check(
@@ -266,6 +267,7 @@ test('Check list: shortcuts, ticking by click and keyboard, slash menu, nesting,
   await owner.keyboard.press('Enter')
   await owner.keyboard.type('Second /cl')
   await menu.waitFor()
+  await settle()
   await owner.keyboard.press('Enter')
   await settle()
   check(

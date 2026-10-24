@@ -83,6 +83,7 @@ test('Slash menu: opens on "/", filters, picks with keyboard or mouse, closes', 
   await owner.keyboard.type('Intro ')
   await owner.keyboard.type('/par')
   await menu.waitFor()
+  await settle()
   await owner.keyboard.press('Enter')
   await settle()
   check(

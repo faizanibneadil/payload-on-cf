@@ -7,7 +7,7 @@ Read this together with `12-owner-rules-and-learnings.md` (owner rules, every pa
 - Done and verified: Iterations 0, 0b, 1, 2 (accounts, boards, Save/Share/limits); the Playwright Test setup; Iteration A (A1-A3); B1 slash menu, B2 headings (+ fix: no line under H2), B3 quote, B4 unordered list. All merged into `dev` and deployed (last deploy green, commit `97be861`).
 - **B5 numbered list** done (PR #31 + Tab nesting fix PR #32, deployed `bd48e5a`, owner verified).
 - **B6 check list** done (PR #33, deployed `6bc331f`, owner verified).
-- **B7 horizontal rule**: built on branch `task/b7-horizontal-rule`, PR into `dev` open, waiting for the owner's merge and check. Owner decisions for B7 are in `12` (label/group, look).
+- **B7 horizontal rule**: merged (PR #34). Owner's check: `/ul` also found Horizontal Rule; fix (slash search matches from the start of words) on branch `task/b7-fix-slash-search`, PR into `dev`, waiting for merge and check. Owner decisions for B7 are in `12` (label/group, look, word-start search).
 - **Next task after B7 is verified: B8 indent** (then B9 alignment; then iteration C inline toolbar). All list guards in `NotYetPlugin` are gone; it still blocks text formats, alignment and indent outside lists.
 - Open owner decisions: E (boards per day, now 10), F (`*.devslix.com` wildcard; prod workers.dev URL allowed or not), Code block settings (before F4).
 

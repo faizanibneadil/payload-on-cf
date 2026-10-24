@@ -184,7 +184,7 @@ test('Horizontal rule: shortcut, slash menu, select and delete, undo, paste, loo
   await settle()
   await shot(owner, 'slash-menu-hr')
   await owner.keyboard.press('Escape')
-  for (const q of ['hr', 'separator', 'line']) {
+  for (const q of ['hr', 'rule', 'separator', 'line']) {
     await reset()
     await owner.keyboard.type(`/${q}`)
     await menu.waitFor()
@@ -195,9 +195,22 @@ test('Horizontal rule: shortcut, slash menu, select and delete, undo, paste, loo
     )
     await owner.keyboard.press('Escape')
   }
+  // Owner (B7 fix): talash lafz ke shuru se — "r-ul-e" ka "ul" Horizontal Rule nahi laata
+  await reset()
+  await owner.keyboard.type('/ul')
+  await menu.waitFor()
+  check(
+    '"/ul" finds only Unordered List, not Horizontal Rule',
+    (await menu.getByRole('option').count()) === 1 &&
+      (await owner.getByTestId('slash-item-unorderedList').isVisible()),
+    (await menu.getByRole('option').allInnerTexts()).join(', '),
+  )
+  await shot(owner, 'slash-menu-ul')
+  await owner.keyboard.press('Escape')
   await reset()
   await owner.keyboard.type('Intro /hr')
   await menu.waitFor()
+  await settle()
   await owner.keyboard.press('Enter')
   await settle()
   await owner.keyboard.type('After')

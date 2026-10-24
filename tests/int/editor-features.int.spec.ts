@@ -60,8 +60,7 @@ describe('editor features', () => {
     expect(editorPlugins).toContain(ListPlugin)
     const found = (q: string) =>
       filterSlashGroups(slashMenuGroups, q).flatMap((g) => g.items.map((i) => i.key))
-    // "ul" Payload ke filter jaisa "horizontal rule" me bhi milta he (Basic group pehle)
-    expect(found('ul')).toEqual(['horizontalRule', 'unorderedList'])
+    expect(found('ul')).toEqual(['unorderedList'])
     expect(found('bullet')).toEqual(['unorderedList'])
     expect(slashMenuGroups.find((g) => g.key === 'lists')?.label).toBe('Lists')
   })
@@ -75,8 +74,8 @@ describe('editor features', () => {
     const found = (q: string) =>
       filterSlashGroups(slashMenuGroups, q).flatMap((g) => g.items.map((i) => i.key))
     expect(found('ol')).toEqual(['orderedList'])
-    // "ordered" lafz "unordered" me bhi he
-    expect(found('ordered')).toEqual(['unorderedList', 'orderedList'])
+    // Lafz ke shuru se: "ordered" ab "unordered" se nahi milta
+    expect(found('ordered')).toEqual(['orderedList'])
     expect(found('numbered')).toEqual(['orderedList'])
     expect(found('list')).toEqual(['unorderedList', 'orderedList', 'checkList'])
     const item = slashMenuGroups.find((g) => g.key === 'lists')?.items[1]
@@ -108,9 +107,12 @@ describe('editor features', () => {
     expect(hr?.type === 'element' && hr.regExp.test('---x')).toBe(false)
     const found = (q: string) =>
       filterSlashGroups(slashMenuGroups, q).flatMap((g) => g.items.map((i) => i.key))
-    for (const q of ['hr', 'horizontal rule', 'line', 'separator']) {
+    for (const q of ['hr', 'horizontal rule', 'horizontal', 'rule', 'line', 'separator']) {
       expect(found(q)).toEqual(['horizontalRule'])
     }
+    // Owner (B7 fix): "rule" ke beech wala "ul" Horizontal Rule nahi dhoondta; "par" sirf Paragraph
+    expect(found('ul')).not.toContain('horizontalRule')
+    expect(found('par')).toEqual(['paragraph'])
     expect(slashMenuGroups[0].items.at(-1)?.label).toBe('Horizontal Rule')
   })
 
