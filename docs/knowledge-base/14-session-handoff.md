@@ -6,11 +6,12 @@ Read this together with `12-owner-rules-and-learnings.md` (owner rules, every pa
 - **Direction changed (owner, October 2026):** the board is no longer an infinite canvas; it is one Lexical document (`05-board-editor.md`). Work is split into small tasks (`13-task-tracker.md`).
 - Done and verified: Iterations 0, 0b, 1, 2 (accounts, boards, Save/Share/limits); the Playwright Test setup; Iteration A (A1-A3); B1 slash menu, B2 headings (+ fix: no line under H2), B3 quote, B4 unordered list. All merged into `dev` and deployed (last deploy green, commit `97be861`).
 - **B5 numbered list** done (PR #31 + Tab nesting fix PR #32, deployed `bd48e5a`, owner verified).
-- **B6 check list**: built on branch `task/b6-check-list`, PR into `dev` open, waiting for the owner's merge and check. Owner decisions for B6 are in `12` (label, ticked look, visitors only look).
-- **Next task after B6 is verified: B7 horizontal rule** (then B8 indent, B9 alignment; then iteration C inline toolbar). All list guards in `NotYetPlugin` are gone; it still blocks text formats, alignment and indent outside lists.
+- **B6 check list** done (PR #33, deployed `6bc331f`, owner verified).
+- **B7 horizontal rule**: built on branch `task/b7-horizontal-rule`, PR into `dev` open, waiting for the owner's merge and check. Owner decisions for B7 are in `12` (label/group, look).
+- **Next task after B7 is verified: B8 indent** (then B9 alignment; then iteration C inline toolbar). All list guards in `NotYetPlugin` are gone; it still blocks text formats, alignment and indent outside lists.
 - Open owner decisions: E (boards per day, now 10), F (`*.devslix.com` wildcard; prod workers.dev URL allowed or not), Code block settings (before F4).
 
-## How a task is done (pattern used for B2-B6)
+## How a task is done (pattern used for B2-B7)
 1. Read Payload's feature source (sparse clone, below) for behaviour, label, slash group, keywords, markdown transformer.
 2. Add `src/components/editor/features/<name>.ts` (nodes, `markdown`, `slashMenu`, `plugins`) and list it in `features/index.ts`.
 3. Add the node rule in `src/lib/document.ts` (`NODE_RULES`), the renderer in `src/components/read-view/document-view.tsx`, the classes in `src/components/editor/theme.ts` (editor and read view share them).
@@ -32,6 +33,7 @@ Read this together with `12-owner-rules-and-learnings.md` (owner rules, every pa
 - Blocked hosts: `*.workers.dev` (cannot open the dev site directly), `ui.shadcn.com` (read shadcn docs/components from a sparse clone of `https://github.com/shadcn-ui/ui`, e.g. `apps/v4/registry/bases/base/ui/code-block.tsx`).
 - Playwright's own browser is not installed: always pass `CHROMIUM_PATH=/opt/pw-browsers/chromium`. Playwright MCP needs `PLAYWRIGHT_MCP_SANDBOX=false` and `PLAYWRIGHT_MCP_EXECUTABLE_PATH=/opt/pw-browsers/chromium` in this container.
 - Headless typing is faster than a person: after selection-changing keys and before Enter in a menu, tests wait 50-100 ms.
+- Headless clicks are faster than a person too: after a block (e.g. a horizontal rule) is selected, Lexical moves the cursor to clicked text on `selectionchange`, which a Playwright `click()` (mouse down and up at once) beats, so the cursor seems not to move. Use a click with ~100 ms between mouse down and up (`humanClick` in `horizontal-rule.spec.mjs`); a real click works with one press.
 - `node_modules` may be missing in a fresh container: run `pnpm install` first.
 - Running `pnpm payload migrate` a second time on the local DB stops at a "data loss" prompt, because `pnpm seed:admin` adds a dev marker row (`payload_migrations`, batch -1). Delete that row first; CI is not affected (production mode).
 - Known flake (24 Oct 2026, task B4): in two of four full runs `auth-boards.spec` (always the first spec) failed once with the local server going away (`ERR_CONNECTION_REFUSED` on `/admin`) and once with the register dialog not opening (page not hydrated within 5 s); alone it passed 3/3 and the next full run passed 7/7. Not related to the editor code (that spec never loads it). Re-run once; if it fails again, investigate the local workerd, not the app.

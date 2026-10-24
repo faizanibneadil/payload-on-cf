@@ -1,6 +1,8 @@
 import { ListItemNode, ListNode } from '@lexical/list'
 import { CHECK_LIST, HEADING, ORDERED_LIST, QUOTE, UNORDERED_LIST } from '@lexical/markdown'
 import { CheckListPlugin } from '@lexical/react/LexicalCheckListPlugin'
+import { HorizontalRuleNode } from '@lexical/react/LexicalHorizontalRuleNode'
+import { HorizontalRulePlugin } from '@lexical/react/LexicalHorizontalRulePlugin'
 import { ListPlugin } from '@lexical/react/LexicalListPlugin'
 import { HeadingNode, QuoteNode } from '@lexical/rich-text'
 import { describe, expect, it } from 'vitest'
@@ -29,6 +31,7 @@ describe('editor features', () => {
           'heading-5',
           'heading-6',
           'blockquote',
+          'horizontalRule',
         ],
       ],
       ['lists', ['unorderedList', 'orderedList', 'checkList']],
@@ -57,7 +60,8 @@ describe('editor features', () => {
     expect(editorPlugins).toContain(ListPlugin)
     const found = (q: string) =>
       filterSlashGroups(slashMenuGroups, q).flatMap((g) => g.items.map((i) => i.key))
-    expect(found('ul')).toEqual(['unorderedList'])
+    // "ul" Payload ke filter jaisa "horizontal rule" me bhi milta he (Basic group pehle)
+    expect(found('ul')).toEqual(['horizontalRule', 'unorderedList'])
     expect(found('bullet')).toEqual(['unorderedList'])
     expect(slashMenuGroups.find((g) => g.key === 'lists')?.label).toBe('Lists')
   })
@@ -91,6 +95,23 @@ describe('editor features', () => {
     }
     const item = slashMenuGroups.find((g) => g.key === 'lists')?.items[2]
     expect(item?.label).toBe('Check List')
+  })
+
+  it('register the horizontal rule node, plugin, "--- " shortcut and find it like Payload', () => {
+    expect(editorNodes).toContain(HorizontalRuleNode)
+    expect(editorPlugins).toContain(HorizontalRulePlugin)
+    const hr = markdownTransformers.find(
+      (t) => t.type === 'element' && t.dependencies.includes(HorizontalRuleNode),
+    )
+    expect(hr?.type === 'element' && hr.regExp.test('---')).toBe(true)
+    expect(hr?.type === 'element' && hr.regExp.test('--- ')).toBe(true)
+    expect(hr?.type === 'element' && hr.regExp.test('---x')).toBe(false)
+    const found = (q: string) =>
+      filterSlashGroups(slashMenuGroups, q).flatMap((g) => g.items.map((i) => i.key))
+    for (const q of ['hr', 'horizontal rule', 'line', 'separator']) {
+      expect(found(q)).toEqual(['horizontalRule'])
+    }
+    expect(slashMenuGroups[0].items.at(-1)?.label).toBe('Horizontal Rule')
   })
 
   it('find headings in the slash menu by level and by word', () => {

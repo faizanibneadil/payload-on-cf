@@ -45,6 +45,7 @@ Canvas-specific learnings (resize, borders, text scale, click-to-type, auto widt
 | Oct 2026 | (B2 check) A line appeared under H2 headings; remove it, no OK until fixed | No decorative lines/borders under headings or text that the owner did not ask for; a look copied from a style kit (shadcn typography) is still a decision to show the owner first |
 | Oct 2026 | Quote look: a thin line on the left, indented, italic; slash menu label "Blockquote" (Payload's) | `05-board-editor.md` (Quote) |
 | Oct 2026 | (B5) Numbered list: slash label "Ordered List" (Payload's); nested levels like Payload (1. A. a. I. i.); the typed number is the start number (`3. ` starts at 3) | `05-board-editor.md` (Ordered list) |
+| Oct 2026 | (B7) Horizontal rule: slash label "Horizontal Rule" in Basic (Payload's); look like Payload (2 px light grey line, ~12 px space, ring when selected) | `05-board-editor.md` (Horizontal rule) |
 | Oct 2026 | (B6) Check list: slash label "Check List" (Payload's); ticked item like Payload (filled box with a tick, text struck through); visitors only look at the owner's ticks, they cannot tick | `05-board-editor.md` (Check list) |
 | Oct 2026 | (B5 check) Nested lists could not be made with Tab; fix it before moving on | List items nest with Tab / Shift+Tab now (not waiting for B8). A list (or any structure) must be fully usable from the keyboard when its task is done; test the keys a user expects (Tab, Shift+Tab, Enter, Backspace) in every list/text task |
 
@@ -55,7 +56,7 @@ Canvas-specific learnings (resize, borders, text scale, click-to-type, auto widt
 
 ## Regression protection
 Browser tests run on the Playwright Test runner (`playwright.config.ts`, specs in `tests/e2e/`):
-- `auth-boards.spec.mjs` (accounts, boards list), `save-share.spec.mjs` (Save, Share, limits); editor features get one spec per feature under `tests/e2e/editor/` (`basics.spec.mjs` A3, `slash-menu.spec.mjs` B1, `headings.spec.mjs` B2, `quote.spec.mjs` B3, `unordered-list.spec.mjs` B4, `ordered-list.spec.mjs` B5, `list-tab.spec.mjs` B5 fix, `check-list.spec.mjs` B6). Unit tests (document validation, converters) in `tests/int/` (`document.int.spec.ts`, `slash-menu.int.spec.ts`, `editor-features.int.spec.ts`).
+- `auth-boards.spec.mjs` (accounts, boards list), `save-share.spec.mjs` (Save, Share, limits); editor features get one spec per feature under `tests/e2e/editor/` (`basics.spec.mjs` A3, `slash-menu.spec.mjs` B1, `headings.spec.mjs` B2, `quote.spec.mjs` B3, `unordered-list.spec.mjs` B4, `ordered-list.spec.mjs` B5, `list-tab.spec.mjs` B5 fix, `check-list.spec.mjs` B6, `horizontal-rule.spec.mjs` B7). Unit tests (document validation, converters) in `tests/int/` (`document.int.spec.ts`, `slash-menu.int.spec.ts`, `editor-features.int.spec.ts`).
 - `pnpm test:e2e` builds the production Worker if needed (`BUILD=1` forces it), gives each spec file a fresh local database (`tests/e2e/server.sh`, only `.wrangler/state`, never dev or production) and runs everything with one worker.
 - Every check is listed in the HTML report (`pnpm test:e2e:report`, annotations pass/FAIL). On a failure the report has the screenshot, a video of every browser window (`tests/e2e/contexts.mjs`) and a trace (each step, network, console). Passing tests keep no videos.
 - When an owner request changes behaviour, update the matching checks in the same commit.

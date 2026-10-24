@@ -20,8 +20,8 @@ When a task changes status, update its row in the same branch/PR.
 | B3 | Quote | done (PR #28; tests `tests/int/editor-features.int.spec.ts`, `tests/e2e/editor/quote.spec.mjs`) |
 | B4 | Bulleted list ("Unordered List") | done (PR #29; tests `tests/int/editor-features.int.spec.ts`, `tests/int/document.int.spec.ts`, `tests/e2e/editor/unordered-list.spec.mjs`) |
 | B5 | Numbered list ("Ordered List") | done (PR #31, Tab nesting fix PR #32; owner verified on dev; tests `tests/int/editor-features.int.spec.ts`, `tests/int/document.int.spec.ts`, `tests/e2e/editor/ordered-list.spec.mjs`, `tests/e2e/editor/list-tab.spec.mjs`) |
-| B6 | Check list | in review (branch `task/b6-check-list`; tests `tests/int/editor-features.int.spec.ts`, `tests/int/document.int.spec.ts`, `tests/e2e/editor/check-list.spec.mjs`) |
-| B7 | Horizontal rule | todo |
+| B6 | Check list | done (PR #33; owner verified on dev; tests `tests/int/editor-features.int.spec.ts`, `tests/int/document.int.spec.ts`, `tests/e2e/editor/check-list.spec.mjs`) |
+| B7 | Horizontal rule | in review (branch `task/b7-horizontal-rule`; tests `tests/int/editor-features.int.spec.ts`, `tests/int/document.int.spec.ts`, `tests/e2e/editor/horizontal-rule.spec.mjs`) |
 | B8 | Indent (paragraphs, headings, quotes; list items already nest with Tab since the B5 fix) | todo |
 | B9 | Alignment | todo |
 
