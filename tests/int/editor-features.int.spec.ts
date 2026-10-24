@@ -1,5 +1,5 @@
 import { ListItemNode, ListNode } from '@lexical/list'
-import { HEADING, QUOTE, UNORDERED_LIST } from '@lexical/markdown'
+import { HEADING, ORDERED_LIST, QUOTE, UNORDERED_LIST } from '@lexical/markdown'
 import { ListPlugin } from '@lexical/react/LexicalListPlugin'
 import { HeadingNode, QuoteNode } from '@lexical/rich-text'
 import { describe, expect, it } from 'vitest'
@@ -29,7 +29,7 @@ describe('editor features', () => {
           'blockquote',
         ],
       ],
-      ['lists', ['unorderedList']],
+      ['lists', ['unorderedList', 'orderedList']],
     ])
     expect(slashMenuGroups[0].items.map((i) => i.label)).toContain('Heading 3')
   })
@@ -58,6 +58,21 @@ describe('editor features', () => {
     expect(found('ul')).toEqual(['unorderedList'])
     expect(found('bullet')).toEqual(['unorderedList'])
     expect(slashMenuGroups.find((g) => g.key === 'lists')?.label).toBe('Lists')
+  })
+
+  it('register the "1. " shortcut and find Ordered List as "ol" or "numbered"', () => {
+    expect(markdownTransformers).toContain(ORDERED_LIST)
+    // Dono list features ek hi ListPlugin laate hain, wo ek dafa
+    expect(editorPlugins.filter((p) => p === ListPlugin)).toHaveLength(1)
+    const found = (q: string) =>
+      filterSlashGroups(slashMenuGroups, q).flatMap((g) => g.items.map((i) => i.key))
+    expect(found('ol')).toEqual(['orderedList'])
+    // "ordered" lafz "unordered" me bhi he
+    expect(found('ordered')).toEqual(['unorderedList', 'orderedList'])
+    expect(found('numbered')).toEqual(['orderedList'])
+    expect(found('list')).toEqual(['unorderedList', 'orderedList'])
+    const item = slashMenuGroups.find((g) => g.key === 'lists')?.items[1]
+    expect(item?.label).toBe('Ordered List')
   })
 
   it('find headings in the slash menu by level and by word', () => {

@@ -105,9 +105,9 @@ function NotYetPlugin(): null {
       editor.registerNodeTransform(ParagraphNode, resetLine),
       editor.registerNodeTransform(HeadingNode, resetLine),
       editor.registerNodeTransform(QuoteNode, resetLine),
-      // Numbered (B5) aur check list (B6) se pehle har list bullet list (paste se bhi)
+      // Check list (B6) se pehle check list bullet list ban jati he (paste se bhi)
       editor.registerNodeTransform(ListNode, (node) => {
-        if (node.getListType() !== 'bullet') node.setListType('bullet')
+        if (node.getListType() === 'check') node.setListType('bullet')
       }),
       // List item ka indent = nesting (rehne do); sirf alignment aur tick hatao
       editor.registerNodeTransform(ListItemNode, (node) => {

@@ -9,6 +9,15 @@ export const editorTheme = {
   // Lexical list theme keys; nested = sirf andar wali list rakhne wala item (apna marker nahi)
   list: {
     ul: 'my-3 ml-6 list-disc first:mt-0',
+    ol: 'my-3 ml-6 first:mt-0',
+    // Payload jaisa (owner, B5): har list level ka apna number style — 1. → A. → a. → I. → i.
+    olDepth: [
+      'list-decimal',
+      'list-[upper-alpha]',
+      'list-[lower-alpha]',
+      'list-[upper-roman]',
+      'list-[lower-roman]',
+    ],
     listitem: 'my-1',
     nested: { listitem: 'list-none' },
   },
