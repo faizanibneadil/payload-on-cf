@@ -78,7 +78,8 @@ jobs:
           include-hidden-files: true
           retention-days: 1
 
-  # Browser suite 4 hisson me ek saath (Playwright shards; har spec file apna saaf local DB leti he)
+  # Browser suite 4 hisson me ek saath (Playwright shards; har spec file apna saaf local DB leti he).
+  # Browser: runner ka pehle se install Chrome (`CHROMIUM_PATH`), koi download nahi
   e2e:
     needs: e2e-build
     runs-on: ubuntu-latest
@@ -101,8 +102,17 @@ jobs:
         with:
           name: e2e-worker-build
           path: .open-next
-      - name: Install Chromium for Playwright
-        run: pnpm exec playwright install --with-deps chromium
+      # Runner (ubuntu-latest) par Google Chrome pehle se install he — Playwright ka browser download
+      # nahi karte (owner: har run me install slow he). Na mile to Chromium, warna job ruk jaye.
+      - name: Use the runner's preinstalled Chrome
+        run: |
+          browser=$(command -v google-chrome || command -v google-chrome-stable || command -v chromium || command -v chromium-browser || true)
+          if [ -z "$browser" ]; then
+            echo "No preinstalled Chrome or Chromium on this runner"
+            exit 1
+          fi
+          "$browser" --version
+          echo "CHROMIUM_PATH=$browser" >> "$GITHUB_ENV"
       - name: Browser tests (shard ${{ matrix.shard }}/4)
         run: pnpm exec playwright test --shard=${{ matrix.shard }}/4
       # Fail hone par report (har check, screenshot, video, trace) aur server ke logs
