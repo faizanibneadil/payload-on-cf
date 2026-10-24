@@ -113,6 +113,10 @@ jobs:
           fi
           "$browser" --version
           echo "CHROMIUM_PATH=$browser" >> "$GITHUB_ENV"
+      # Tests har browser window ki video banate hain (fail par report me). Iske liye Playwright ka apna
+      # chhota ffmpeg chahiye jo Chrome ke saath nahi aata — sirf wahi (koi browser nahi), chand second
+      - name: Install Playwright's ffmpeg (videos in failure reports)
+        run: pnpm exec playwright install ffmpeg
       - name: Browser tests (shard ${{ matrix.shard }}/4)
         run: pnpm exec playwright test --shard=${{ matrix.shard }}/4
       # Fail hone par report (har check, screenshot, video, trace) aur server ke logs

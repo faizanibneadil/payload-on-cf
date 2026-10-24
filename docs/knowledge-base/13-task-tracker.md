@@ -73,4 +73,4 @@ When a task changes status, update its row in the same branch/PR.
 ## Infrastructure
 | Id | Task | Status |
 |---|---|---|
-| CI1 | Whole test suite in GitHub Actions before every deploy (dev and main): unit, lint, tsc, browser suite in 4 parallel shards; locally only the tests of changed modules | in review (branch `task/ci1-e2e-in-actions`) |
+| CI1 | Whole test suite in GitHub Actions before every deploy (dev and main): unit, lint, tsc, browser suite in 4 parallel shards; locally only the tests of changed modules | merged (PR #36); first run red: every shard stopped at the first page because Playwright's `ffmpeg` (video recording) was missing -> fix in review, branch `task/ci1-fix-ffmpeg` |
