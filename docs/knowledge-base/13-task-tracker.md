@@ -19,7 +19,7 @@ When a task changes status, update its row in the same branch/PR.
 | B2 | Headings H1-H6 | done (PR #26, fix PR #27: no line under H2; tests `tests/int/editor-features.int.spec.ts`, `tests/e2e/editor/headings.spec.mjs`) |
 | B3 | Quote | done (PR #28; tests `tests/int/editor-features.int.spec.ts`, `tests/e2e/editor/quote.spec.mjs`) |
 | B4 | Bulleted list ("Unordered List") | done (PR #29; tests `tests/int/editor-features.int.spec.ts`, `tests/int/document.int.spec.ts`, `tests/e2e/editor/unordered-list.spec.mjs`) |
-| B5 | Numbered list | todo |
+| B5 | Numbered list ("Ordered List") | in review (branch `task/b5-ordered-list`; tests `tests/int/editor-features.int.spec.ts`, `tests/int/document.int.spec.ts`, `tests/e2e/editor/ordered-list.spec.mjs`) |
 | B6 | Check list | todo |
 | B7 | Horizontal rule | todo |
 | B8 | Indent | todo |

@@ -134,6 +134,38 @@ describe('document validation', () => {
     )
   })
 
+  it('accepts numbered lists with a start number from 1 to 9999', () => {
+    const item = (children: unknown[], value = 1) => ({
+      type: 'listitem',
+      version: 1,
+      value,
+      children,
+    })
+    const list = (children: unknown[], extra: Record<string, unknown> = {}) => ({
+      type: 'list',
+      version: 1,
+      listType: 'number',
+      tag: 'ol',
+      start: 1,
+      children,
+      ...extra,
+    })
+    expect(
+      validateDocument(docOf([list([item([text('One')]), item([list([item([text('A')])])], 2)])])),
+    ).toBe(true)
+    expect(validateDocument(docOf([list([item([text('x')], 3)], { start: 3 })]))).toBe(true)
+    expect(validateDocument(docOf([list([item([text('x')])], { start: 9999 })]))).toBe(true)
+    expect(validateDocument(docOf([list([item([text('x')])], { start: undefined })]))).toBe(true)
+    for (const start of [0, -1, 10000, 1.5, '3']) {
+      expect(validateDocument(docOf([list([item([text('x')])], { start })]))).toBe(
+        'Invalid list start',
+      )
+    }
+    expect(validateDocument(docOf([list([{ ...item([text('x')]), value: 'two' }])]))).toBe(
+      'Invalid list item',
+    )
+  })
+
   it('rejects documents nested too deeply', () => {
     let node: unknown = text('deep')
     for (let i = 0; i <= MAX_DEPTH; i++) node = paragraph([node])

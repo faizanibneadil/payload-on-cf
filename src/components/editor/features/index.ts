@@ -3,6 +3,7 @@ import type { Klass, LexicalEditor, LexicalNode } from 'lexical'
 import type { ComponentType } from 'react'
 import type { SlashMenuGroup } from '../slash-menu/slash-menu-items'
 import { headingFeature } from './heading'
+import { orderedListFeature } from './ordered-list'
 import { paragraphFeature } from './paragraph'
 import { quoteFeature } from './quote'
 import { type EditorFeature, SLASH_GROUPS } from './types'
@@ -14,6 +15,7 @@ export const editorFeatures: EditorFeature[] = [
   headingFeature,
   quoteFeature,
   unorderedListFeature,
+  orderedListFeature,
 ]
 
 // Ek node kai features me ho sakta he (lists) — ek hi dafa register

@@ -57,9 +57,16 @@
 
 ## Unordered list (as built, task B4)
 - `features/unordered-list.ts`: Lexical `ListNode` + `ListItemNode`, markdown `UNORDERED_LIST` (`- `, `* `, `+ `), Lexical `ListPlugin` (features can now bring plugins), slash item "Unordered List" in the **Lists** group (Payload's label; keywords `unordered list`, `ul`, `bullet`), lucide `List` icon.
-- Enter = next item, Enter on an empty item = end of the list, Backspace at the start of the first item = back to a paragraph. Pasted `<ul>` stays a list. Until B5/B6 every list is a bullet list (a pasted `<ol>` becomes bullets, ticks are removed).
+- Enter = next item, Enter on an empty item = end of the list, Backspace at the start of the first item = back to a paragraph. Pasted `<ul>` stays a list. Until B6 a check list becomes a bullet list (ticks removed); numbered lists exist since B5.
 - Look: standard round bullets (disc), indented; nested lists (from paste; Tab nesting comes with indent, B8) have no bullet on the wrapping item, like Lexical.
-- Server: `list` (listType `bullet` for now; children only `listitem`), `listitem` (`checked` boolean if present).
+- Server: `list` (listType `bullet` or `number`; children only `listitem`), `listitem` (`checked` boolean, `value` integer, if present).
+
+## Ordered list (as built, task B5)
+- `features/ordered-list.ts`: same Lexical `ListNode` + `ListItemNode` and `ListPlugin` as B4 (registered once), markdown `ORDERED_LIST` (`<number>. ` at the start of a line), slash item "Ordered List" in the **Lists** group after "Unordered List" (Payload's label, owner; keywords `ordered list`, `ol`, `numbered`), lucide `ListOrdered` icon.
+- Start number (owner): the typed number, like Lexical/Payload: `3. ` starts the list at 3 (next item 4); a pasted `<ol start="5">` keeps 5. Allowed 1-9999: the editor moves anything outside (e.g. `0. `) into that range (`ListStartPlugin`), the server rejects it (`Invalid list start`).
+- Enter / Backspace / undo like the bullet list. A numbered list right after a bullet list stays its own list. Slash menu > Ordered List inside a bullet list turns the whole list into a numbered list (and Unordered List back), Lexical's behaviour. Pasted `<ol>` stays numbered.
+- Look (owner: like Payload): numbers outside the text, indented like bullets; every nesting level has its own style: `1.` -> `A.` -> `a.` -> `I.` -> `i.`, then `1.` again (theme `list.olDepth`, the level counts all list levels like Lexical). An item that only holds a nested list takes no number (Lexical); the read view gives each `<li>` the same `value` and each `<ol>` the same `start`, so visitors see the same numbers.
+- Server: `list.start` integer 1-9999 if present.
 
 ## Inline toolbar (iteration C)
 - **No fixed toolbar.** A floating toolbar appears only on a text selection, positioned at the selection (portal in `body`).
@@ -76,7 +83,7 @@
 Payload's table feature as the model: insert a table, add/remove rows and columns, header row/column, cell merge if Payload offers it.
 
 ## Slash menu (iteration B, extended in F)
-As built (task B1): `src/components/editor/slash-menu/`. Opens on `/` at the start of a line, after a space or after `(` (Payload's trigger); the text after `/` (no spaces, max 75 characters) filters items by label and keywords, ignoring case, spaces, `-` and `_`; no match or a space closes it. Arrow keys / hover highlight, Enter / Tab / click pick (the `/query` text is removed, one undo step), Escape closes and keeps the text. Menu sits under the `/`, groups have a small title, items an icon. Each feature adds its items to a group from its own file in `src/components/editor/features/` (listed in `features/index.ts`); empty groups are hidden. Group keys like Payload: `basic`, `lists`, `blocks`, `inlineBlocks`. Today: Basic > Paragraph, Heading 1-6, Blockquote; Lists > Unordered List. The menu is at most 320 px tall and scrolls (the highlighted item scrolls into view).
+As built (task B1): `src/components/editor/slash-menu/`. Opens on `/` at the start of a line, after a space or after `(` (Payload's trigger); the text after `/` (no spaces, max 75 characters) filters items by label and keywords, ignoring case, spaces, `-` and `_`; no match or a space closes it. Arrow keys / hover highlight, Enter / Tab / click pick (the `/query` text is removed, one undo step), Escape closes and keeps the text. Menu sits under the `/`, groups have a small title, items an icon. Each feature adds its items to a group from its own file in `src/components/editor/features/` (listed in `features/index.ts`); empty groups are hidden. Group keys like Payload: `basic`, `lists`, `blocks`, `inlineBlocks`. Today: Basic > Paragraph, Heading 1-6, Blockquote; Lists > Unordered List, Ordered List. The menu is at most 320 px tall and scrolls (the highlighted item scrolls into view).
 `/` opens a menu at the cursor, filtered while typing, with Payload's categories: basic items (text types, lists, quote, horizontal rule, table), **Blocks**, **Inline blocks**.
 
 ## Blocks and inline blocks (iteration F, canvas in G)

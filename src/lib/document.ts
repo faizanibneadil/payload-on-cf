@@ -30,6 +30,16 @@ const NODE_RULES: Record<string, { children: boolean; check?: (node: DocNode) =>
       children: true,
       check: (node) => {
         if (!LIST_TYPES.has(node.listType as string)) return 'Invalid list type'
+        if (
+          node.start !== undefined &&
+          !(
+            Number.isInteger(node.start) &&
+            (node.start as number) >= LIST_START_MIN &&
+            (node.start as number) <= LIST_START_MAX
+          )
+        ) {
+          return 'Invalid list start'
+        }
         if (!node.children?.every((c) => c?.type === 'listitem')) return 'Invalid list'
         return null
       },
@@ -37,7 +47,8 @@ const NODE_RULES: Record<string, { children: boolean; check?: (node: DocNode) =>
     listitem: {
       children: true,
       check: (node) =>
-        node.checked !== undefined && typeof node.checked !== 'boolean'
+        (node.checked !== undefined && typeof node.checked !== 'boolean') ||
+        (node.value !== undefined && !Number.isInteger(node.value))
           ? 'Invalid list item'
           : null,
     },
@@ -61,8 +72,11 @@ const NODE_RULES: Record<string, { children: boolean; check?: (node: DocNode) =>
     tab: { children: false },
   }
 
-// Har list type apne task me judta he (numbered B5, check B6)
-const LIST_TYPES = new Set(['bullet'])
+// Har list type apne task me judta he (check list B6)
+const LIST_TYPES = new Set(['bullet', 'number'])
+// Numbered list ka shuru number (owner, B5: likha hua number; hadd 1-9999)
+export const LIST_START_MIN = 1
+export const LIST_START_MAX = 9999
 const HEADING_TAGS = new Set(['h1', 'h2', 'h3', 'h4', 'h5', 'h6'])
 
 const isSmallInt = (v: unknown) =>
