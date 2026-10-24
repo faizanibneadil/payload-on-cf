@@ -1,4 +1,4 @@
-# 14. Session handoff (state as of 24 October 2026, end of session)
+# 14. Session handoff (state as of 24 October 2026, end of the second session)
 
 Read this together with `12-owner-rules-and-learnings.md` (owner rules, every past correction) and `13-task-tracker.md` (what is next) before doing anything.
 
@@ -8,8 +8,9 @@ Read this together with `12-owner-rules-and-learnings.md` (owner rules, every pa
 - **B5 numbered list** done (PR #31 + Tab nesting fix PR #32, deployed `bd48e5a`, owner verified).
 - **B6 check list** done (PR #33, deployed `6bc331f`, owner verified).
 - **B7 horizontal rule**: merged (PR #34) + slash search fix merged (PR #35, word-start search); waiting for the owner's check on dev. Owner decisions for B7 are in `12` (label/group, look, word-start search).
-- **CI1** (owner, before B8): whole suite in GitHub Actions before every deploy; locally only the tests of changed modules. Branch `task/ci1-e2e-in-actions`, PR into `dev`.
-- **Next task after B7 is verified: B8 indent** (then B9 alignment; then iteration C inline toolbar). All list guards in `NotYetPlugin` are gone; it still blocks text formats, alignment and indent outside lists.
+- **CI1** done (PR #36 + ffmpeg fix PR #37): the whole suite runs in GitHub Actions before every deploy on `dev` and `main` (unit, lint, tsc, browser suite in 4 parallel shards on the runner's preinstalled Chrome); about 8 min merge to deploy; last run green (`5134aa6`). Locally only the tests of the changed modules (`12`, rules 3, 5, 10).
+- No PR is open. Every branch of this session is merged.
+- **Next: ask the owner whether B7 (horizontal rule + word-start slash search) is OK on dev; then mark B7 `done` and start B8 indent** (then B9 alignment; then iteration C inline toolbar). All list guards in `NotYetPlugin` are gone; it still blocks text formats, alignment and indent outside lists.
 - Open owner decisions: E (boards per day, now 10), F (`*.devslix.com` wildcard; prod workers.dev URL allowed or not), Code block settings (before F4).
 
 ## How a task is done (pattern used for B2-B7)
@@ -37,6 +38,8 @@ Read this together with `12-owner-rules-and-learnings.md` (owner rules, every pa
 - Headless clicks are faster than a person too: after a block (e.g. a horizontal rule) is selected, Lexical moves the cursor to clicked text on `selectionchange`, which a Playwright `click()` (mouse down and up at once) beats, so the cursor seems not to move. Use a click with ~100 ms between mouse down and up (`humanClick` in `horizontal-rule.spec.mjs`); a real click works with one press.
 - `node_modules` may be missing in a fresh container: run `pnpm install` first.
 - Running `pnpm payload migrate` a second time on the local DB stops at a "data loss" prompt, because `pnpm seed:admin` adds a dev marker row (`payload_migrations`, batch -1). Delete that row first; CI is not affected (production mode).
+- Playwright's download CDN (`cdn.playwright.dev`) is blocked in the cloud session (403); locally the browser and ffmpeg come from `/opt/pw-browsers`. In GitHub Actions the e2e job uses the runner's Chrome and installs only Playwright's `ffmpeg` (videos for failure reports).
+- GitHub Actions: run list `curl https://api.github.com/repos/faizanibneadil/payload-on-cf/actions/runs?branch=dev`, jobs `.../actions/runs/<id>/jobs`; logs with the GitHub MCP `get_job_logs` (`run_id` + `failed_only: true`).
 - Known flake (24 Oct 2026, task B4): in two of four full runs `auth-boards.spec` (always the first spec) failed once with the local server going away (`ERR_CONNECTION_REFUSED` on `/admin`) and once with the register dialog not opening (page not hydrated within 5 s); alone it passed 3/3 and the next full run passed 7/7. Not related to the editor code (that spec never loads it). Re-run once; if it fails again, investigate the local workerd, not the app.
 - Dev D1 id `d7951b74-a34d-4a5f-a544-ef4f2e9a6004`. Production D1/R2 and `main` are never touched.
 
