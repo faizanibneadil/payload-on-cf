@@ -8,9 +8,9 @@ Read this together with `12-owner-rules-and-learnings.md` (owner rules, every pa
 - **B5 numbered list** done (PR #31 + Tab nesting fix PR #32, deployed `bd48e5a`, owner verified).
 - **B6 check list** done (PR #33, deployed `6bc331f`, owner verified).
 - **B7 horizontal rule** done (PR #34 + slash search fix PR #35, owner verified on dev).
-- **B8 indent**: built on branch `task/b8-indent`, PR into `dev` waiting for the owner's merge, then the owner's check on dev. Owner decisions for B8 are in `12`.
+- **B8 indent**: built on branch `task/b8-indent`, PR #39 into `dev` waiting for the owner's merge, then the owner's check on dev. Owner decisions for B8 are in `12`.
 - **CI1** done (PR #36 + ffmpeg fix PR #37): the whole suite runs in GitHub Actions before every deploy on `dev` and `main` (unit, lint, tsc, browser suite in 4 parallel shards on the runner's preinstalled Chrome); about 8 min merge to deploy; last run green (`5134aa6`). Locally only the tests of the changed modules (`12`, rules 3, 5, 10).
-- Open PR: B8 indent (`task/b8-indent`).
+- Open PR: #39 B8 indent (`task/b8-indent`).
 - **Next: after the owner merges B8, watch the Actions run; when the owner says B8 is OK on dev, mark B8 `done` and start B9 alignment** (then iteration C inline toolbar). `NotYetPlugin` now blocks only text formats and alignment (the indent guard is gone since B8).
 - Open owner decisions: E (boards per day, now 10), F (`*.devslix.com` wildcard; prod workers.dev URL allowed or not), Code block settings (before F4).
 
