@@ -6,10 +6,11 @@ import type { BoardDocument, DocNode } from '@/lib/document'
  * Document ka read view — server par JSON se seedha React (browser me Lexical ka JS nahi aata).
  * Har naya node type (headings, lists, ...) yahan apna renderer jodta hai; anjaan type kuch nahi dikhata.
  */
-/** List ke andar: kitni lists gehra (1 = bahar wali) aur is item ka number — Lexical jaisa */
+/** List ke andar: kitni lists gehra (1 = bahar wali), is item ka number, check list ka item he ya nahi */
 interface ListContext {
   depth: number
   value?: number
+  check?: boolean
 }
 
 const renderers: Record<
@@ -37,7 +38,14 @@ const renderers: Record<
   list: (node, children, key, { depth }) => {
     if (node.listType !== 'number') {
       return (
-        <ul key={key} className={editorTheme.list.ul}>
+        <ul
+          key={key}
+          className={
+            node.listType === 'check'
+              ? `${editorTheme.list.ul} ${editorTheme.list.checklist}`
+              : editorTheme.list.ul
+          }
+        >
           {children}
         </ul>
       )
@@ -55,18 +63,24 @@ const renderers: Record<
       </ol>
     )
   },
-  listitem: (node, children, key, { value }) => {
-    // Andar wali list rakhne wala item: Lexical jaisa dono classes ("nested" = apna bullet nahi)
+  listitem: (node, children, key, { value, check }) => {
+    // Classes Lexical ki tarteeb me: item, (check list) tick ya khali, (andar wali list rakhe) nested
+    const { list } = editorTheme
     const nested = node.children?.some((c) => c.type === 'list') ?? false
+    const classes = [list.listitem]
+    if (check) classes.push(node.checked ? list.listitemChecked : list.listitemUnchecked)
+    if (nested) classes.push(list.nested.listitem)
+    // Sirf asal item checkbox he (wrapper nahi); visitor ke liye sirf dekhne ka (owner, B6)
+    const box = check && node.children?.[0]?.type !== 'list'
     return (
+      // biome-ignore lint/a11y/useAriaPropsSupportedByRole: role sirf check item par `checkbox` he (Lexical jaisa), tab hi aria-checked
       <li
         key={key}
         value={value}
-        className={
-          nested
-            ? `${editorTheme.list.listitem} ${editorTheme.list.nested.listitem}`
-            : editorTheme.list.listitem
-        }
+        className={classes.join(' ')}
+        role={box ? 'checkbox' : undefined}
+        aria-checked={box ? node.checked === true : undefined}
+        aria-readonly={box ? true : undefined}
       >
         {node.children?.length ? children : <br />}
       </li>
@@ -91,6 +105,7 @@ function renderChildren(nodes: DocNode[] | undefined, depth = 0): ReactNode {
         return renderItem?.(item, renderChildren(item.children, depth + 1), j, {
           depth: depth + 1,
           value: itemValue,
+          check: node.listType === 'check',
         })
       })
       return render(node, items, i, { depth: depth + 1 })

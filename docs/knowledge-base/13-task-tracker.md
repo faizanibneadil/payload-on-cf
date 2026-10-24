@@ -19,8 +19,8 @@ When a task changes status, update its row in the same branch/PR.
 | B2 | Headings H1-H6 | done (PR #26, fix PR #27: no line under H2; tests `tests/int/editor-features.int.spec.ts`, `tests/e2e/editor/headings.spec.mjs`) |
 | B3 | Quote | done (PR #28; tests `tests/int/editor-features.int.spec.ts`, `tests/e2e/editor/quote.spec.mjs`) |
 | B4 | Bulleted list ("Unordered List") | done (PR #29; tests `tests/int/editor-features.int.spec.ts`, `tests/int/document.int.spec.ts`, `tests/e2e/editor/unordered-list.spec.mjs`) |
-| B5 | Numbered list ("Ordered List") | merged (PR #31; owner check on dev found: Tab did not nest list items -> fix in review, branch `task/b5-fix-list-tab`; tests `tests/int/editor-features.int.spec.ts`, `tests/int/document.int.spec.ts`, `tests/e2e/editor/ordered-list.spec.mjs`, `tests/e2e/editor/list-tab.spec.mjs`) |
-| B6 | Check list | todo |
+| B5 | Numbered list ("Ordered List") | done (PR #31, Tab nesting fix PR #32; owner verified on dev; tests `tests/int/editor-features.int.spec.ts`, `tests/int/document.int.spec.ts`, `tests/e2e/editor/ordered-list.spec.mjs`, `tests/e2e/editor/list-tab.spec.mjs`) |
+| B6 | Check list | in review (branch `task/b6-check-list`; tests `tests/int/editor-features.int.spec.ts`, `tests/int/document.int.spec.ts`, `tests/e2e/editor/check-list.spec.mjs`) |
 | B7 | Horizontal rule | todo |
 | B8 | Indent (paragraphs, headings, quotes; list items already nest with Tab since the B5 fix) | todo |
 | B9 | Alignment | todo |

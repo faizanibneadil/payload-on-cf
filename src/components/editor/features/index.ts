@@ -2,6 +2,7 @@ import type { Transformer } from '@lexical/markdown'
 import type { Klass, LexicalEditor, LexicalNode } from 'lexical'
 import type { ComponentType } from 'react'
 import type { SlashMenuGroup } from '../slash-menu/slash-menu-items'
+import { checkListFeature } from './check-list'
 import { headingFeature } from './heading'
 import { orderedListFeature } from './ordered-list'
 import { paragraphFeature } from './paragraph'
@@ -16,6 +17,7 @@ export const editorFeatures: EditorFeature[] = [
   quoteFeature,
   unorderedListFeature,
   orderedListFeature,
+  checkListFeature,
 ]
 
 // Ek node kai features me ho sakta he (lists) — ek hi dafa register

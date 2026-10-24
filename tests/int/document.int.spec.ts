@@ -167,6 +167,36 @@ describe('document validation', () => {
     )
   })
 
+  it('accepts check lists with ticked and open items, also nested', () => {
+    const item = (children: unknown[], checked?: boolean) => ({
+      type: 'listitem',
+      version: 1,
+      value: 1,
+      children,
+      ...(checked === undefined ? {} : { checked }),
+    })
+    const list = (children: unknown[]) => ({
+      type: 'list',
+      version: 1,
+      listType: 'check',
+      children,
+    })
+    expect(
+      validateDocument(
+        docOf([
+          list([
+            item([text('Done')], true),
+            item([text('Open')], false),
+            item([list([item([text('Sub')], false)])]),
+          ]),
+        ]),
+      ),
+    ).toBe(true)
+    expect(validateDocument(docOf([list([item([text('x')], 'yes' as unknown as boolean)])]))).toBe(
+      'Invalid list item',
+    )
+  })
+
   it('accepts lists nested as deep as Tab allows (MAX_LIST_INDENT), not one level more', () => {
     const item = (children: unknown[]) => ({ type: 'listitem', version: 1, value: 1, children })
     const list = (children: unknown[]) => ({

@@ -1,6 +1,6 @@
 'use client'
 
-import { ListItemNode, ListNode } from '@lexical/list'
+import { ListItemNode } from '@lexical/list'
 import { LexicalComposer } from '@lexical/react/LexicalComposer'
 import { useLexicalComposerContext } from '@lexical/react/LexicalComposerContext'
 import { ContentEditable } from '@lexical/react/LexicalContentEditable'
@@ -108,14 +108,9 @@ function NotYetPlugin(): null {
       editor.registerNodeTransform(ParagraphNode, resetLine),
       editor.registerNodeTransform(HeadingNode, resetLine),
       editor.registerNodeTransform(QuoteNode, resetLine),
-      // Check list (B6) se pehle check list bullet list ban jati he (paste se bhi)
-      editor.registerNodeTransform(ListNode, (node) => {
-        if (node.getListType() === 'check') node.setListType('bullet')
-      }),
-      // List item ka indent = nesting (rehne do); sirf alignment aur tick hatao
+      // List item ka indent = nesting (rehne do); sirf alignment hatao
       editor.registerNodeTransform(ListItemNode, (node) => {
         if (node.getFormatType() !== '') node.setFormat('')
-        if (node.getChecked() !== undefined) node.setChecked(undefined)
       }),
     )
   }, [editor])

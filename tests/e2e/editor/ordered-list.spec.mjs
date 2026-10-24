@@ -177,9 +177,10 @@ test('Ordered list: shortcut, start number, Enter/Backspace, slash menu, paste, 
   await menu.waitFor()
   const lists = menu.getByRole('group', { name: 'Lists' })
   check(
-    'Slash menu "Lists" group has "Unordered List" then "Ordered List" (with an icon)',
-    JSON.stringify((await lists.getByRole('option').allInnerTexts()).map((t) => t.trim())) ===
-      JSON.stringify(['Unordered List', 'Ordered List']) &&
+    'Slash menu "Lists" group has "Ordered List" right after "Unordered List" (with an icon)',
+    JSON.stringify(
+      (await lists.getByRole('option').allInnerTexts()).map((t) => t.trim()).slice(0, 2),
+    ) === JSON.stringify(['Unordered List', 'Ordered List']) &&
       (await owner.getByTestId('slash-item-orderedList').locator('svg').count()) === 1,
   )
   await owner.keyboard.type('list')
