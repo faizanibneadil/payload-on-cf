@@ -12,6 +12,7 @@ import {
   markdownTransformers,
   slashMenuGroups,
 } from '@/components/editor/features'
+import { indentFeature } from '@/components/editor/features/indent'
 import { ListTabPlugin } from '@/components/editor/features/list-tab'
 import { filterSlashGroups } from '@/components/editor/slash-menu/slash-menu-items'
 
@@ -114,6 +115,15 @@ describe('editor features', () => {
     expect(found('ul')).not.toContain('horizontalRule')
     expect(found('par')).toEqual(['paragraph'])
     expect(slashMenuGroups[0].items.at(-1)?.label).toBe('Horizontal Rule')
+  })
+
+  it('register the indent plugins (Tab, limit/quote, Escape-then-Tab), with no slash item (B8)', () => {
+    expect(indentFeature.plugins).toHaveLength(3)
+    for (const plugin of indentFeature.plugins ?? []) expect(editorPlugins).toContain(plugin)
+    expect(indentFeature.slashMenu).toBeUndefined()
+    expect(indentFeature.markdown).toBeUndefined()
+    // List ka Tab (nesting) bhi pehle jaisa register
+    expect(editorPlugins).toContain(ListTabPlugin)
   })
 
   it('find headings in the slash menu by level and by word', () => {

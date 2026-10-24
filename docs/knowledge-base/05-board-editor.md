@@ -25,7 +25,7 @@
 ## As built (task A3)
 - Page: the document sits in a centred column (max width 3xl, padding 16-32 px) under the header and scrolls with the page.
 - Owner: the server read view shows first, then the editor chunk replaces it (same classes, nothing moves). Placeholder "Start writing your lecture..." on an empty board; the editor is at least half a screen tall, so a click below the text puts the cursor in it.
-- Only paragraphs for now: Enter = new paragraph, Shift+Enter = line break. Formatting, alignment and indent commands are blocked and pasted rich text arrives as plain paragraphs, until their own tasks enable them.
+- Only paragraphs for now: Enter = new paragraph, Shift+Enter = line break. Formatting and alignment commands are blocked and pasted rich text arrives without them, until their own tasks enable them (indent since B8).
 - Typed text reaches the board 300 ms after typing stops, so "Unsaved changes" shows while still typing; Save and Ctrl/Cmd+S (also inside the editor) include the newest text. Opening a board is never an unsaved change (the editor's normalized document becomes the saved baseline).
 - Undo/redo: Lexical history (Ctrl/Cmd+Z, Ctrl/Cmd+Shift+Z).
 - Visitor of a shared board with no text sees "This board is empty."
@@ -71,7 +71,7 @@
 ## List nesting with Tab (as built, B5 fix)
 - Owner (B5 check on dev): Tab must make a nested list. `features/list-tab.ts` (`ListTabPlugin`, part of both list features): in a list item Tab = one level in, Shift+Tab = one level out (Lexical's list item indent = nesting, like Payload). Works with several items selected, in numbered and bullet lists; the cursor stays in the editor. Enter on an empty nested item moves it one level out (Lexical).
 - Limit: 15 levels (`MAX_LIST_INDENT` in `src/lib/document.ts`, derived from the server's depth limit `MAX_DEPTH` 32), so a nested list always saves; further Tabs do nothing.
-- Outside lists Tab is unchanged (no indent) until task B8; `NotYetPlugin` still blocks indent there.
+- Outside lists Tab indents the line since task B8 (below). The nesting limit is applied by B8's Tab plugin (`maxIndent`), the same limit for list items and lines.
 
 ## Check list (as built, task B6)
 - `features/check-list.ts`: same list nodes, `ListPlugin` and Tab nesting, plus Lexical's `CheckListPlugin`; markdown `CHECK_LIST` (`[ ] ` open, `[x] ` / `[X] ` ticked, at the start of a line), slash item "Check List" in the **Lists** group after "Ordered List" (Payload's label, owner; keywords `check list`, `check`, `checklist`, `cl`), lucide `ListChecks` icon.
@@ -87,6 +87,17 @@
 - Look (owner: like Payload): a 2 px light grey line (`--foreground` at 20%, visible in light and dark), 12 px space above and below, no border; selected = 3 px ring in `--ring`. Classes `board-hr` / `board-hr-selected`, CSS in `src/app/globals.css`.
 - Found with `/hr`, `/horizontal`, `/rule`, `/line`, `/separator` (word-start search, B7 fix); `/ul` finds only Unordered List.
 - Server: `horizontalrule` with no children. A board with only a rule counts as content.
+
+## Indent (as built, task B8)
+- `features/indent.ts` (Payload's IndentFeature as the model; no slash item, no markdown shortcut, like Payload): Lexical's `TabIndentationPlugin` plus our `IndentPlugin` and `EscapeTabPlugin`. Lines that indent (owner): paragraph, heading, quote. List items keep nesting with Tab (`list-tab.ts`, B5 fix).
+- Tab (owner: Payload default): at the start of a line, or with several lines selected, Tab moves the whole line in one level; Tab in the middle or at the end of text inserts a tab character. Shift+Tab always moves the line one level out, wherever the cursor is (owner said "Shift+Tab = out"; Lexical alone would insert a tab character there). In a list Tab / Shift+Tab always nest / un-nest, also in the middle of an item (no tab characters in lists).
+- One level = 24 px (owner: as much as list nesting), CSS variable `--lexical-indent-base-value` on `.board-document` (`globals.css`); Lexical writes `padding-inline-start: calc(n * var(...))` on the line. A quote moves as a whole (margin, its left line too), so it keeps its own inner space (`IndentPlugin` mutation listener; read view the same). Helper `indentSize()` in `theme.ts`, class `board-indent`.
+- Limit (owner): 15 levels like list nesting, i.e. indent 0-14 (`MAX_INDENT` = `MAX_LIST_INDENT` in `src/lib/document.ts`); further Tabs do nothing. Pasted or old lines deeper than that are set to 14 (node transform).
+- Keys (Lexical/Payload): Backspace at the start of an indented line moves it one level out first; Enter at the end of an indented line starts the next line **without** indent (Lexical's `insertNewAfter`, Payload the same); undo/redo per step. Pasted `padding-inline-start` keeps an indent (Lexical's 40 px steps), at most the limit.
+- Tab character width: 4 characters (`tab-size: 4` in `documentClass`, editor and read view). A tab jumps to the next 4-character stop, so after a 3-letter word it is only 1 character wide (normal tab stops).
+- Leaving the editor from the keyboard (owner: Escape then Tab, Payload's way): Escape takes the focus out of the editor (Lexical); the next Tab / Shift+Tab goes to the next / previous control. For that one key the editor gets `tabindex="-1"` (Shift+Tab would otherwise land on the editor again, because the caret is inside it). Escape in the slash menu only closes the menu.
+- Read view: the same padding (quote: margin) as an inline style, so visitors see the same positions.
+- Server: `indent` on paragraph, heading and quote must be an integer 0-14 if present (`Invalid indent`).
 
 ## Inline toolbar (iteration C)
 - **No fixed toolbar.** A floating toolbar appears only on a text selection, positioned at the selection (portal in `body`).

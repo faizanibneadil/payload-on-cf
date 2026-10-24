@@ -1,5 +1,5 @@
 // Task B5 fix: list me Tab = andar wali (nested) list, Shift+Tab = bahar — numbered aur bullet dono,
-// kai items ek saath, hadd, paragraph me Tab pehle jaisa, undo, Save, visitor read view
+// kai items ek saath, hadd, paragraph me Tab = indent (B8), undo, Save, visitor read view
 import { test } from '@playwright/test'
 import { BASE } from '../base.mjs'
 import { recordVideos } from '../contexts.mjs'
@@ -169,18 +169,22 @@ test('List nesting: Tab / Shift+Tab in numbered and bullet lists, limit, save, r
     JSON.stringify(await items()),
   )
 
-  // ---------- Outside lists: unchanged until indent (B8) ----------
+  // ---------- Outside lists: indent (B8, `indent.spec.mjs`), not a list ----------
   await reset()
   await owner.keyboard.type('Plain paragraph')
   await press('Home')
   await press('Tab')
   const para = await editor.evaluate((el) => {
     const p = el.querySelector('p')
-    return { indent: p.style.paddingInlineStart || p.style.textIndent || '', text: p.innerText }
+    return {
+      padding: Math.round(Number.parseFloat(getComputedStyle(p).paddingLeft)),
+      text: p.innerText,
+      lists: el.querySelectorAll('ul, ol').length,
+    }
   })
   check(
-    'Tab in a paragraph does not indent it (indent comes in B8)',
-    para.indent === '' && para.text === 'Plain paragraph',
+    'Tab at the start of a paragraph indents it (B8) and does not make a list',
+    para.padding === 24 && para.text === 'Plain paragraph' && para.lists === 0,
     JSON.stringify(para),
   )
 

@@ -1,4 +1,4 @@
-# 14. Session handoff (state as of 24 October 2026, end of the second session)
+# 14. Session handoff (state as of 24 October 2026, third session: B8)
 
 Read this together with `12-owner-rules-and-learnings.md` (owner rules, every past correction) and `13-task-tracker.md` (what is next) before doing anything.
 
@@ -7,17 +7,18 @@ Read this together with `12-owner-rules-and-learnings.md` (owner rules, every pa
 - Done and verified: Iterations 0, 0b, 1, 2 (accounts, boards, Save/Share/limits); the Playwright Test setup; Iteration A (A1-A3); B1 slash menu, B2 headings (+ fix: no line under H2), B3 quote, B4 unordered list. All merged into `dev` and deployed (last deploy green, commit `97be861`).
 - **B5 numbered list** done (PR #31 + Tab nesting fix PR #32, deployed `bd48e5a`, owner verified).
 - **B6 check list** done (PR #33, deployed `6bc331f`, owner verified).
-- **B7 horizontal rule**: merged (PR #34) + slash search fix merged (PR #35, word-start search); waiting for the owner's check on dev. Owner decisions for B7 are in `12` (label/group, look, word-start search).
+- **B7 horizontal rule** done (PR #34 + slash search fix PR #35, owner verified on dev).
+- **B8 indent**: built on branch `task/b8-indent`, PR #39 into `dev` waiting for the owner's merge, then the owner's check on dev. Owner decisions for B8 are in `12`.
 - **CI1** done (PR #36 + ffmpeg fix PR #37): the whole suite runs in GitHub Actions before every deploy on `dev` and `main` (unit, lint, tsc, browser suite in 4 parallel shards on the runner's preinstalled Chrome); about 8 min merge to deploy; last run green (`5134aa6`). Locally only the tests of the changed modules (`12`, rules 3, 5, 10).
-- No PR is open. Every branch of this session is merged.
-- **Next: ask the owner whether B7 (horizontal rule + word-start slash search) is OK on dev; then mark B7 `done` and start B8 indent** (then B9 alignment; then iteration C inline toolbar). All list guards in `NotYetPlugin` are gone; it still blocks text formats, alignment and indent outside lists.
+- Open PR: #39 B8 indent (`task/b8-indent`).
+- **Next: after the owner merges B8, watch the Actions run; when the owner says B8 is OK on dev, mark B8 `done` and start B9 alignment** (then iteration C inline toolbar). `NotYetPlugin` now blocks only text formats and alignment (the indent guard is gone since B8).
 - Open owner decisions: E (boards per day, now 10), F (`*.devslix.com` wildcard; prod workers.dev URL allowed or not), Code block settings (before F4).
 
 ## How a task is done (pattern used for B2-B7)
 1. Read Payload's feature source (sparse clone, below) for behaviour, label, slash group, keywords, markdown transformer.
 2. Add `src/components/editor/features/<name>.ts` (nodes, `markdown`, `slashMenu`, `plugins`) and list it in `features/index.ts`.
 3. Add the node rule in `src/lib/document.ts` (`NODE_RULES`), the renderer in `src/components/read-view/document-view.tsx`, the classes in `src/components/editor/theme.ts` (editor and read view share them).
-4. If the feature replaces a temporary guard in `NotYetPlugin` (`board-editor.tsx`; e.g. B8 removes the indent block (today it lets only list items through, for Tab nesting), B9 the alignment block, iteration C the text format block) remove that guard and update the tests that checked it (e.g. `basics.spec`).
+4. If the feature replaces a temporary guard in `NotYetPlugin` (`board-editor.tsx`; B8 removed the indent block, B9 removes the alignment block, iteration C the text format block) remove that guard and update the tests that checked it (e.g. `basics.spec`, B8 updated `list-tab.spec`).
 5. Tests (run locally only these and the specs of touched modules; the whole suite runs in Actions): unit (`tests/int/editor-features.int.spec.ts`, `tests/int/document.int.spec.ts`) and one e2e spec `tests/e2e/editor/<name>.spec.mjs` (shortcut, Enter/Backspace, slash menu, undo, paste, look, Save + reload, visitor same look/positions, server rejection, dark screenshot).
 6. Anything the owner did not decide (look, label, behaviour that differs from Payload) -> ask first with options (owner rule; e.g. quote look was asked).
 7. Docs in the same branch: tracker row, `05-board-editor.md` "as built" section, learnings in `12` if the owner decided something, this file.
@@ -36,6 +37,8 @@ Read this together with `12-owner-rules-and-learnings.md` (owner rules, every pa
 - Playwright's own browser is not installed: always pass `CHROMIUM_PATH=/opt/pw-browsers/chromium`. Playwright MCP needs `PLAYWRIGHT_MCP_SANDBOX=false` and `PLAYWRIGHT_MCP_EXECUTABLE_PATH=/opt/pw-browsers/chromium` in this container.
 - Headless typing is faster than a person: after selection-changing keys and before Enter in a menu, tests wait 50-100 ms.
 - Headless clicks are faster than a person too: after a block (e.g. a horizontal rule) is selected, Lexical moves the cursor to clicked text on `selectionchange`, which a Playwright `click()` (mouse down and up at once) beats, so the cursor seems not to move. Use a click with ~100 ms between mouse down and up (`humanClick` in `horizontal-rule.spec.mjs`); a real click works with one press.
+- Keyboard handlers on `document`: Shift+Tab sends a lone `Shift` keydown first; ignore modifier keys before deciding "another key was pressed" (B8 `EscapeTabPlugin` bug found this way). Lexical commands with the same priority run in registration order, and `RichTextPlugin` registers first, so a handler that must see a key RichText also handles (e.g. Escape at `COMMAND_PRIORITY_EDITOR`) needs a higher priority and must return `false`.
+- Lexical's `TabIndentationPlugin` handles `INDENT_CONTENT_COMMAND` at CRITICAL priority for every block, list items included: its `maxIndent` (checked as `new indent < maxIndent`) is the only nesting limit since B8; a guard at a lower priority never runs.
 - `node_modules` may be missing in a fresh container: run `pnpm install` first.
 - Running `pnpm payload migrate` a second time on the local DB stops at a "data loss" prompt, because `pnpm seed:admin` adds a dev marker row (`payload_migrations`, batch -1). Delete that row first; CI is not affected (production mode).
 - Playwright's download CDN (`cdn.playwright.dev`) is blocked in the cloud session (403); locally the browser and ffmpeg come from `/opt/pw-browsers`. In GitHub Actions the e2e job uses the runner's Chrome and installs only Playwright's `ffmpeg` (videos for failure reports).
