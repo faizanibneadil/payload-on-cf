@@ -6,6 +6,8 @@ export const documentClass =
 
 export const editorTheme = {
   paragraph: 'mb-3 last:mb-0',
+  // Owner ka faisla (B3): baen taraf patli line, andar aur italic
+  quote: 'my-4 border-l-2 pl-6 italic first:mt-0',
   // shadcn typography jaisa; pehli line par oopar ka margin nahi
   heading: {
     h1: 'mt-10 mb-4 text-4xl font-extrabold tracking-tight first:mt-0',

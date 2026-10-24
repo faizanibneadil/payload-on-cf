@@ -20,6 +20,11 @@ const renderers: Record<string, (node: DocNode, children: ReactNode, key: number
       </Tag>
     )
   },
+  quote: (node, children, key) => (
+    <blockquote key={key} className={editorTheme.quote}>
+      {node.children?.length ? children : <br />}
+    </blockquote>
+  ),
   text: (node, _children, key) => <span key={key}>{node.text as string}</span>,
   linebreak: (_node, _children, key) => <br key={key} />,
   tab: (_node, _children, key) => <span key={key}>{'\t'}</span>,

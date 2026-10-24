@@ -3,10 +3,11 @@ import type { Klass, LexicalEditor, LexicalNode } from 'lexical'
 import type { SlashMenuGroup } from '../slash-menu/slash-menu-items'
 import { headingFeature } from './heading'
 import { paragraphFeature } from './paragraph'
+import { quoteFeature } from './quote'
 import { type EditorFeature, SLASH_GROUPS } from './types'
 
 /** Editor ke saare features — tarteeb = slash menu me items ki tarteeb */
-export const editorFeatures: EditorFeature[] = [paragraphFeature, headingFeature]
+export const editorFeatures: EditorFeature[] = [paragraphFeature, headingFeature, quoteFeature]
 
 export const editorNodes: Klass<LexicalNode>[] = editorFeatures.flatMap((f) => f.nodes ?? [])
 

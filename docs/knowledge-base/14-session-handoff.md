@@ -5,7 +5,7 @@ Read this together with `12-owner-rules-and-learnings.md` (owner rules, every pa
 ## Where the project stands
 - **Direction changed (owner, October 2026):** the board is no longer an infinite canvas; it is one Lexical document (`05-board-editor.md`). Work is split into small tasks (`13-task-tracker.md`).
 - Done and verified: Iterations 0, 0b, 1, 2 (accounts, boards, Save/Share/limits); the Playwright Test setup.
-- Current task: see `13-task-tracker.md` (Iteration A and B1 done; B2 headings in review; next B3 quote).
+- Current task: see `13-task-tracker.md` (Iteration A, B1, B2 done; B3 quote in review; next B4 bulleted list).
 - Open owner decisions: E (boards per day, now 10), F (`*.devslix.com` wildcard; prod workers.dev URL allowed or not), Code block settings (before F4).
 
 ## How to work here

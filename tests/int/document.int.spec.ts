@@ -106,6 +106,14 @@ describe('document validation', () => {
     )
   })
 
+  it('accepts quotes with text and line breaks', () => {
+    expect(
+      validateDocument(
+        docOf([{ ...paragraph([text('Said'), { type: 'linebreak', version: 1 }]), type: 'quote' }]),
+      ),
+    ).toBe(true)
+  })
+
   it('rejects documents nested too deeply', () => {
     let node: unknown = text('deep')
     for (let i = 0; i <= MAX_DEPTH; i++) node = paragraph([node])

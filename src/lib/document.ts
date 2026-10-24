@@ -25,6 +25,7 @@ const NODE_RULES: Record<string, { children: boolean; check?: (node: DocNode) =>
   {
     root: { children: true },
     paragraph: { children: true },
+    quote: { children: true },
     heading: {
       children: true,
       check: (node) => (HEADING_TAGS.has(node.tag as string) ? null : 'Invalid heading level'),
