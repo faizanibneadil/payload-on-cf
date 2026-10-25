@@ -22,6 +22,7 @@ import { useEffect } from 'react'
 import { useBoard } from '@/components/board/board-store'
 import type { BoardDocument } from '@/lib/document'
 import { editorNodes, editorPlugins, markdownTransformers } from './features'
+import { InlineToolbarPlugin } from './inline-toolbar/inline-toolbar-plugin'
 import { SlashMenuPlugin } from './slash-menu/slash-menu-plugin'
 import { documentClass, editorTheme } from './theme'
 
@@ -74,6 +75,7 @@ export function BoardEditor() {
         <Plugin key={i} />
       ))}
       <SlashMenuPlugin />
+      <InlineToolbarPlugin />
       <NotYetPlugin />
       <BoardSyncPlugin />
     </LexicalComposer>

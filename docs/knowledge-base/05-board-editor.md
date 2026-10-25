@@ -42,7 +42,7 @@
 | Check list | `[ ] `, `[x] ` (Payload's; `- [ ] ` while typing becomes a bullet at `- ` first, in Payload too) |
 | Horizontal rule | `--- ` (three dashes and a space, Payload's) |
 | Indent | Tab / Shift+Tab |
-| Alignment | - (left, center, right, justify) |
+| Alignment | - (left, center, right, justify; from the toolbar, task C10) |
 
 ## Headings (as built, task B2)
 - `features/heading.ts`: Lexical `HeadingNode`, markdown `HEADING` (`# ` to `###### ` at the start of a line), slash items "Heading 1"-"Heading 6" (keywords `heading`, `h1`...), lucide icons.
@@ -104,6 +104,14 @@
 - Items: text type dropdown (paragraph, headings, lists, check list, quote), bold, italic, underline, strikethrough, superscript, subscript, inline code, alignment, indent / outdent, text state (colours), link.
 - Text state: text and background colours from Payload's `defaultColors` (look good in light and dark). Stored as Lexical node state, not as inline CSS.
 - Format shortcuts like Payload/Lexical: `**bold**`, `*italic*`, `~~strike~~`, `` `code` ``; Ctrl/Cmd+B, I, U.
+
+### Toolbar shell (as built, task C1)
+- `src/components/editor/inline-toolbar/`: `toolbar-items.ts` (groups, item type, `buildToolbarGroups`, `toolbarPosition`; no Lexical import) and `inline-toolbar-plugin.tsx` (`InlineToolbarPlugin`, in `board-editor.tsx`, owner only).
+- Each feature adds buttons with `toolbar: { group, items }` (`features/types.ts`); `features/index.ts` builds `toolbarGroups`. Groups in Payload's order (owner): text type | format | link | alignment | indent | colour, a thin vertical line between groups, empty groups hidden. **No buttons -> no toolbar** (C1 has none; Bold comes in C2, owner checks C1 + C2 together).
+- When (owner: like Payload): shows for a text selection (not only spaces) after the mouse is released or with Shift+Arrow; hides when the selection collapses (typing, click), on Escape (Lexical blurs the editor), when the editor loses focus, and while the mouse is pressed for a new selection. Never for visitors (they have no editor).
+- Where (owner): above the selection, centred on it; below when there is no room above (under the header, `h-12`); kept 8 px inside the screen left and right; follows scrolling (fixed position, recalculated on scroll/resize).
+- Look (owner: shadcn): small box with rounded corners, thin border, light shadow, theme background (`bg-popover`, light and dark); 32 px icon buttons (lucide, muted colour; hover/active = `bg-accent`), `aria-pressed` for an applied format; tooltip with the name and shortcut (shadcn Tooltip on Base UI). A click on a button keeps the editor's focus and selection (mouse down is prevented on the toolbar).
+- `role="toolbar"` (`aria-label="Text formatting"`), each group `role="group"`, test ids `inline-toolbar`, `toolbar-<key>`.
 
 ## Links (iteration D)
 - Fields: label (text shown), URL, open in new tab (`target`), `rel` (e.g. `noopener noreferrer`, `nofollow`).
