@@ -74,3 +74,4 @@ When a task changes status, update its row in the same branch/PR.
 | Id | Task | Status |
 |---|---|---|
 | CI1 | Whole test suite in GitHub Actions before every deploy (dev and main): unit, lint, tsc, browser suite in 4 parallel shards; locally only the tests of changed modules | done (PR #36 + fix PR #37: install Playwright's `ffmpeg` for videos; first green run `5134aa6`, about 8 min merge to deploy; owner: "nice work") |
+| CI2 | Test server logs in the job output when a browser shard fails (`Show test server logs` step, `tests/e2e/server.sh logs`); every server's log of a run is kept (`preview-history.log`), so the failing spec's log is not overwritten by the next spec. To find out why the local test server sometimes stops in `auth-boards.spec` (flake) | in review (branch `task/ci2-server-logs`) |
