@@ -1,5 +1,7 @@
 # 13. Task tracker
 
+> **25 Oct 2026: on hold for re-planning.** The owner changed direction (`15-direction-payload-richtext.md`): the board moves to Payload's own rich text (`richText` field, Payload features, blocks). Iterations B-G below were planned for our own Lexical build and will be replaced by a new task list after the next session explains the Payload approach and the owner answers the open questions. Rows below are kept as history.
+
 One feature = one task. Flow (standing rule 9 in `12`): branch `task/<id>-<name>` from the latest `dev` -> build + tests -> push -> PR into `dev` -> **owner merges** -> CI deploys dev -> owner checks -> mark `done` here -> next task.
 
 Status: `todo` -> `in progress` -> `in review` (PR open) -> `merged` (owner merged, deployed to dev) -> `done` (owner verified on dev).
@@ -31,7 +33,7 @@ When a task changes status, update its row in the same branch/PR.
 | C1 | Toolbar shell (shows on selection, positioned at it) | done (PR #40; owner verified on dev together with C2; tests `tests/int/inline-toolbar.int.spec.ts`, `tests/e2e/editor/inline-toolbar.spec.mjs`) |
 | C2 | Bold | done (PR #41; owner verified on dev; tests `tests/int/editor-features.int.spec.ts`, `tests/int/document.int.spec.ts`, `tests/int/inline-toolbar.int.spec.ts`, `tests/e2e/editor/bold.spec.mjs`, `tests/e2e/editor/inline-toolbar.spec.mjs`) |
 | C3 | Italic | done (PR #42; owner verified on dev; tests `tests/int/editor-features.int.spec.ts`, `tests/int/document.int.spec.ts`, `tests/int/inline-toolbar.int.spec.ts`, `tests/e2e/editor/italic.spec.mjs`; `basics`/`bold` specs updated) |
-| C4 | Underline | in review (branch `task/c4-underline`; tests `tests/int/*` (formats, toolbar order), `tests/e2e/editor/underline.spec.mjs`; `basics`/`bold`/`italic` specs now use strikethrough as the not-yet-built format) |
+| C4 | Underline | merged (PR #43, deployed to dev after two re-runs; owner check pending, likely superseded by `15`; tests `tests/int/*` (formats, toolbar order), `tests/e2e/editor/underline.spec.mjs`; `basics`/`bold`/`italic` specs now use strikethrough as the not-yet-built format) |
 | C5 | Strikethrough | todo |
 | C6 | Superscript | todo |
 | C7 | Subscript | todo |
@@ -74,4 +76,4 @@ When a task changes status, update its row in the same branch/PR.
 | Id | Task | Status |
 |---|---|---|
 | CI1 | Whole test suite in GitHub Actions before every deploy (dev and main): unit, lint, tsc, browser suite in 4 parallel shards; locally only the tests of changed modules | done (PR #36 + fix PR #37: install Playwright's `ffmpeg` for videos; first green run `5134aa6`, about 8 min merge to deploy; owner: "nice work") |
-| CI2 | Test server logs in the job output when a browser shard fails (`Show test server logs` step, `tests/e2e/server.sh logs`); every server's log of a run is kept (`preview-history.log`), so the failing spec's log is not overwritten by the next spec. To find out why the local test server sometimes stops in `auth-boards.spec` (flake) | in review (branch `task/ci2-server-logs`) |
+| CI2 | Test server logs in the job output when a browser shard fails (`Show test server logs` step, `tests/e2e/server.sh logs`); every server's log of a run is kept (`preview-history.log`), so the failing spec's log is not overwritten by the next spec. To find out why the local test server sometimes stops in `auth-boards.spec` (flake) | merged (PR #44). Its merge run was red: `auth-boards` (test server `wrangler dev` crashed, now visible in the log) and a flaky `inline-toolbar` check; deploy skipped, app unchanged. See `15` (open CI issues) |

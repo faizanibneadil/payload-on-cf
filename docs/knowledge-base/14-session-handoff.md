@@ -1,23 +1,16 @@
-# 14. Session handoff (state as of 24 October 2026, third session: B8)
+# 14. Session handoff (state as of 25 October 2026, end of the third session)
 
 Read this together with `12-owner-rules-and-learnings.md` (owner rules, every past correction) and `13-task-tracker.md` (what is next) before doing anything.
 
 ## Where the project stands
-- **Direction changed (owner, October 2026):** the board is no longer an infinite canvas; it is one Lexical document (`05-board-editor.md`). Work is split into small tasks (`13-task-tracker.md`).
-- Done and verified: Iterations 0, 0b, 1, 2 (accounts, boards, Save/Share/limits); the Playwright Test setup; Iteration A (A1-A3); B1 slash menu, B2 headings (+ fix: no line under H2), B3 quote, B4 unordered list. All merged into `dev` and deployed (last deploy green, commit `97be861`).
-- **B5 numbered list** done (PR #31 + Tab nesting fix PR #32, deployed `bd48e5a`, owner verified).
-- **B6 check list** done (PR #33, deployed `6bc331f`, owner verified).
-- **B7 horizontal rule** done (PR #34 + slash search fix PR #35, owner verified on dev).
-- **B8 indent** done (PR #39, owner tested live). **B9 alignment** moved into C10 (owner: toolbar first; decisions in `12`).
-- **C1 toolbar shell** and **C2 Bold** done (PRs #40, #41, owner verified on dev).
-- **C3 Italic** done (PR #42, owner verified).
-- **C4 Underline**: branch `task/c4-underline`, PR into `dev`, waiting for the owner's merge and check.
-- **CI1** done (PR #36 + ffmpeg fix PR #37): the whole suite runs in GitHub Actions before every deploy on `dev` and `main` (unit, lint, tsc, browser suite in 4 parallel shards on the runner's preinstalled Chrome); about 8 min merge to deploy; last run green (`5134aa6`). Locally only the tests of the changed modules (`12`, rules 3, 5, 10).
-- Open PRs: C4 Underline is merged and deployed (after re-runs); CI2 test server logs (`task/ci2-server-logs`).
-- **Next: after the owner checks C4 on dev, C5 Strikethrough** (then C6-C11). Lexical uses one class `underlineStrikethrough` for underline + strikethrough together (theme key), so C5 must add that class too. C5's specs need a new not-yet-built format for the old checks (subscript/superscript: bits 32/64, `<sub>`/`<sup>`). A format task = a feature file with `textFormats: ['<format>']`, its markdown transformers, a `toolbar` item in the `format` group; add its bit to `TEXT_FORMAT_BITS` in `src/lib/document.ts`, its class to `theme.text`, its tag to the read view's `text` renderer; tests like `bold.spec.mjs`. Text-format markdown shortcuts are sorted longest mark first automatically.
-- Open owner decisions: E (boards per day, now 10), F (`*.devslix.com` wildcard; prod workers.dev URL allowed or not), Code block settings (before F4).
+- **25 Oct 2026, end of the third session: direction change.** The owner wants the board built on **Payload's own rich text** (`@payloadcms/richtext-lexical`: its editor, features, blocks, inline blocks, Views; board content = Payload `richText` field so boards work in the admin too), on the Cloudflare Workers **paid plan**. Everything about it, the questions to ask and how to start: `15-direction-payload-richtext.md`. **Do not continue the old task list (C5 strikethrough etc.).**
+- `dev` = `8c31e44` (+ this docs PR). Deployed on dev: accounts, boards, Save/Share/limits, and our own Lexical editor with headings, quote, bullet/numbered/check lists, horizontal rule, indent (B8), inline toolbar (C1), bold (C2), italic (C3), underline (C4; deployed after two re-runs, the owner has not checked it).
+- Owner verified: everything up to C3. B9 alignment was moved into C10 (decisions in `12`), now part of the re-plan.
+- CI: CI1 (whole suite before deploy) and CI2 (test server logs printed on a failed shard) are merged. Last run (`40188694167`, merge of PR #44) is red: `auth-boards` flake (the test server `wrangler dev` itself crashed, see `15`) and a flaky check in `inline-toolbar.spec`; deploy skipped, app unchanged. Fix only with the owner's OK.
+- No PR open except the docs PR of this hand-off.
+- Open owner decisions: everything in `15` ("Questions"), plus E (boards per day) and F (`*.devslix.com`).
 
-## How a task is done (pattern used for B2-B7)
+## How a task is done (pattern used for B2-C4, our own Lexical build; superseded by `15`, keep only the flow: study, ask, build, test, docs)
 1. Read Payload's feature source (sparse clone, below) for behaviour, label, slash group, keywords, markdown transformer.
 2. Add `src/components/editor/features/<name>.ts` (nodes, `markdown`, `slashMenu`, `plugins`) and list it in `features/index.ts`.
 3. Add the node rule in `src/lib/document.ts` (`NODE_RULES`), the renderer in `src/components/read-view/document-view.tsx`, the classes in `src/components/editor/theme.ts` (editor and read view share them).

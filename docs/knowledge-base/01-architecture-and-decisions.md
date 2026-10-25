@@ -1,5 +1,7 @@
 # 01. Architecture and fixed decisions
 
+> **25 Oct 2026: the Editor, Storage and Workers plan rows are changing** (owner: Payload's own rich text, `richText` field, paid plan). Read `15-direction-payload-richtext.md` first; it wins over this file until this file is rewritten.
+
 > Status: rewritten for the board editor (owner decision, October 2026). The board is one Lexical document; the infinite canvas is removed (task A3). Tasks and their status: `13-task-tracker.md`.
 
 ## Product
