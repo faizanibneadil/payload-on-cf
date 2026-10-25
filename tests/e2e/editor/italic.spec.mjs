@@ -82,7 +82,8 @@ test('Italic: shortcut, toolbar, markdown, bold-italic, quote, paste, save, read
       await owner
         .getByTestId('inline-toolbar')
         .evaluate((el) => [...el.querySelectorAll('button')].map((b) => b.dataset.testid)),
-    ) === '["toolbar-bold","toolbar-italic"]',
+      // Italic, Bold ke foran baad (aage ke buttons is check ko na todein)
+    ).includes('"toolbar-bold","toolbar-italic"'),
   )
   await button.click()
   await settle()
@@ -180,14 +181,14 @@ test('Italic: shortcut, toolbar, markdown, bold-italic, quote, paste, save, read
     )
   await reset()
   await paste(
-    '<p>One <i>i tag</i>, <em>em tag</em>, <span style="font-style:italic">docs</span> and <u>under</u></p>',
-    'One i tag, em tag, docs and under',
+    '<p>One <i>i tag</i>, <em>em tag</em>, <span style="font-style:italic">docs</span> and <s>strike</s></p>',
+    'One i tag, em tag, docs and strike',
   )
   await settle()
   check(
-    'Pasted <i>, <em> and font-style italic stay italic; underline is dropped (not built yet)',
+    'Pasted <i>, <em> and font-style italic stay italic; strikethrough is dropped (not built yet)',
     JSON.stringify(await italics()) === '["i tag","em tag","docs"]' &&
-      (await editor.locator('u').count()) === 0,
+      !/<s\b|line-through/.test(await editor.innerHTML()),
     JSON.stringify(await italics()),
   )
 

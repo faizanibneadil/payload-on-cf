@@ -99,7 +99,7 @@ export const LIST_START_MAX = 9999
 const HEADING_TAGS = new Set(['h1', 'h2', 'h3', 'h4', 'h5', 'h6'])
 
 // Text ke formats (Lexical ke bits) jo board me aa sakte hain — har format task (C2-C8) apna bit jodta he
-export const TEXT_FORMAT_BITS = { bold: 1, italic: 2 } as const
+export const TEXT_FORMAT_BITS = { bold: 1, italic: 2, underline: 8 } as const
 export const ALLOWED_TEXT_FORMAT = Object.values(TEXT_FORMAT_BITS).reduce((a, b) => a | b, 0)
 
 const isSmallInt = (v: unknown) =>

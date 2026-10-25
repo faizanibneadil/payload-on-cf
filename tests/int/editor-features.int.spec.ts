@@ -141,8 +141,8 @@ describe('editor features', () => {
     expect(editorPlugins).toContain(ListTabPlugin)
   })
 
-  it('enable bold and italic with their shortcuts, matching the server (C2, C3)', () => {
-    expect([...enabledTextFormats]).toEqual(['bold', 'italic'])
+  it('enable bold, italic and underline, matching the server (C2-C4)', () => {
+    expect([...enabledTextFormats]).toEqual(['bold', 'italic', 'underline'])
     for (const t of [
       BOLD_STAR,
       BOLD_UNDERSCORE,
@@ -155,7 +155,7 @@ describe('editor features', () => {
     }
     // Editor jo formats rakhta he, server bhi wahi qubool kare
     expect(enabledTextFormatMask).toBe(ALLOWED_TEXT_FORMAT)
-    expect(enabledTextFormatMask).toBe(3)
+    expect(enabledTextFormatMask).toBe(11)
   })
 
   it('check longer format marks first: *** before ** before * (C3)', () => {

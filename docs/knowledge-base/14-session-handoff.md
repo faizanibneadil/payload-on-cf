@@ -10,10 +10,11 @@ Read this together with `12-owner-rules-and-learnings.md` (owner rules, every pa
 - **B7 horizontal rule** done (PR #34 + slash search fix PR #35, owner verified on dev).
 - **B8 indent** done (PR #39, owner tested live). **B9 alignment** moved into C10 (owner: toolbar first; decisions in `12`).
 - **C1 toolbar shell** and **C2 Bold** done (PRs #40, #41, owner verified on dev).
-- **C3 Italic**: branch `task/c3-italic`, PR into `dev`, waiting for the owner's merge and check.
+- **C3 Italic** done (PR #42, owner verified).
+- **C4 Underline**: branch `task/c4-underline`, PR into `dev`, waiting for the owner's merge and check.
 - **CI1** done (PR #36 + ffmpeg fix PR #37): the whole suite runs in GitHub Actions before every deploy on `dev` and `main` (unit, lint, tsc, browser suite in 4 parallel shards on the runner's preinstalled Chrome); about 8 min merge to deploy; last run green (`5134aa6`). Locally only the tests of the changed modules (`12`, rules 3, 5, 10).
-- Open PR: C3 Italic.
-- **Next: after the owner checks C3 on dev, C4 Underline** (then C5-C11). A format task = a feature file with `textFormats: ['<format>']`, its markdown transformers, a `toolbar` item in the `format` group; add its bit to `TEXT_FORMAT_BITS` in `src/lib/document.ts`, its class to `theme.text`, its tag to the read view's `text` renderer; tests like `bold.spec.mjs`. Text-format markdown shortcuts are sorted longest mark first automatically.
+- Open PR: C4 Underline.
+- **Next: after the owner checks C4 on dev, C5 Strikethrough** (then C6-C11). Lexical uses one class `underlineStrikethrough` for underline + strikethrough together (theme key), so C5 must add that class too. C5's specs need a new not-yet-built format for the old checks (subscript/superscript: bits 32/64, `<sub>`/`<sup>`). A format task = a feature file with `textFormats: ['<format>']`, its markdown transformers, a `toolbar` item in the `format` group; add its bit to `TEXT_FORMAT_BITS` in `src/lib/document.ts`, its class to `theme.text`, its tag to the read view's `text` renderer; tests like `bold.spec.mjs`. Text-format markdown shortcuts are sorted longest mark first automatically.
 - Open owner decisions: E (boards per day, now 10), F (`*.devslix.com` wildcard; prod workers.dev URL allowed or not), Code block settings (before F4).
 
 ## How a task is done (pattern used for B2-B7)

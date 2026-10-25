@@ -99,13 +99,18 @@ const renderers: Record<
   },
   horizontalrule: (_node, _children, key) => <hr key={key} className={editorTheme.hr} />,
   text: (node, _children, key) => {
-    // Editor (Lexical) jaisa: bold = <strong>, warna italic = <em>; dono ki theme classes
+    // Editor (Lexical) jaisa: bold = <strong>, warna italic = <em>, warna <span>; har format ki theme class
     const format = typeof node.format === 'number' ? node.format : 0
-    const bold = (format & TEXT_FORMAT_BITS.bold) !== 0
-    const italic = (format & TEXT_FORMAT_BITS.italic) !== 0
+    const has = (bit: number) => (format & bit) !== 0
+    const bold = has(TEXT_FORMAT_BITS.bold)
+    const italic = has(TEXT_FORMAT_BITS.italic)
     const Tag = bold ? 'strong' : italic ? 'em' : 'span'
     const className =
-      [bold && editorTheme.text.bold, italic && editorTheme.text.italic]
+      [
+        bold && editorTheme.text.bold,
+        italic && editorTheme.text.italic,
+        has(TEXT_FORMAT_BITS.underline) && editorTheme.text.underline,
+      ]
         .filter(Boolean)
         .join(' ') || undefined
     return (
