@@ -21,7 +21,13 @@ import {
 import { useEffect } from 'react'
 import { useBoard } from '@/components/board/board-store'
 import type { BoardDocument } from '@/lib/document'
-import { editorNodes, editorPlugins, markdownTransformers } from './features'
+import {
+  editorNodes,
+  editorPlugins,
+  enabledTextFormatMask,
+  enabledTextFormats,
+  markdownTransformers,
+} from './features'
 import { InlineToolbarPlugin } from './inline-toolbar/inline-toolbar-plugin'
 import { SlashMenuPlugin } from './slash-menu/slash-menu-plugin'
 import { documentClass, editorTheme } from './theme'
@@ -31,8 +37,8 @@ const SYNC_DELAY_MS = 300
 
 /**
  * Board ka Lexical editor (sirf owner/admin). Features (`./features`) apne nodes, markdown shortcuts aur
- * slash menu items laate hain. Formatting aur alignment apne apne task me aayenge, tab tak band hain
- * (paste ya shortcut se bhi na aayen).
+ * slash menu items laate hain. Text formats sirf wahi jo features ne chalu kiye (C2 se bold); alignment
+ * apne task me — tab tak band (paste ya shortcut se bhi na aayen).
  */
 export function BoardEditor() {
   const { initialDoc } = useBoard()
@@ -86,17 +92,27 @@ const resetAlignment = (node: ElementNode) => {
   if (node.getFormatType() !== '') node.setFormat('')
 }
 
-/** Jo abhi bane nahi: bold/italic, alignment waghera ke commands aur paste ka style/format hatao */
+/** Jo abhi bane nahi: baqi text formats, alignment waghera ke commands aur paste ka style/format hatao */
 function NotYetPlugin(): null {
   const [editor] = useLexicalComposerContext()
   useEffect(() => {
     const block = () => true
     return mergeRegister(
-      editor.registerCommand(FORMAT_TEXT_COMMAND, block, COMMAND_PRIORITY_CRITICAL),
+      editor.registerCommand(
+        FORMAT_TEXT_COMMAND,
+        (format) => !enabledTextFormats.has(format),
+        COMMAND_PRIORITY_CRITICAL,
+      ),
       editor.registerCommand(FORMAT_ELEMENT_COMMAND, block, COMMAND_PRIORITY_CRITICAL),
       editor.registerNodeTransform(TextNode, (node) => {
-        if (node.getFormat() !== 0) node.setFormat(0)
+        const format = node.getFormat()
+        if (format & ~enabledTextFormatMask) node.setFormat(format & enabledTextFormatMask)
         if (node.getStyle() !== '') node.setStyle('')
+      }),
+      // Khali line ka "agla likha text bold" wala format bhi sirf chalu formats
+      editor.registerNodeTransform(ParagraphNode, (node) => {
+        const format = node.getTextFormat()
+        if (format & ~enabledTextFormatMask) node.setTextFormat(format & enabledTextFormatMask)
       }),
       // Alignment (B9) se pehle har line baen taraf (indent B8 se asal feature he)
       editor.registerNodeTransform(ParagraphNode, resetAlignment),

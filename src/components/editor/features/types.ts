@@ -1,5 +1,5 @@
 import type { Transformer } from '@lexical/markdown'
-import type { Klass, LexicalEditor, LexicalNode } from 'lexical'
+import type { Klass, LexicalEditor, LexicalNode, TextFormatType } from 'lexical'
 import type { ComponentType } from 'react'
 import type { ToolbarGroupKey, ToolbarItem } from '../inline-toolbar/toolbar-items'
 import type { SlashMenuItem } from '../slash-menu/slash-menu-items'
@@ -27,6 +27,8 @@ export interface EditorFeature {
   slashMenu?: { group: SlashGroupKey; items: SlashMenuItem<LexicalEditor>[] }
   /** Inline toolbar ke buttons, apne group me (Payload ki tarteeb, `TOOLBAR_GROUPS`) */
   toolbar?: { group: ToolbarGroupKey; items: ToolbarItem<LexicalEditor>[] }
+  /** Text ke formats jo ye feature chalu karta he (baqi `NotYetPlugin` hata deta he) */
+  textFormats?: TextFormatType[]
   /** Lexical plugins jo is feature ko chahiyen (jaise lists ka ListPlugin) */
   plugins?: ComponentType[]
 }

@@ -76,12 +76,12 @@ test('Board editor basics: write, save, reload, visitor read view, validation', 
     JSON.stringify(await paragraphs()),
   )
 
-  // ---------- Formatting abhi band (apne task me aayegi) ----------
-  await owner.keyboard.press('ControlOrMeta+b')
+  // ---------- Baqi formatting abhi band (bold C2 se, `bold.spec`; italic waghera apne task me) ----------
+  await owner.keyboard.press('ControlOrMeta+i')
   await owner.keyboard.type(' plain')
   await settle()
   check(
-    'Ctrl+B does not format yet (bold comes in its own task)',
+    'Ctrl+I does not format yet (italic comes in its own task)',
     (await editor.locator('strong, b, em, i, u, s, code').count()) === 0,
   )
   await owner.keyboard.press('Enter')
@@ -95,10 +95,11 @@ test('Board editor basics: write, save, reload, visitor read view, validation', 
   await settle()
   const pastedHtml = await editor.innerHTML()
   check(
-    // Headings task B2 se paste me rehti hain (headings.spec); bold/italic/rang abhi nahi
-    'Pasted rich text arrives without bold, italic or colours',
+    // Headings B2 se, bold C2 se paste me rehte hain; italic/rang abhi nahi
+    'Pasted rich text keeps bold but arrives without italic or colours',
     /Pasted bold/.test(await editor.innerText()) &&
-      !/<(strong|b|em|i)\b/.test(pastedHtml) &&
+      /<strong\b/.test(pastedHtml) &&
+      !/<(em|i)\b/.test(pastedHtml) &&
       !/color/.test(pastedHtml),
     pastedHtml.slice(0, 300),
   )

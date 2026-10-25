@@ -54,8 +54,11 @@ describe('inline toolbar groups', () => {
     expect(buildToolbarGroups([])).toEqual([])
   })
 
-  it('has no buttons yet in C1 (Bold comes in C2), so no toolbar shows', () => {
-    expect(toolbarGroups).toEqual([])
+  it('has the Bold button in the format group (C2)', () => {
+    expect(toolbarGroups.map((g) => [g.key, g.items.map((i) => i.key)])).toEqual([
+      ['format', ['bold']],
+    ])
+    expect(toolbarGroups[0].items[0]).toMatchObject({ label: 'Bold', shortcut: 'Mod+B' })
   })
 })
 

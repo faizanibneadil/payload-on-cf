@@ -20,7 +20,7 @@ export interface ToolbarItem<TEditor = unknown> {
   key: string
   /** Tooltip aur `aria-label` */
   label: string
-  /** Tooltip me shortcut, jaise "Ctrl+B" */
+  /** Tooltip me shortcut; "Mod+B" = Mac par ⌘B, baqi par Ctrl+B */
   shortcut?: string
   icon: LucideIcon
   /** Selection par ye format laga hua he? (Lexical `read` ke andar bulaya jata he) */

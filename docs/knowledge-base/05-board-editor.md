@@ -112,6 +112,13 @@
 - Where (owner): above the selection, centred on it; below when there is no room above (under the header, `h-12`); kept 8 px inside the screen left and right; follows scrolling (fixed position, recalculated on scroll/resize).
 - Look (owner: shadcn): small box with rounded corners, thin border, light shadow, theme background (`bg-popover`, light and dark); 32 px icon buttons (lucide, muted colour; hover/active = `bg-accent`), `aria-pressed` for an applied format; tooltip with the name and shortcut (shadcn Tooltip on Base UI). A click on a button keeps the editor's focus and selection (mouse down is prevented on the toolbar).
 - `role="toolbar"` (`aria-label="Text formatting"`), each group `role="group"`, test ids `inline-toolbar`, `toolbar-<key>`.
+- The first line of the board has no room above (header), so its toolbar shows below the selection.
+
+### Bold (as built, task C2)
+- `features/bold.ts` (Payload's BoldFeature): toolbar button "Bold" first in the format group (lucide `Bold`, tooltip `Ctrl+B`, `⌘B` on a Mac), Ctrl/Cmd+B (Lexical), markdown `**text**` and `__text__` while typing (Payload; `***` bold-italic comes with italic, C3). With no selection Ctrl/Cmd+B makes the next typed text bold.
+- Text formats are switched on per feature (`textFormats` in the feature file). `NotYetPlugin` lets only those through (commands, paste, shortcuts) and strips the other bits from text and from an empty line's typing format; the server's `ALLOWED_TEXT_FORMAT` (`src/lib/document.ts`, `TEXT_FORMAT_BITS`) must match (unit test) and rejects other bits (`Invalid text format`).
+- Pasted `<b>`, `<strong>` and `font-weight: 700` (Google Docs) stay bold.
+- Look: `<strong>` with `font-weight: bolder` (theme `text.bold`): 700 in normal text like Payload, and still heavier than a heading inside headings (Payload's plain `bold` would make bold text lighter than an H1). The read view renders the same `<strong>`.
 
 ## Links (iteration D)
 - Fields: label (text shown), URL, open in new tab (`target`), `rel` (e.g. `noopener noreferrer`, `nofollow`).

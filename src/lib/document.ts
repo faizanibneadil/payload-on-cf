@@ -77,7 +77,12 @@ const NODE_RULES: Record<string, { children: boolean; check?: (node: DocNode) =>
         if (node.text.length > MAX_TEXT_CHARS) {
           return `A piece of text can have at most ${MAX_TEXT_CHARS} characters`
         }
-        if (node.format !== undefined && !isSmallInt(node.format)) return 'Invalid text format'
+        if (
+          node.format !== undefined &&
+          (!isSmallInt(node.format) || ((node.format as number) & ~ALLOWED_TEXT_FORMAT) !== 0)
+        ) {
+          return 'Invalid text format'
+        }
         if (node.style !== undefined && typeof node.style !== 'string') return 'Invalid text style'
         return null
       },
@@ -92,6 +97,10 @@ const LIST_TYPES = new Set(['bullet', 'number', 'check'])
 export const LIST_START_MIN = 1
 export const LIST_START_MAX = 9999
 const HEADING_TAGS = new Set(['h1', 'h2', 'h3', 'h4', 'h5', 'h6'])
+
+// Text ke formats (Lexical ke bits) jo board me aa sakte hain — har format task (C2-C8) apna bit jodta he
+export const TEXT_FORMAT_BITS = { bold: 1 } as const
+export const ALLOWED_TEXT_FORMAT = Object.values(TEXT_FORMAT_BITS).reduce((a, b) => a | b, 0)
 
 const isSmallInt = (v: unknown) =>
   typeof v === 'number' && Number.isInteger(v) && v >= 0 && v < 2 ** 16
