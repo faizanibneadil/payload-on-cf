@@ -19,6 +19,7 @@ import { orderedListFeature } from './ordered-list'
 import { paragraphFeature } from './paragraph'
 import { quoteFeature } from './quote'
 import { type EditorFeature, SLASH_GROUPS } from './types'
+import { underlineFeature } from './underline'
 import { unorderedListFeature } from './unordered-list'
 
 /** Editor ke saare features — tarteeb = slash menu me items ki tarteeb */
@@ -33,6 +34,7 @@ export const editorFeatures: EditorFeature[] = [
   indentFeature,
   boldFeature,
   italicFeature,
+  underlineFeature,
 ]
 
 // Ek node kai features me ho sakta he (lists) — ek hi dafa register

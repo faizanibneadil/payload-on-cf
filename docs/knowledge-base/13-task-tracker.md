@@ -30,8 +30,8 @@ When a task changes status, update its row in the same branch/PR.
 |---|---|---|
 | C1 | Toolbar shell (shows on selection, positioned at it) | done (PR #40; owner verified on dev together with C2; tests `tests/int/inline-toolbar.int.spec.ts`, `tests/e2e/editor/inline-toolbar.spec.mjs`) |
 | C2 | Bold | done (PR #41; owner verified on dev; tests `tests/int/editor-features.int.spec.ts`, `tests/int/document.int.spec.ts`, `tests/int/inline-toolbar.int.spec.ts`, `tests/e2e/editor/bold.spec.mjs`, `tests/e2e/editor/inline-toolbar.spec.mjs`) |
-| C3 | Italic | in review (branch `task/c3-italic`; tests `tests/int/editor-features.int.spec.ts`, `tests/int/document.int.spec.ts`, `tests/int/inline-toolbar.int.spec.ts`, `tests/e2e/editor/italic.spec.mjs`; `basics`/`bold` specs updated) |
-| C4 | Underline | todo |
+| C3 | Italic | done (PR #42; owner verified on dev; tests `tests/int/editor-features.int.spec.ts`, `tests/int/document.int.spec.ts`, `tests/int/inline-toolbar.int.spec.ts`, `tests/e2e/editor/italic.spec.mjs`; `basics`/`bold` specs updated) |
+| C4 | Underline | in review (branch `task/c4-underline`; tests `tests/int/*` (formats, toolbar order), `tests/e2e/editor/underline.spec.mjs`; `basics`/`bold`/`italic` specs now use strikethrough as the not-yet-built format) |
 | C5 | Strikethrough | todo |
 | C6 | Superscript | todo |
 | C7 | Subscript | todo |

@@ -54,10 +54,11 @@ describe('inline toolbar groups', () => {
     expect(buildToolbarGroups([])).toEqual([])
   })
 
-  it('has Bold, then Italic in the format group (C2, C3)', () => {
+  it('has Bold, Italic, Underline in the format group, in order (C2-C4)', () => {
     expect(toolbarGroups.map((g) => [g.key, g.items.map((i) => i.key)])).toEqual([
-      ['format', ['bold', 'italic']],
+      ['format', ['bold', 'italic', 'underline']],
     ])
+    expect(toolbarGroups[0].items[2]).toMatchObject({ label: 'Underline', shortcut: 'Mod+U' })
     expect(toolbarGroups[0].items[0]).toMatchObject({ label: 'Bold', shortcut: 'Mod+B' })
     expect(toolbarGroups[0].items[1]).toMatchObject({ label: 'Italic', shortcut: 'Mod+I' })
   })

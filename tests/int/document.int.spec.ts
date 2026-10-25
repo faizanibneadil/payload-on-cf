@@ -80,11 +80,11 @@ describe('document validation', () => {
       'Invalid document part',
     )
     expect(validateDocument(docOf([paragraph([text('a', { text: 5 })])]))).toBe('Invalid text')
-    // Bold (C2) aur italic (C3) chalu; baqi formats (strikethrough 4, underline 8, ...) apne task tak nahi
-    for (const format of [1, 2, 3]) {
+    // Bold (C2), italic (C3), underline (C4) chalu; baqi (strikethrough 4, code 16, ...) apne task tak nahi
+    for (const format of [1, 2, 3, 8, 9, 11]) {
       expect(validateDocument(docOf([paragraph([text('a', { format })])]))).toBe(true)
     }
-    for (const format of [4, 5, 8, 16, 32, 64]) {
+    for (const format of [4, 5, 12, 16, 32, 64]) {
       expect(validateDocument(docOf([paragraph([text('a', { format })])]))).toBe(
         'Invalid text format',
       )

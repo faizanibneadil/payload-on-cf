@@ -126,6 +126,12 @@
 - Look: `<em>` with class `board-italic` (`font-style: italic`); bold + italic = one `<strong>` with both classes (Lexical). Inside a quote (already italic) an italic word shows **upright** (owner, C3), CSS in `globals.css`. Read view the same tags and classes.
 - Pasted `<i>`, `<em>` and `font-style: italic` stay italic. Server: format bit 2 allowed (`TEXT_FORMAT_BITS.italic`).
 
+### Underline (as built, task C4)
+- `features/underline.ts` (Payload's UnderlineFeature): toolbar button "Underline" after Italic (lucide `Underline`, tooltip `Ctrl+U` / `⌘U`), Ctrl/Cmd+U (Lexical). No markdown shortcut (markdown has no underline; Payload has none either).
+- Look: a plain underline (`text-decoration: underline`, theme `text.underline`), like Payload; it combines with bold and italic on the same text (Lexical keeps one tag: `<strong>`, `<em>` or `<span>`, with every format's class; the read view does the same).
+- Pasted `<u>` and `text-decoration: underline` (Google Docs) stay underlined. Server: format bit 8 allowed.
+- Tests check the toolbar order as "this button right after the previous one", so later buttons do not break earlier specs.
+
 ## Links (iteration D)
 - Fields: label (text shown), URL, open in new tab (`target`), `rel` (e.g. `noopener noreferrer`, `nofollow`).
 - While editing, when the cursor is on a link a small popover shows the label (or the URL), with **Edit** and **Remove**. Edit opens the fields in the same place.

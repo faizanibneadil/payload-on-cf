@@ -149,15 +149,14 @@ test('Bold: shortcut, toolbar, markdown, paste, undo, headings, save, read view,
     )
   await reset()
   await paste(
-    '<p>One <b>b tag</b>, <strong>strong tag</strong>, <span style="font-weight:700">docs</span> and <u>underline</u></p>',
-    'One b tag, strong tag, docs and underline',
+    '<p>One <b>b tag</b>, <strong>strong tag</strong>, <span style="font-weight:700">docs</span> and <s>strike</s></p>',
+    'One b tag, strong tag, docs and strike',
   )
   await settle()
   check(
-    'Pasted <b>, <strong> and font-weight bold stay bold; underline is dropped (not built yet)',
+    'Pasted <b>, <strong> and font-weight bold stay bold; strikethrough is dropped (not built yet)',
     JSON.stringify(await bolds()) === '["b tag","strong tag","docs"]' &&
-      (await editor.locator('u').count()) === 0 &&
-      !(await editor.innerHTML()).includes('underline"'),
+      !/<s\b|line-through/.test(await editor.innerHTML()),
     JSON.stringify(await bolds()),
   )
 
@@ -244,12 +243,12 @@ test('Bold: shortcut, toolbar, markdown, paste, undo, headings, save, read view,
         },
       },
     })
-  const underline = await saveDoc(8)
-  const underlineBody = await underline.json()
+  const strike = await saveDoc(4)
+  const strikeBody = await strike.json()
   check(
-    'Server rejects formats that are not built yet (underline)',
-    underline.status() === 400 && /Invalid text format/.test(underlineBody.error ?? ''),
-    `${underline.status()} ${underlineBody.error}`,
+    'Server rejects formats that are not built yet (strikethrough)',
+    strike.status() === 400 && /Invalid text format/.test(strikeBody.error ?? ''),
+    `${strike.status()} ${strikeBody.error}`,
   )
 
   const unexpected = consoleErrors.filter((e) => !/status of 40[0134]/.test(e))

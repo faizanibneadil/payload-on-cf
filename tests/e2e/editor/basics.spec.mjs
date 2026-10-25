@@ -76,34 +76,31 @@ test('Board editor basics: write, save, reload, visitor read view, validation', 
     JSON.stringify(await paragraphs()),
   )
 
-  // ---------- Baqi formatting abhi band (bold C2, italic C3 se; underline waghera apne task me) ----------
-  await owner.keyboard.press('ControlOrMeta+u')
+  // ---------- Baqi formatting abhi band (bold C2, italic C3, underline C4 se; strikethrough waghera apne
+  // task me — un ka koi keyboard shortcut nahi, is liye sirf paste se check) ----------
   await owner.keyboard.type(' plain')
   await settle()
-  check(
-    'Ctrl+U does not format yet (underline comes in its own task)',
-    (await editor.locator('strong, b, em, i, u, s, code').count()) === 0,
-  )
   await owner.keyboard.press('Enter')
   await settle()
   await editor.evaluate((el) => {
     const data = new DataTransfer()
     data.setData(
       'text/html',
-      '<p>Pasted <b>bold</b></p><p style="color:red">red <i>it</i> <u>under</u></p>',
+      '<p>Pasted <b>bold</b></p><p style="color:red">red <i>it</i> <u>under</u> <s>gone</s> <code>x</code></p>',
     )
-    data.setData('text/plain', 'Pasted bold\nred it under')
+    data.setData('text/plain', 'Pasted bold\nred it under gone x')
     el.dispatchEvent(new ClipboardEvent('paste', { clipboardData: data, bubbles: true }))
   })
   await settle()
   const pastedHtml = await editor.innerHTML()
   check(
-    // Headings B2, bold C2, italic C3 se paste me rehte hain; underline/rang abhi nahi
-    'Pasted rich text keeps bold and italic but arrives without underline or colours',
+    // Headings B2, bold C2, italic C3, underline C4 se paste me rehte hain; strikethrough/code/rang abhi nahi
+    'Pasted rich text keeps bold, italic and underline but drops strikethrough, code and colours',
     /Pasted bold/.test(await editor.innerText()) &&
       /<strong\b/.test(pastedHtml) &&
       /<em\b/.test(pastedHtml) &&
-      !/<u\b|underline/.test(pastedHtml) &&
+      /underline/.test(pastedHtml) &&
+      !/<s\b|line-through|<code\b/.test(pastedHtml) &&
       !/color/.test(pastedHtml),
     pastedHtml.slice(0, 300),
   )
