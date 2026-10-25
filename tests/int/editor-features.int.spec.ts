@@ -1,9 +1,13 @@
 import { ListItemNode, ListNode } from '@lexical/list'
 import {
+  BOLD_ITALIC_STAR,
+  BOLD_ITALIC_UNDERSCORE,
   BOLD_STAR,
   BOLD_UNDERSCORE,
   CHECK_LIST,
   HEADING,
+  ITALIC_STAR,
+  ITALIC_UNDERSCORE,
   ORDERED_LIST,
   QUOTE,
   UNORDERED_LIST,
@@ -137,13 +141,31 @@ describe('editor features', () => {
     expect(editorPlugins).toContain(ListTabPlugin)
   })
 
-  it('enable bold with the "**" and "__" shortcuts, matching the server (C2)', () => {
-    expect([...enabledTextFormats]).toEqual(['bold'])
-    expect(markdownTransformers).toContain(BOLD_STAR)
-    expect(markdownTransformers).toContain(BOLD_UNDERSCORE)
+  it('enable bold and italic with their shortcuts, matching the server (C2, C3)', () => {
+    expect([...enabledTextFormats]).toEqual(['bold', 'italic'])
+    for (const t of [
+      BOLD_STAR,
+      BOLD_UNDERSCORE,
+      ITALIC_STAR,
+      ITALIC_UNDERSCORE,
+      BOLD_ITALIC_STAR,
+      BOLD_ITALIC_UNDERSCORE,
+    ]) {
+      expect(markdownTransformers).toContain(t)
+    }
     // Editor jo formats rakhta he, server bhi wahi qubool kare
     expect(enabledTextFormatMask).toBe(ALLOWED_TEXT_FORMAT)
-    expect(enabledTextFormatMask).toBe(1)
+    expect(enabledTextFormatMask).toBe(3)
+  })
+
+  it('check longer format marks first: *** before ** before * (C3)', () => {
+    const at = (t: unknown) => markdownTransformers.indexOf(t as (typeof markdownTransformers)[0])
+    expect(at(BOLD_ITALIC_STAR)).toBeLessThan(at(BOLD_STAR))
+    expect(at(BOLD_STAR)).toBeLessThan(at(ITALIC_STAR))
+    expect(at(BOLD_ITALIC_UNDERSCORE)).toBeLessThan(at(BOLD_UNDERSCORE))
+    expect(at(BOLD_UNDERSCORE)).toBeLessThan(at(ITALIC_UNDERSCORE))
+    // Element shortcuts (headings, lists, ...) pehle jaisi tarteeb me
+    expect(at(HEADING)).toBeLessThan(at(QUOTE))
   })
 
   it('find headings in the slash menu by level and by word', () => {

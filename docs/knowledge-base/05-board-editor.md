@@ -118,7 +118,13 @@
 - `features/bold.ts` (Payload's BoldFeature): toolbar button "Bold" first in the format group (lucide `Bold`, tooltip `Ctrl+B`, `⌘B` on a Mac), Ctrl/Cmd+B (Lexical), markdown `**text**` and `__text__` while typing (Payload; `***` bold-italic comes with italic, C3). With no selection Ctrl/Cmd+B makes the next typed text bold.
 - Text formats are switched on per feature (`textFormats` in the feature file). `NotYetPlugin` lets only those through (commands, paste, shortcuts) and strips the other bits from text and from an empty line's typing format; the server's `ALLOWED_TEXT_FORMAT` (`src/lib/document.ts`, `TEXT_FORMAT_BITS`) must match (unit test) and rejects other bits (`Invalid text format`).
 - Pasted `<b>`, `<strong>` and `font-weight: 700` (Google Docs) stay bold.
-- Look: `<strong>` with `font-weight: bolder` (theme `text.bold`): 700 in normal text like Payload, and still heavier than a heading inside headings (Payload's plain `bold` would make bold text lighter than an H1). The read view renders the same `<strong>`.
+- Look: `<strong>` with `font-weight: bolder` (theme `text.bold`): 700 in normal text like Payload, and still heavier than a heading inside headings (Payload's plain `bold` would make bold text lighter than an H1). The read view renders the same `<strong>`. Owner: OK (C1 + C2 check).
+
+### Italic (as built, task C3)
+- `features/italic.ts` (Payload's ItalicFeature): toolbar button "Italic" after Bold (lucide `Italic`, tooltip `Ctrl+I` / `⌘I`), Ctrl/Cmd+I (Lexical), markdown `*text*` and `_text_` (not inside a word: `snake_case` stays), and with bold `***text***` / `___text___` (Payload adds these only when italic exists).
+- Markdown order: text-format shortcuts are sorted longest mark first (`***` before `**` before `*`, `features/index.ts`), other shortcuts keep their order.
+- Look: `<em>` with class `board-italic` (`font-style: italic`); bold + italic = one `<strong>` with both classes (Lexical). Inside a quote (already italic) an italic word shows **upright** (owner, C3), CSS in `globals.css`. Read view the same tags and classes.
+- Pasted `<i>`, `<em>` and `font-style: italic` stay italic. Server: format bit 2 allowed (`TEXT_FORMAT_BITS.italic`).
 
 ## Links (iteration D)
 - Fields: label (text shown), URL, open in new tab (`target`), `rel` (e.g. `noopener noreferrer`, `nofollow`).

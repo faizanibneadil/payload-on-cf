@@ -14,6 +14,7 @@ import { checkListFeature } from './check-list'
 import { headingFeature } from './heading'
 import { horizontalRuleFeature } from './horizontal-rule'
 import { indentFeature } from './indent'
+import { italicFeature } from './italic'
 import { orderedListFeature } from './ordered-list'
 import { paragraphFeature } from './paragraph'
 import { quoteFeature } from './quote'
@@ -31,6 +32,7 @@ export const editorFeatures: EditorFeature[] = [
   checkListFeature,
   indentFeature,
   boldFeature,
+  italicFeature,
 ]
 
 // Ek node kai features me ho sakta he (lists) — ek hi dafa register
@@ -42,7 +44,12 @@ export const editorPlugins: ComponentType[] = [
   ...new Set(editorFeatures.flatMap((f) => f.plugins ?? [])),
 ]
 
-export const markdownTransformers: Transformer[] = editorFeatures.flatMap((f) => f.markdown ?? [])
+// Text formats me lamba nishan pehle (`***` bold-italic, phir `**` bold, phir `*` italic), warna chhota
+// nishan pehle pakad leta; baqi transformers apni tarteeb me (sort stable he)
+const tagLength = (t: Transformer) => (t.type === 'text-format' ? t.tag.length : 0)
+export const markdownTransformers: Transformer[] = editorFeatures
+  .flatMap((f) => f.markdown ?? [])
+  .sort((a, b) => tagLength(b) - tagLength(a))
 
 /** Features ke items unke group me (Payload ke groups ki tarteeb), khali group nahi */
 export const slashMenuGroups: SlashMenuGroup<LexicalEditor>[] = SLASH_GROUPS.map((group) => ({
