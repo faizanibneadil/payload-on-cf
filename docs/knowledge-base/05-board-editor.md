@@ -1,5 +1,7 @@
 # 05. Board editor (one Lexical document per board)
 
+> **25 Oct 2026: being replaced.** The owner decided to build the board on Payload's own rich text (`richText` field, Payload features, blocks, Views). Everything below describes our own Lexical build (tasks A3-C4) and stays as history and as the record of the owner's look/behaviour decisions until the new plan in `15-direction-payload-richtext.md` replaces it.
+
 > Status: **target design** (owner decision, October 2026), built step by step through the tasks in `13-task-tracker.md`; each section says which task builds it. Built so far: storage, validation, editor with paragraphs, read view (task A3).
 
 ## Goal
