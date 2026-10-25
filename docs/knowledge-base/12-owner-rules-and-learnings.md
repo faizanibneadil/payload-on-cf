@@ -59,6 +59,7 @@ Canvas-specific learnings (resize, borders, text scale, click-to-type, auto widt
 | Oct 2026 | (C1 + C2 check) "Everything is OK" (toolbar, Bold, bold weight `bolder` in headings) | C1, C2 `done`; the agent's bold weight choice is accepted |
 | Oct 2026 | (C3) Inside a quote (italic) an italic word shows upright | `05-board-editor.md` (Italic); the rest of italic follows Payload |
 | Oct 2026 | (C3 check) "ok" | C3 `done` |
+| Oct 2026 | (PR #43 run red: auth-boards flake, then a Cloudflare API error on deploy) Re-run the failed jobs; investigate the flake later in its own task; first step: print the test server logs in the job output on failure | Re-run only with the owner's OK; task CI2 |
 | Oct 2026 | (B5 check) Nested lists could not be made with Tab; fix it before moving on | List items nest with Tab / Shift+Tab now (not waiting for B8). A list (or any structure) must be fully usable from the keyboard when its task is done; test the keys a user expects (Tab, Shift+Tab, Enter, Backspace) in every list/text task |
 
 ## Open choices (need the owner's answer)

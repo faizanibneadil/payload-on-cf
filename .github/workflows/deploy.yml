@@ -119,6 +119,11 @@ jobs:
         run: pnpm exec playwright install ffmpeg
       - name: Browser tests (shard ${{ matrix.shard }}/4)
         run: pnpm exec playwright test --shard=${{ matrix.shard }}/4
+      # Fail par test server ke logs seedha job output me (artifact download kiye baghair padhe ja sakein):
+      # is shard ke har server ki aakhri lines — server kyun band hua (auth-boards flake ki jaanch, CI2)
+      - name: Show test server logs
+        if: failure()
+        run: bash tests/e2e/server.sh logs
       # Fail hone par report (har check, screenshot, video, trace) aur server ke logs
       - name: Upload test report
         if: failure()
