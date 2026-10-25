@@ -145,6 +145,14 @@
   }
 }
 
+/* Italic (C3); quote khud italic he, us ke andar italic lafz seedha (owner) */
+.board-italic {
+  font-style: italic;
+}
+.board-document blockquote .board-italic {
+  font-style: normal;
+}
+
 /* Indent ka ek level (B8, owner: 24px, list ki nesting jitna) — Lexical aur read view dono isi se */
 .board-document {
   --lexical-indent-base-value: 24px;

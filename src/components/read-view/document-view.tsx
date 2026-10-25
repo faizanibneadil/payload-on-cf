@@ -98,15 +98,22 @@ const renderers: Record<
     )
   },
   horizontalrule: (_node, _children, key) => <hr key={key} className={editorTheme.hr} />,
-  text: (node, _children, key) =>
-    // Editor (Lexical) jaisa: bold = <strong> theme class ke saath
-    typeof node.format === 'number' && node.format & TEXT_FORMAT_BITS.bold ? (
-      <strong key={key} className={editorTheme.text.bold}>
+  text: (node, _children, key) => {
+    // Editor (Lexical) jaisa: bold = <strong>, warna italic = <em>; dono ki theme classes
+    const format = typeof node.format === 'number' ? node.format : 0
+    const bold = (format & TEXT_FORMAT_BITS.bold) !== 0
+    const italic = (format & TEXT_FORMAT_BITS.italic) !== 0
+    const Tag = bold ? 'strong' : italic ? 'em' : 'span'
+    const className =
+      [bold && editorTheme.text.bold, italic && editorTheme.text.italic]
+        .filter(Boolean)
+        .join(' ') || undefined
+    return (
+      <Tag key={key} className={className}>
         {node.text as string}
-      </strong>
-    ) : (
-      <span key={key}>{node.text as string}</span>
-    ),
+      </Tag>
+    )
+  },
   linebreak: (_node, _children, key) => <br key={key} />,
   tab: (_node, _children, key) => <span key={key}>{'\t'}</span>,
 }

@@ -28,9 +28,9 @@ When a task changes status, update its row in the same branch/PR.
 ## Iteration C: inline toolbar
 | Id | Task | Status |
 |---|---|---|
-| C1 | Toolbar shell (shows on selection, positioned at it) | in review (branch `task/c1-toolbar-shell`; no buttons yet, visible from C2; owner checks C1 + C2 together; tests `tests/int/inline-toolbar.int.spec.ts`, `tests/e2e/editor/inline-toolbar.spec.mjs`) |
-| C2 | Bold | in review (branch `task/c2-bold`, on top of C1; tests `tests/int/editor-features.int.spec.ts`, `tests/int/document.int.spec.ts`, `tests/int/inline-toolbar.int.spec.ts`, `tests/e2e/editor/bold.spec.mjs`, `tests/e2e/editor/inline-toolbar.spec.mjs`) |
-| C3 | Italic | todo |
+| C1 | Toolbar shell (shows on selection, positioned at it) | done (PR #40; owner verified on dev together with C2; tests `tests/int/inline-toolbar.int.spec.ts`, `tests/e2e/editor/inline-toolbar.spec.mjs`) |
+| C2 | Bold | done (PR #41; owner verified on dev; tests `tests/int/editor-features.int.spec.ts`, `tests/int/document.int.spec.ts`, `tests/int/inline-toolbar.int.spec.ts`, `tests/e2e/editor/bold.spec.mjs`, `tests/e2e/editor/inline-toolbar.spec.mjs`) |
+| C3 | Italic | in review (branch `task/c3-italic`; tests `tests/int/editor-features.int.spec.ts`, `tests/int/document.int.spec.ts`, `tests/int/inline-toolbar.int.spec.ts`, `tests/e2e/editor/italic.spec.mjs`; `basics`/`bold` specs updated) |
 | C4 | Underline | todo |
 | C5 | Strikethrough | todo |
 | C6 | Superscript | todo |

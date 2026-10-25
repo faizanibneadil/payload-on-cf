@@ -9,10 +9,11 @@ Read this together with `12-owner-rules-and-learnings.md` (owner rules, every pa
 - **B6 check list** done (PR #33, deployed `6bc331f`, owner verified).
 - **B7 horizontal rule** done (PR #34 + slash search fix PR #35, owner verified on dev).
 - **B8 indent** done (PR #39, owner tested live). **B9 alignment** moved into C10 (owner: toolbar first; decisions in `12`).
-- **C1 toolbar shell**: branch `task/c1-toolbar-shell`, PR into `dev`. It shows no toolbar until a feature has a button; **C2 Bold** follows right away as its own PR, the owner checks C1 + C2 together.
+- **C1 toolbar shell** and **C2 Bold** done (PRs #40, #41, owner verified on dev).
+- **C3 Italic**: branch `task/c3-italic`, PR into `dev`, waiting for the owner's merge and check.
 - **CI1** done (PR #36 + ffmpeg fix PR #37): the whole suite runs in GitHub Actions before every deploy on `dev` and `main` (unit, lint, tsc, browser suite in 4 parallel shards on the runner's preinstalled Chrome); about 8 min merge to deploy; last run green (`5134aa6`). Locally only the tests of the changed modules (`12`, rules 3, 5, 10).
-- Open PRs: C1 toolbar shell, C2 Bold (branch built on top of C1; merge C1 first).
-- **Next: after the owner checks C1 + C2 on dev, C3 Italic** (then C4-C11). A format task = a feature file with `textFormats: ['<format>']`, its markdown transformers, a `toolbar` item in the `format` group; add its bit to `TEXT_FORMAT_BITS` in `src/lib/document.ts`, its class to `theme.text`, its tag to the read view's `text` renderer; tests like `bold.spec.mjs`. C3 also adds Payload's bold-italic transformers (`***`, `___`).
+- Open PR: C3 Italic.
+- **Next: after the owner checks C3 on dev, C4 Underline** (then C5-C11). A format task = a feature file with `textFormats: ['<format>']`, its markdown transformers, a `toolbar` item in the `format` group; add its bit to `TEXT_FORMAT_BITS` in `src/lib/document.ts`, its class to `theme.text`, its tag to the read view's `text` renderer; tests like `bold.spec.mjs`. Text-format markdown shortcuts are sorted longest mark first automatically.
 - Open owner decisions: E (boards per day, now 10), F (`*.devslix.com` wildcard; prod workers.dev URL allowed or not), Code block settings (before F4).
 
 ## How a task is done (pattern used for B2-B7)

@@ -149,14 +149,15 @@ test('Bold: shortcut, toolbar, markdown, paste, undo, headings, save, read view,
     )
   await reset()
   await paste(
-    '<p>One <b>b tag</b>, <strong>strong tag</strong>, <span style="font-weight:700">docs</span> and <i>italic</i></p>',
-    'One b tag, strong tag, docs and italic',
+    '<p>One <b>b tag</b>, <strong>strong tag</strong>, <span style="font-weight:700">docs</span> and <u>underline</u></p>',
+    'One b tag, strong tag, docs and underline',
   )
   await settle()
   check(
-    'Pasted <b>, <strong> and font-weight bold stay bold; italic is dropped (not built yet)',
+    'Pasted <b>, <strong> and font-weight bold stay bold; underline is dropped (not built yet)',
     JSON.stringify(await bolds()) === '["b tag","strong tag","docs"]' &&
-      (await editor.locator('em, i').count()) === 0,
+      (await editor.locator('u').count()) === 0 &&
+      !(await editor.innerHTML()).includes('underline"'),
     JSON.stringify(await bolds()),
   )
 
@@ -243,12 +244,12 @@ test('Bold: shortcut, toolbar, markdown, paste, undo, headings, save, read view,
         },
       },
     })
-  const italic = await saveDoc(2)
-  const italicBody = await italic.json()
+  const underline = await saveDoc(8)
+  const underlineBody = await underline.json()
   check(
-    'Server rejects formats that are not built yet (italic)',
-    italic.status() === 400 && /Invalid text format/.test(italicBody.error ?? ''),
-    `${italic.status()} ${italicBody.error}`,
+    'Server rejects formats that are not built yet (underline)',
+    underline.status() === 400 && /Invalid text format/.test(underlineBody.error ?? ''),
+    `${underline.status()} ${underlineBody.error}`,
   )
 
   const unexpected = consoleErrors.filter((e) => !/status of 40[0134]/.test(e))

@@ -76,30 +76,34 @@ test('Board editor basics: write, save, reload, visitor read view, validation', 
     JSON.stringify(await paragraphs()),
   )
 
-  // ---------- Baqi formatting abhi band (bold C2 se, `bold.spec`; italic waghera apne task me) ----------
-  await owner.keyboard.press('ControlOrMeta+i')
+  // ---------- Baqi formatting abhi band (bold C2, italic C3 se; underline waghera apne task me) ----------
+  await owner.keyboard.press('ControlOrMeta+u')
   await owner.keyboard.type(' plain')
   await settle()
   check(
-    'Ctrl+I does not format yet (italic comes in its own task)',
+    'Ctrl+U does not format yet (underline comes in its own task)',
     (await editor.locator('strong, b, em, i, u, s, code').count()) === 0,
   )
   await owner.keyboard.press('Enter')
   await settle()
   await editor.evaluate((el) => {
     const data = new DataTransfer()
-    data.setData('text/html', '<p>Pasted <b>bold</b></p><p style="color:red">red <i>it</i></p>')
-    data.setData('text/plain', 'Pasted bold\nred it')
+    data.setData(
+      'text/html',
+      '<p>Pasted <b>bold</b></p><p style="color:red">red <i>it</i> <u>under</u></p>',
+    )
+    data.setData('text/plain', 'Pasted bold\nred it under')
     el.dispatchEvent(new ClipboardEvent('paste', { clipboardData: data, bubbles: true }))
   })
   await settle()
   const pastedHtml = await editor.innerHTML()
   check(
-    // Headings B2 se, bold C2 se paste me rehte hain; italic/rang abhi nahi
-    'Pasted rich text keeps bold but arrives without italic or colours',
+    // Headings B2, bold C2, italic C3 se paste me rehte hain; underline/rang abhi nahi
+    'Pasted rich text keeps bold and italic but arrives without underline or colours',
     /Pasted bold/.test(await editor.innerText()) &&
       /<strong\b/.test(pastedHtml) &&
-      !/<(em|i)\b/.test(pastedHtml) &&
+      /<em\b/.test(pastedHtml) &&
+      !/<u\b|underline/.test(pastedHtml) &&
       !/color/.test(pastedHtml),
     pastedHtml.slice(0, 300),
   )
