@@ -1,6 +1,7 @@
 import type { Transformer } from '@lexical/markdown'
 import type { Klass, LexicalEditor, LexicalNode } from 'lexical'
 import type { ComponentType } from 'react'
+import { buildToolbarGroups, type ToolbarGroup } from '../inline-toolbar/toolbar-items'
 import type { SlashMenuGroup } from '../slash-menu/slash-menu-items'
 import { checkListFeature } from './check-list'
 import { headingFeature } from './heading'
@@ -40,3 +41,8 @@ export const slashMenuGroups: SlashMenuGroup<LexicalEditor>[] = SLASH_GROUPS.map
   ...group,
   items: editorFeatures.flatMap((f) => (f.slashMenu?.group === group.key ? f.slashMenu.items : [])),
 })).filter((group) => group.items.length > 0)
+
+/** Inline toolbar ke groups: features ke buttons Payload ki tarteeb me, khali group nahi */
+export const toolbarGroups: ToolbarGroup<LexicalEditor>[] = buildToolbarGroups(
+  editorFeatures.flatMap((f) => (f.toolbar ? [f.toolbar] : [])),
+)

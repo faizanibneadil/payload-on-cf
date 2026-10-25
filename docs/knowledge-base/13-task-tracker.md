@@ -22,13 +22,13 @@ When a task changes status, update its row in the same branch/PR.
 | B5 | Numbered list ("Ordered List") | done (PR #31, Tab nesting fix PR #32; owner verified on dev; tests `tests/int/editor-features.int.spec.ts`, `tests/int/document.int.spec.ts`, `tests/e2e/editor/ordered-list.spec.mjs`, `tests/e2e/editor/list-tab.spec.mjs`) |
 | B6 | Check list | done (PR #33; owner verified on dev; tests `tests/int/editor-features.int.spec.ts`, `tests/int/document.int.spec.ts`, `tests/e2e/editor/check-list.spec.mjs`) |
 | B7 | Horizontal rule | done (PR #34, slash search fix PR #35: matches from the start of words; owner verified on dev; tests `tests/int/editor-features.int.spec.ts`, `tests/int/document.int.spec.ts`, `tests/e2e/editor/horizontal-rule.spec.mjs`) |
-| B8 | Indent (paragraphs, headings, quotes; list items already nest with Tab since the B5 fix) | in review (PR #39; tests `tests/int/document.int.spec.ts`, `tests/int/editor-features.int.spec.ts`, `tests/e2e/editor/indent.spec.mjs`, `tests/e2e/editor/list-tab.spec.mjs` updated) |
-| B9 | Alignment | todo |
+| B8 | Indent (paragraphs, headings, quotes; list items already nest with Tab since the B5 fix) | done (PR #39; owner verified on dev; tests `tests/int/document.int.spec.ts`, `tests/int/editor-features.int.spec.ts`, `tests/e2e/editor/indent.spec.mjs`, `tests/e2e/editor/list-tab.spec.mjs` updated) |
+| B9 | Alignment | moved to iteration C (owner: alignment belongs to the toolbar; build the toolbar first, then its features). Built as part of C10; owner decisions already taken (`12`) |
 
 ## Iteration C: inline toolbar
 | Id | Task | Status |
 |---|---|---|
-| C1 | Toolbar shell (shows on selection, positioned at it) | todo |
+| C1 | Toolbar shell (shows on selection, positioned at it) | in review (branch `task/c1-toolbar-shell`; no buttons yet, visible from C2; owner checks C1 + C2 together; tests `tests/int/inline-toolbar.int.spec.ts`, `tests/e2e/editor/inline-toolbar.spec.mjs`) |
 | C2 | Bold | todo |
 | C3 | Italic | todo |
 | C4 | Underline | todo |
@@ -37,7 +37,7 @@ When a task changes status, update its row in the same branch/PR.
 | C7 | Subscript | todo |
 | C8 | Inline code | todo |
 | C9 | Text type dropdown (paragraph, headings, lists, check list, quote) | todo |
-| C10 | Alignment and indent in the toolbar | todo |
+| C10 | Alignment (was B9: left, center, right, justify on paragraph/heading/quote; Enter keeps it) and indent in the toolbar | todo |
 | C11 | Text state colours (`defaultColors`) | todo |
 
 ## Iteration D: links
