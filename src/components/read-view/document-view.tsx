@@ -1,6 +1,6 @@
 import type { CSSProperties, ReactNode } from 'react'
 import { documentClass, editorTheme, indentSize } from '@/components/editor/theme'
-import type { BoardDocument, DocNode } from '@/lib/document'
+import { type BoardDocument, type DocNode, TEXT_FORMAT_BITS } from '@/lib/document'
 
 /**
  * Document ka read view — server par JSON se seedha React (browser me Lexical ka JS nahi aata).
@@ -98,7 +98,15 @@ const renderers: Record<
     )
   },
   horizontalrule: (_node, _children, key) => <hr key={key} className={editorTheme.hr} />,
-  text: (node, _children, key) => <span key={key}>{node.text as string}</span>,
+  text: (node, _children, key) =>
+    // Editor (Lexical) jaisa: bold = <strong> theme class ke saath
+    typeof node.format === 'number' && node.format & TEXT_FORMAT_BITS.bold ? (
+      <strong key={key} className={editorTheme.text.bold}>
+        {node.text as string}
+      </strong>
+    ) : (
+      <span key={key}>{node.text as string}</span>
+    ),
   linebreak: (_node, _children, key) => <br key={key} />,
   tab: (_node, _children, key) => <span key={key}>{'\t'}</span>,
 }

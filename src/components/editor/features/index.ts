@@ -1,8 +1,15 @@
 import type { Transformer } from '@lexical/markdown'
-import type { Klass, LexicalEditor, LexicalNode } from 'lexical'
+import {
+  type Klass,
+  type LexicalEditor,
+  type LexicalNode,
+  TEXT_TYPE_TO_FORMAT,
+  type TextFormatType,
+} from 'lexical'
 import type { ComponentType } from 'react'
 import { buildToolbarGroups, type ToolbarGroup } from '../inline-toolbar/toolbar-items'
 import type { SlashMenuGroup } from '../slash-menu/slash-menu-items'
+import { boldFeature } from './bold'
 import { checkListFeature } from './check-list'
 import { headingFeature } from './heading'
 import { horizontalRuleFeature } from './horizontal-rule'
@@ -23,6 +30,7 @@ export const editorFeatures: EditorFeature[] = [
   orderedListFeature,
   checkListFeature,
   indentFeature,
+  boldFeature,
 ]
 
 // Ek node kai features me ho sakta he (lists) — ek hi dafa register
@@ -45,4 +53,15 @@ export const slashMenuGroups: SlashMenuGroup<LexicalEditor>[] = SLASH_GROUPS.map
 /** Inline toolbar ke groups: features ke buttons Payload ki tarteeb me, khali group nahi */
 export const toolbarGroups: ToolbarGroup<LexicalEditor>[] = buildToolbarGroups(
   editorFeatures.flatMap((f) => (f.toolbar ? [f.toolbar] : [])),
+)
+
+/** Chalu text formats (features ke) — baqi commands, paste aur shortcuts se nahi aate */
+export const enabledTextFormats: ReadonlySet<TextFormatType> = new Set(
+  editorFeatures.flatMap((f) => f.textFormats ?? []),
+)
+
+/** Unhi formats ke Lexical bits (server ka `ALLOWED_TEXT_FORMAT` isi ke barabar, unit test) */
+export const enabledTextFormatMask = [...enabledTextFormats].reduce(
+  (mask, format) => mask | TEXT_TYPE_TO_FORMAT[format],
+  0,
 )

@@ -17,6 +17,10 @@ import { cn } from '@/lib/utils'
 import { toolbarGroups } from '../features'
 import { type ToolbarGroup, toolbarPosition } from './toolbar-items'
 
+// Shortcut "Mod+B": Mac par ⌘B, baqi par Ctrl+B
+const shortcutLabel = (shortcut: string) =>
+  shortcut.replace('Mod+', /Mac|iPhone|iPad/.test(navigator.platform) ? '⌘' : 'Ctrl+')
+
 // Header (h-12) ke neeche hi rahe; header na mile to screen ka sira
 const headerBottom = () => document.querySelector('header')?.getBoundingClientRect().bottom ?? 0
 
@@ -180,7 +184,9 @@ export function InlineToolbarPlugin({
                   </TooltipTrigger>
                   <TooltipContent>
                     {item.label}
-                    {item.shortcut && <span className="opacity-60">{item.shortcut}</span>}
+                    {item.shortcut && (
+                      <span className="opacity-60">{shortcutLabel(item.shortcut)}</span>
+                    )}
                   </TooltipContent>
                 </Tooltip>
               )

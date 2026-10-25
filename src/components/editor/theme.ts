@@ -11,6 +11,8 @@ export const indentSize = (indent: number) =>
 
 export const editorTheme = {
   paragraph: 'mb-3 last:mb-0',
+  // Text formats (C2 se). Bold: `bolder` — aam text me 700 (Payload jaisa), headings me un se bhi gehra
+  text: { bold: '[font-weight:bolder]' },
   // Indent wali line (B8) — faasla Lexical inline style se lagata he (read view bhi wahi)
   indent: 'board-indent',
   // Lexical list theme keys; nested = sirf andar wali list rakhne wala item (apna marker nahi)

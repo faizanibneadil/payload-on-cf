@@ -1,5 +1,13 @@
 import { ListItemNode, ListNode } from '@lexical/list'
-import { CHECK_LIST, HEADING, ORDERED_LIST, QUOTE, UNORDERED_LIST } from '@lexical/markdown'
+import {
+  BOLD_STAR,
+  BOLD_UNDERSCORE,
+  CHECK_LIST,
+  HEADING,
+  ORDERED_LIST,
+  QUOTE,
+  UNORDERED_LIST,
+} from '@lexical/markdown'
 import { CheckListPlugin } from '@lexical/react/LexicalCheckListPlugin'
 import { HorizontalRuleNode } from '@lexical/react/LexicalHorizontalRuleNode'
 import { HorizontalRulePlugin } from '@lexical/react/LexicalHorizontalRulePlugin'
@@ -9,12 +17,15 @@ import { describe, expect, it } from 'vitest'
 import {
   editorNodes,
   editorPlugins,
+  enabledTextFormatMask,
+  enabledTextFormats,
   markdownTransformers,
   slashMenuGroups,
 } from '@/components/editor/features'
 import { indentFeature } from '@/components/editor/features/indent'
 import { ListTabPlugin } from '@/components/editor/features/list-tab'
 import { filterSlashGroups } from '@/components/editor/slash-menu/slash-menu-items'
+import { ALLOWED_TEXT_FORMAT } from '@/lib/document'
 
 const keys = () => slashMenuGroups.map((g) => [g.key, g.items.map((i) => i.key)])
 
@@ -124,6 +135,15 @@ describe('editor features', () => {
     expect(indentFeature.markdown).toBeUndefined()
     // List ka Tab (nesting) bhi pehle jaisa register
     expect(editorPlugins).toContain(ListTabPlugin)
+  })
+
+  it('enable bold with the "**" and "__" shortcuts, matching the server (C2)', () => {
+    expect([...enabledTextFormats]).toEqual(['bold'])
+    expect(markdownTransformers).toContain(BOLD_STAR)
+    expect(markdownTransformers).toContain(BOLD_UNDERSCORE)
+    // Editor jo formats rakhta he, server bhi wahi qubool kare
+    expect(enabledTextFormatMask).toBe(ALLOWED_TEXT_FORMAT)
+    expect(enabledTextFormatMask).toBe(1)
   })
 
   it('find headings in the slash menu by level and by word', () => {
