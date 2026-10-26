@@ -9,7 +9,6 @@ export async function getCurrentUser() {
     const payload = await getPayload({ config })
 
     const { user } = await payload.auth({ headers })
-    payload.logger.info(user)
     return user || null
   } catch {
     return null
