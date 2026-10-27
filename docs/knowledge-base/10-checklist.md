@@ -18,7 +18,7 @@
 - [ ] Title: live normalization, max 50, unique slug, fallback `untitled-<id>`
 - [ ] `/` serves the Playground; `/p/[slug]` shows a saved playground; unknown slug returns 404
 - [ ] Share uses `navigator.share` with clipboard fallback
-- [ ] Dark theme only (no light theme, no theme toggle, no `next-themes`)
+- [ ] Light theme only in the app (no dark theme, no theme toggle, no `next-themes`); Payload admin stays dark
 - [ ] Theory read-only for non-owners; code editor, preview and console work; all panels resize; mobile tabs work
 - [ ] Monaco and Tiptap are dynamically imported (the sandboxed preview also loads lazily)
 - [ ] Panels: Theory/Files/Code/Preview collapse to a 40px rail, dragging below min collapses, Code or Preview always stays open (see `11-panel-layout.mdx`)

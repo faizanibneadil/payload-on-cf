@@ -2,7 +2,7 @@ import type { Monaco } from '@monaco-editor/react'
 
 /** CSS variable (oklch etc.) ko Monaco-safe #rrggbb me badalta hai — canvas pixel read se. */
 function resolveCssVar(name: string): string {
-  if (typeof document === 'undefined') return '#1e1e1e'
+  if (typeof document === 'undefined') return '#ffffff'
 
   const probe = document.createElement('span')
   probe.style.color = `var(${name})`
@@ -34,7 +34,7 @@ function resolveCssVar(name: string): string {
 /** App ke theme variables se "app" Monaco theme define karke apply karta hai */
 export function applyMonacoTheme(monaco: Monaco) {
   monaco.editor.defineTheme('app', {
-    base: 'vs-dark',
+    base: 'vs',
     inherit: true,
     rules: [],
     colors: {
