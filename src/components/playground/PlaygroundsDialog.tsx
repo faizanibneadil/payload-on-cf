@@ -111,7 +111,7 @@ export default function PlaygroundsDialog({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-h-[85dvh] gap-0 overflow-hidden p-0 sm:max-w-lg">
+        <DialogContent className="max-h-[85dvh] gap-0 overflow-y-auto p-0 sm:max-w-lg">
           <DialogHeader className="border-b p-4">
             <DialogTitle className="flex items-center gap-2">
               <FolderGit2 className="size-4" /> My playgrounds
